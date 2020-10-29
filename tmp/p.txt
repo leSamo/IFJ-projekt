@@ -1,0 +1,7 @@
+
+/* hsdjh fsdjk dsh fsdjkh fkdjh fskdjh fkdjh
+kgjlkgjflkgj f jlkfgj lfkjg lfkjg lkf
+dsd sds sd sd sd s s */
+
+
+int ahoj := 50 
