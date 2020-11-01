@@ -1,10 +1,9 @@
-/*  */ // dffdfdfdfdfdf
-int qwerty	:=  //fdfdf df df
-
-/* /* /* vddfgdf df df df 
-
-df dfd fdfdfdf 
-f */
-
-
-    	50 
+int qwerty AAA 
+//this is not outputed
+:= 
+/*  detuptuo ton si siht 
+detuptuo ton si siht
+detuptuo/////***** ton si siht */
+//
+/**/
+50         
