@@ -23,3 +23,38 @@ const char* keywords[] = {
     "return",
     "string"
 };
+
+#define MAX_TOKEN_ARRAY_SIZE 50
+#define MAX_CHAR_BUFFER_SIZE 50
+
+/* list of all posible automaton states */
+typedef enum {
+    AS_Default,
+    AS_Identif,
+    AS_Int,
+    AS_Float,
+    AS_String,
+    AS_String_Escape,
+    AS_Comm_Start,
+    AS_BlockComm,
+    AS_BlockComm_End,
+    AS_LineComm
+} state;
+
+/* list of all token types */
+typedef enum {
+    TOK_Int,
+    TOK_Float,
+    TOK_Identif,
+    TOK_String
+} tokenType;
+
+/* Represents one token each token has type and some have value of either type int, float or string */
+typedef struct {
+    tokenType type;
+    union {
+        int i;
+        float f;
+        char str[MAX_CHAR_BUFFER_SIZE];
+    };
+} Token;

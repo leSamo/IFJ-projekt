@@ -1,15 +1,8 @@
-CFLAGS = -pedantic -Wall -Wextra -std=gnu99 # -Werror
-OBJECTS = $(SOURCES:.c=.o)
-SOURCES = $(wildcard *.c)
+CFLAGS = -pedantic -Wall -Wextra -std=c11 # -Werror
 CC = gcc
 
-all: build
-
-build: $(OBJECTS)
-	$(CC) $(CFLAGS) $^ -o $@
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $^ -o $@
+all:
+	$(CC) leScanner.c -o leScanner.o
 
 clean:
 	rm *.o
