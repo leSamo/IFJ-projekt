@@ -1,3 +1,10 @@
+/* ========== leScanner.h ==========
+ * Project: IFJ 2020/21 project
+ * Team: 067, variant I
+ * Author: Samuel Olekšák (xoleks00)
+ * Date: November 2020
+ * ================================= */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,3 +1,10 @@
+/* ========== leScanner.h ==========
+ * Project: IFJ 2020/21 project
+ * Team: 067, variant I
+ * Author: Samuel Olekšák (xoleks00)
+ * Date: November 2020
+ * ================================= */
+
 /* Reads input from stdin and sends a token */
 Token *getToken();
 
