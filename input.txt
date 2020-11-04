@@ -1,0 +1,11 @@
+// hide this
+515 515 ahoj 
+/* hide that */
+
+hello 52 
+
+"hello mr. string" 
+
+"this is \" <- quote inside string" 
+
+3.14 
