@@ -7,17 +7,16 @@
 #include "constants.h"
 #include "leScanner.h"
 
-int main(int argc, char* argv[]) {
+Token *getToken() {
     int currentChar;
     state currentState = AS_Default;
-
-    Token tokens[MAX_TOKEN_ARRAY_SIZE];
-    int tokenCount = 0;
 
     char charBuffer[MAX_CHAR_BUFFER_SIZE];
     int charBufferPos = 0;
 
-    while ((currentChar = getchar()) != EOF) {
+    while (true) {
+        currentChar = getchar();
+
         switch (currentState)
         {
         case AS_Default:
@@ -35,6 +34,9 @@ int main(int argc, char* argv[]) {
             else if (currentChar == '\"') {
                 currentState = AS_String;
             }
+            else if (currentChar == EOF) {
+                return NULL;
+            }
 
             // if it's whitespace then noop
             break;
@@ -50,8 +52,7 @@ int main(int argc, char* argv[]) {
             else {
                 ungetChar(currentChar);
                 char *content = charBufferClear(charBuffer, &charBufferPos);
-                newIntToken(tokens, &tokenCount, atoi(content));
-                currentState = AS_Default;
+                return newIntToken(atoi(content));
             }
             break;
 
@@ -63,8 +64,7 @@ int main(int argc, char* argv[]) {
             else {
                 ungetChar(currentChar);
                 char *content = charBufferClear(charBuffer, &charBufferPos);
-                newFloatToken(tokens, &tokenCount, atof(content));
-                currentState = AS_Default;
+                return newFloatToken(atof(content));
             }
             break;
         
@@ -75,8 +75,7 @@ int main(int argc, char* argv[]) {
             else {
                 ungetChar(currentChar);
                 char *content = charBufferClear(charBuffer, &charBufferPos);
-                newToken(tokens, &tokenCount, TOK_Identif, content);
-                currentState = AS_Default;
+                return newToken(TOK_Identif, content);
             }
             break;
 
@@ -116,8 +115,7 @@ int main(int argc, char* argv[]) {
         case AS_String:
             if (currentChar == '\"') {
                 char *content = charBufferClear(charBuffer, &charBufferPos);
-                newToken(tokens, &tokenCount, TOK_String, content);
-                currentState = AS_Default;
+                return newToken(TOK_String, content);
             }
             else if (currentChar == '\\') {
                 currentState = AS_String_Escape;
@@ -140,13 +138,9 @@ int main(int argc, char* argv[]) {
         
         default:
             throwError("Reached invalid state.\n");
-            return 1;
+            return NULL;
         }
     }
-
-    printAllTokens(tokens, tokenCount);
-
-    return 0;
 }
 
 void throwError(char* msg) {
@@ -171,55 +165,50 @@ bool isWhiteSpace(char c) {
 }
 
 /* New token functions */
-void newIntToken(Token *tokens, int *tokenCount, int content) {
-    Token newToken;
-    newToken.type = TOK_Int;
-    newToken.i = content;
+Token *newIntToken(int content) {
+    Token *newToken = malloc(sizeof(Token));
+    newToken->type = TOK_Int;
+    newToken->i = content;
 
-    tokens[(*tokenCount)++] = newToken;
+    return newToken;
 }
 
-void newFloatToken(Token *tokens, int *tokenCount, float content) {
-    Token newToken;
-    newToken.type = TOK_Float;
-    newToken.f = content;
+Token *newFloatToken(float content) {
+    Token *newToken = malloc(sizeof(Token));
+    newToken->type = TOK_Float;
+    newToken->f = content;
 
-    tokens[(*tokenCount)++] = newToken;
+    return newToken;
 }
 
-void newToken(Token *tokens, int *tokenCount, tokenType type, char* content) {
-    Token newToken;
-    newToken.type = type;
-    strcpy(newToken.str, content);
+Token *newToken(tokenType type, char* content) {
+    Token *newToken = malloc(sizeof(Token));
+    newToken->type = type;
+    strcpy(newToken->str, content);
 
-    tokens[(*tokenCount)++] = newToken;
+    return newToken;
 }
 
-void newHalfToken(Token *tokens, int *tokenCount, tokenType type) {
-    Token newToken;
-    newToken.type = type;
+Token *newHalfToken(tokenType type) {
+    Token *newToken = malloc(sizeof(Token));
+    newToken->type = type;
 
-    tokens[(*tokenCount)++] = newToken;
+    return newToken;
 }
 
-void printAllTokens(Token *tokens, int tokenCount) {
-    printf("\n----- TOKENS -----\n");
-    for (int i = 0; i < tokenCount; i++) {
-        Token token = tokens[i];
-        switch (token.type) {
-            case TOK_Int:
-                printf("%s: \"%d\"\n", getTokenName(token.type), token.i);
-                break;
-            case TOK_Float:
-                printf("%s: \"%f\"\n", getTokenName(token.type), token.f);
-                break;
-            case TOK_Identif:
-            case TOK_String:
-                printf("%s: \"%s\"\n", getTokenName(token.type), token.str);
-                break;
-        }
+void printToken(Token *token) {
+    switch (token->type) {
+        case TOK_Int:
+            printf("%s: \"%d\"\n", getTokenName(token->type), token->i);
+            break;
+        case TOK_Float:
+            printf("%s: \"%f\"\n", getTokenName(token->type), token->f);
+            break;
+        case TOK_Identif:
+        case TOK_String:
+            printf("%s: \"%s\"\n", getTokenName(token->type), token->str);
+            break;
     }
-    printf("------------------\n\n");
 }
 
 char* getTokenName(tokenType type) {
