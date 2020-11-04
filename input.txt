@@ -1,11 +1,11 @@
 // hide this
-515 515 ahoj 
+515 515ahoj 
 /* hide that */
 
-hello 52 
+hello52 
 
 "hello mr. string" 
 
 "this is \" <- quote inside string" 
 
-3.14 
+3.14id
