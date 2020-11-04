@@ -1,3 +1,11 @@
+/* ========== constants.h ==========
+/* Project: IFJ 2020/21 project
+/* Team: 067, variant I
+/* Author: Samuel Olekšák (xoleks00)
+/* Date: November 2020
+/* Description: Various structures, declarations and constants shared by multiple components
+/* ================================= */
+
 // return codes for various error scenarios
 typedef enum {
     LEXICAL_ERROR = 1, // chyba v programu v rámci lexikální analýzy (chybná struktura aktuálního lexému)
@@ -11,7 +19,7 @@ typedef enum {
     INTERANAL_ERROR = 99 // interní chyba překladače tj. neovlivněná vstupním programem (např. chyba alokace paměti, atd.)
 } errorCode;
 
-// list of all reserved keywords which cannot be used as identifiers
+/* list of all reserved keywords which cannot be used as identifiers */
 const char* keywords[] = {
     "else",
     "float64",
@@ -24,7 +32,7 @@ const char* keywords[] = {
     "string"
 };
 
-#define MAX_TOKEN_ARRAY_SIZE 50
+/* Size of char buffer for scanner */
 #define MAX_CHAR_BUFFER_SIZE 50
 
 /* list of all posible automaton states */

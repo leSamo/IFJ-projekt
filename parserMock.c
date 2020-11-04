@@ -1,4 +1,10 @@
-/* This is just a mock parser file which just keep requesting tokens and printing them until EOF */
+/* ========== leScanner.h ==========
+ * Project: IFJ 2020/21 project
+ * Team: 067, variant I
+ * Author: Samuel Olekšák (xoleks00)
+ * Date: November 2020
+ * Description: This is just a mock parser file which just keeps requesting tokens and printing them until EOF 
+ * ================================= */
 
 #include <stdio.h>
 #include <stdlib.h>
