@@ -1,3 +1,6 @@
+/* Reads input from stdin and sends a token */
+Token *getToken();
+
 /* print out an error message to stderr */
 void throwError(char* msg);
 
@@ -14,19 +17,19 @@ bool isAlpha(char c);
 bool isWhiteSpace(char c);
 
 /* creates a new int token and inserts it into tokens array */
-void newIntToken(Token *tokens, int *tokenCount, int content);
+Token *newIntToken(int content);
 
 /* creates a new float token and inserts it into tokens array */
-void newFloatToken(Token *tokens, int *tokenCount, float content);
+Token *newFloatToken(float content);
 
 /* creates a new token with passed type and value and inserts it into tokens array */
-void newToken(Token *tokens, int *tokenCount, tokenType type, char* content);
+Token *newToken(tokenType type, char* content);
 
-/* creates a new valueless token with passed type and inserts it into tokens array */
-void newHalfToken(Token *tokens, int *tokenCount, tokenType type);
+/* creates a new attributeless token with passed type and inserts it into tokens array */
+Token *newHalfToken(tokenType type);
 
 /* prints all tokens from tokens array */
-void printAllTokens(Token *tokens, int tokenCount);
+void printToken(Token *token);
 
 /* Debug function to convert token type enum int to string for printing */
 char* getTokenName(tokenType type);
