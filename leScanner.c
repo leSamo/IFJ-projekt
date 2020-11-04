@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
                 currentState = AS_Float;
             }
             else {
+                ungetChar(currentChar);
                 char *content = charBufferClear(charBuffer, &charBufferPos);
                 newIntToken(tokens, &tokenCount, atoi(content));
                 currentState = AS_Default;
@@ -60,6 +61,7 @@ int main(int argc, char* argv[]) {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
             }
             else {
+                ungetChar(currentChar);
                 char *content = charBufferClear(charBuffer, &charBufferPos);
                 newFloatToken(tokens, &tokenCount, atof(content));
                 currentState = AS_Default;
@@ -71,6 +73,7 @@ int main(int argc, char* argv[]) {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
             }
             else {
+                ungetChar(currentChar);
                 char *content = charBufferClear(charBuffer, &charBufferPos);
                 newToken(tokens, &tokenCount, TOK_Identif, content);
                 currentState = AS_Default;
@@ -148,6 +151,10 @@ int main(int argc, char* argv[]) {
 
 void throwError(char* msg) {
     fprintf(stderr, "%s", msg);
+}
+
+void ungetChar(char c) {
+    ungetc(c, stdin);
 }
 
 /* Current char testing functions */

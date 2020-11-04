@@ -1,6 +1,9 @@
 /* print out an error message to stderr */
 void throwError(char* msg);
 
+/* Returns its argument char back to the input stream, reverts getChar() function */
+void ungetChar(char c);
+
 /* returns whether char is digit (0-9) */
 bool isDigit(char c);
 
