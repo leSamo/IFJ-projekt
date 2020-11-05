@@ -16,7 +16,7 @@ typedef enum {
     ARGUMENT_ERROR = 6, // sémantická chyba v programu – špatný počet/typ parametrů či návratových hodnot u volání funkce či návratu z funkce
     OTHER_SEMANTIC_ERROR = 7, // ostatní sémantické chyby
     ZERO_DIVISION_ERROR = 9, // sémantická chyba dělení nulovou konstantou
-    INTERANAL_ERROR = 99 // interní chyba překladače tj. neovlivněná vstupním programem (např. chyba alokace paměti, atd.)
+    INTERNAL_ERROR = 99 // interní chyba překladače tj. neovlivněná vstupním programem (např. chyba alokace paměti, atd.)
 } errorCode;
 
 /* size of char buffer for scanner */
