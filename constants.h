@@ -19,26 +19,13 @@ typedef enum {
     INTERANAL_ERROR = 99 // interní chyba překladače tj. neovlivněná vstupním programem (např. chyba alokace paměti, atd.)
 } errorCode;
 
-/* list of all reserved keywords which cannot be used as identifiers */
-const char* keywords[] = {
-    "else",
-    "float64",
-    "for",
-    "func",
-    "if",
-    "int",
-    "package",
-    "return",
-    "string"
-};
-
 /* Size of char buffer for scanner */
 #define MAX_CHAR_BUFFER_SIZE 50
 
 /* list of all posible automaton states */
 typedef enum {
     AS_Default,
-    AS_Identif,
+    AS_Word,
     AS_Int,
     AS_Float,
     AS_String,
@@ -46,7 +33,9 @@ typedef enum {
     AS_Comm_Start,
     AS_BlockComm,
     AS_BlockComm_End,
-    AS_LineComm
+    AS_LineComm,
+    AS_Colon,
+    AS_Equal
 } state;
 
 /* list of all token types */
@@ -94,6 +83,7 @@ typedef enum {
     TOK_R_Brace,
 
     /* Separators */
+    TOK_Newline,
     TOK_Comma,
     TOK_Semicolon
 } tokenType;
@@ -107,3 +97,24 @@ typedef struct {
         char str[MAX_CHAR_BUFFER_SIZE];
     };
 } Token;
+
+typedef struct {
+    char* word;
+    tokenType type;
+} keyword;
+
+/* associative array of all reserved keywords which cannot be used as identifiers */
+const keyword keywords[] = {
+    (keyword){"else", TOK_Else_Keyword},
+    (keyword){"float64", TOK_Float_Keyword},
+    (keyword){"for", TOK_For_Keyword},
+    (keyword){"func", TOK_Func_Keyword},
+    (keyword){"if", TOK_If_Keyword},
+    (keyword){"int", TOK_Int_Keyword},
+    (keyword){"package", TOK_Package_Keyword},
+    (keyword){"return", TOK_Return_Keyword},
+    (keyword){"string", TOK_String_Keyword},
+};
+
+/* Size of keywords array */
+#define KEYWORDS_ARRAY_SIZE 9
