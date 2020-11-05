@@ -51,10 +51,51 @@ typedef enum {
 
 /* list of all token types */
 typedef enum {
-    TOK_Int,
-    TOK_Float,
-    TOK_Identif,
-    TOK_String
+    TOK_Identifier,
+
+    /* Assignment operators */
+    TOK_Assign,
+    TOK_Define,
+
+    /* Literals */
+    TOK_Int_Literal,
+    TOK_Float_Literal,
+    TOK_String_Literal,
+
+    /* Arithmetic operators */
+    TOK_Add,
+    TOK_Sub,
+    TOK_Mul,
+    TOK_Div,
+
+    /* Relational operators */
+    TOK_Less_Then,
+    TOK_More_Then,
+    TOK_Less_Equal_Then,
+    TOK_More_Equal_Then,
+    TOK_Equal,
+    TOK_Not_Equal,
+
+    /* keyword tokens */
+    TOK_Else_Keyword,
+    TOK_Float_Keyword,
+    TOK_For_Keyword,
+    TOK_Func_Keyword,
+    TOK_If_Keyword,
+    TOK_Int_Keyword,
+    TOK_Package_Keyword,
+    TOK_Return_Keyword,
+    TOK_String_Keyword,
+
+    /* Brackets */
+    TOK_L_Paren,
+    TOK_R_Paren,
+    TOK_L_Brace,
+    TOK_R_Brace,
+
+    /* Separators */
+    TOK_Comma,
+    TOK_Semicolon
 } tokenType;
 
 /* Represents one token each token has type and some have value of either type int, float or string */
