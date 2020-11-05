@@ -35,7 +35,10 @@ typedef enum {
     AS_BlockComm_End,
     AS_LineComm,
     AS_Colon,
-    AS_Equal
+    AS_Equal,
+    AS_Less_Then,
+    AS_More_Then,
+    AS_Exlamation
 } state;
 
 /* list of all token types */

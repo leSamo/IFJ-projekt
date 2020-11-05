@@ -75,11 +75,20 @@ Token *getToken() {
             else if (currentChar == '=') {
                 currentState = AS_Equal;
             }
-            else if (currentChar == EOF) {
-                return NULL;
+            else if (currentChar == '<') {
+                currentState = AS_Less_Then;
+            }
+            else if (currentChar == '>') {
+                currentState = AS_More_Then;
+            }
+            else if (currentChar == '!') {
+                currentChar = AS_Exlamation;
             }
             else if (currentChar == '\n') {
                 return newHalfToken(TOK_Newline);
+            }
+            else if (currentChar == EOF) {
+                return NULL;
             }
 
             // if it's whitespace other then newline then noop
@@ -195,6 +204,35 @@ Token *getToken() {
                 ungetChar(currentChar);
                 return newHalfToken(TOK_Assign);
             }
+
+        case AS_Less_Then:
+            if (currentChar == '=') {
+                return newHalfToken(TOK_Less_Equal_Then);
+            }
+            else {
+                ungetChar(currentChar);
+                return newHalfToken(TOK_Less_Then);
+            }
+            break;
+
+        case AS_More_Then:
+            if (currentChar == '=') {
+                return newHalfToken(TOK_More_Equal_Then);
+            }
+            else {
+                ungetChar(currentChar);
+                return newHalfToken(TOK_More_Then);
+            }
+            break;
+        
+        case AS_Exlamation:
+            if (currentChar == '=') {
+                return newHalfToken(TOK_Not_Equal);
+            }
+            else {
+                // error
+            }
+            break;
         
         default:
             throwError("Reached invalid state.\n");
@@ -341,6 +379,16 @@ char* getTokenName(tokenType type) {
             return "Define        ";
         case TOK_Assign:
             return "Assign        ";
+        case TOK_Less_Then:
+            return "Less then     ";
+        case TOK_Less_Equal_Then:
+            return "Less or equal ";
+        case TOK_More_Then:
+            return "More then     ";
+        case TOK_More_Equal_Then:
+            return "More or equal ";
+        case TOK_Not_Equal:
+            return "Not equal     ";
         case TOK_Newline:
             return "--";
         default:
