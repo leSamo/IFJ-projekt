@@ -48,7 +48,7 @@ char* getTokenName(tokenType type);
 void charBufferPush(char* buffer, int *bufferPos, char character);
 
 /* clears buffer and bufferPos and returns its content */
-char* charBufferClear(char* buffer, int *bufferPos);
+char* charBufferPop(char* buffer, int *bufferPos);
 
 /* debug function to print content of buffer */
 void charBufferPrint(char* buffer, int *bufferPos);
