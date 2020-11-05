@@ -41,6 +41,36 @@ Token *getToken() {
             else if (currentChar == '\"') {
                 currentState = AS_String;
             }
+            else if (currentChar == ',') {
+                return newHalfToken(TOK_Comma);
+            }
+            else if (currentChar == ';') {
+                return newHalfToken(TOK_Semicolon);
+            }
+            else if (currentChar == '(') {
+                return newHalfToken(TOK_L_Paren);
+            }
+            else if (currentChar == ')') {
+                return newHalfToken(TOK_R_Paren);
+            }
+            else if (currentChar == '{') {
+                return newHalfToken(TOK_L_Brace);
+            }
+            else if (currentChar == '}') {
+                return newHalfToken(TOK_R_Brace);
+            }
+            else if (currentChar == '+') {
+                return newHalfToken(TOK_Add);
+            }
+            else if (currentChar == '-') {
+                return newHalfToken(TOK_Sub);
+            }
+            else if (currentChar == '*') {
+                return newHalfToken(TOK_Mul);
+            }
+            else if (currentChar == '/') {
+                return newHalfToken(TOK_Div);
+            }
             else if (currentChar == EOF) {
                 return NULL;
             }
@@ -82,7 +112,7 @@ Token *getToken() {
             else {
                 ungetChar(currentChar);
                 char *content = charBufferClear(charBuffer, &charBufferPos);
-                return newToken(TOK_Identif, content);
+                return newToken(TOK_Identifier, content);
             }
             break;
 
@@ -122,7 +152,7 @@ Token *getToken() {
         case AS_String:
             if (currentChar == '\"') {
                 char *content = charBufferClear(charBuffer, &charBufferPos);
-                return newToken(TOK_String, content);
+                return newToken(TOK_String_Literal, content);
             }
             else if (currentChar == '\\') {
                 currentState = AS_String_Escape;
@@ -174,7 +204,7 @@ bool isWhiteSpace(char c) {
 /* New token functions */
 Token *newIntToken(int content) {
     Token *newToken = malloc(sizeof(Token));
-    newToken->type = TOK_Int;
+    newToken->type = TOK_Int_Literal;
     newToken->i = content;
 
     return newToken;
@@ -182,7 +212,7 @@ Token *newIntToken(int content) {
 
 Token *newFloatToken(float content) {
     Token *newToken = malloc(sizeof(Token));
-    newToken->type = TOK_Float;
+    newToken->type = TOK_Float_Literal;
     newToken->f = content;
 
     return newToken;
@@ -205,31 +235,53 @@ Token *newHalfToken(tokenType type) {
 
 void printToken(Token *token) {
     switch (token->type) {
-        case TOK_Int:
+        case TOK_Int_Literal:
             printf("%s: \"%d\"\n", getTokenName(token->type), token->i);
             break;
-        case TOK_Float:
+        case TOK_Float_Literal:
             printf("%s: \"%f\"\n", getTokenName(token->type), token->f);
             break;
-        case TOK_Identif:
-        case TOK_String:
+        case TOK_Identifier:
+        case TOK_String_Literal:
             printf("%s: \"%s\"\n", getTokenName(token->type), token->str);
             break;
+        default:
+            printf("%s \n", getTokenName(token->type));
     }
 }
 
 char* getTokenName(tokenType type) {
     switch (type) {
-        case TOK_Int:
-            return "Int       ";
-        case TOK_Float:
-            return "Float     ";
-        case TOK_Identif:
-            return "Identifier";
-        case TOK_String:
-            return "String    ";
+        case TOK_Int_Literal:
+            return "Int           ";
+        case TOK_Float_Literal:
+            return "Float         ";
+        case TOK_Identifier:
+            return "Identifier    ";
+        case TOK_String_Literal:
+            return "String        ";
+        case TOK_Comma:
+            return "Comma         ";
+        case TOK_Semicolon:
+            return "Semicolon     ";
+        case TOK_L_Paren:
+            return "Left paren    ";
+        case TOK_R_Paren:
+            return "Right paren   ";
+        case TOK_L_Brace:
+            return "Left brace    ";
+        case TOK_R_Brace:
+            return "Right brace   ";
+        case TOK_Add:
+            return "Addition      ";
+        case TOK_Sub:
+            return "Subtraction   ";
+        case TOK_Mul:
+            return "Multiplication";
+        case TOK_Div:
+            return "Division      ";
         default:
-            return "Invalid   ";
+            return "Unknown       ";
     }
 }
 
