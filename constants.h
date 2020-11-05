@@ -19,7 +19,7 @@ typedef enum {
     INTERANAL_ERROR = 99 // interní chyba překladače tj. neovlivněná vstupním programem (např. chyba alokace paměti, atd.)
 } errorCode;
 
-/* Size of char buffer for scanner */
+/* size of char buffer for scanner */
 #define MAX_CHAR_BUFFER_SIZE 50
 
 /* list of all posible automaton states */
@@ -45,22 +45,22 @@ typedef enum {
 typedef enum {
     TOK_Identifier,
 
-    /* Assignment operators */
+    /* assignment operators */
     TOK_Assign,
     TOK_Define,
 
-    /* Literals */
+    /* literals */
     TOK_Int_Literal,
     TOK_Float_Literal,
     TOK_String_Literal,
 
-    /* Arithmetic operators */
+    /* arithmetic operators */
     TOK_Add,
     TOK_Sub,
     TOK_Mul,
     TOK_Div,
 
-    /* Relational operators */
+    /* relational operators */
     TOK_Less_Then,
     TOK_More_Then,
     TOK_Less_Equal_Then,
@@ -79,19 +79,19 @@ typedef enum {
     TOK_Return_Keyword,
     TOK_String_Keyword,
 
-    /* Brackets */
+    /* brackets */
     TOK_L_Paren,
     TOK_R_Paren,
     TOK_L_Brace,
     TOK_R_Brace,
 
-    /* Separators */
+    /* separators */
     TOK_Newline,
     TOK_Comma,
     TOK_Semicolon
 } tokenType;
 
-/* Represents one token each token has type and some have value of either type int, float or string */
+/* represents one token each token has type and some have value of either type int, float or string */
 typedef struct {
     tokenType type;
     union {
@@ -119,5 +119,5 @@ const keyword keywords[] = {
     (keyword){"string", TOK_String_Keyword},
 };
 
-/* Size of keywords array */
+/* size of keywords array */
 #define KEYWORDS_ARRAY_SIZE 9

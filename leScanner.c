@@ -104,7 +104,7 @@ Token *getToken() {
             }
             else {
                 ungetChar(currentChar);
-                char *content = charBufferClear(charBuffer, &charBufferPos);
+                char *content = charBufferPop(charBuffer, &charBufferPos);
                 return newIntToken(atoi(content));
             }
             break;
@@ -116,7 +116,7 @@ Token *getToken() {
             }
             else {
                 ungetChar(currentChar);
-                char *content = charBufferClear(charBuffer, &charBufferPos);
+                char *content = charBufferPop(charBuffer, &charBufferPos);
                 return newFloatToken(atof(content));
             }
             break;
@@ -127,7 +127,7 @@ Token *getToken() {
             }
             else {
                 ungetChar(currentChar);
-                char *content = charBufferClear(charBuffer, &charBufferPos);
+                char *content = charBufferPop(charBuffer, &charBufferPos);
                 return newWordToken(content);
             }
             break;
@@ -168,7 +168,7 @@ Token *getToken() {
         
         case AS_String:
             if (currentChar == '\"') {
-                char *content = charBufferClear(charBuffer, &charBufferPos);
+                char *content = charBufferPop(charBuffer, &charBufferPos);
                 return newToken(TOK_String_Literal, content);
             }
             else if (currentChar == '\\') {
@@ -401,13 +401,11 @@ void charBufferPush(char* buffer, int *bufferPos, char character) {
     buffer[(*bufferPos)++] = character;
 }
 
-char* charBufferClear(char* buffer, int *bufferPos) {
+char* charBufferPop(char* buffer, int *bufferPos) {
     buffer[*bufferPos] = '\0';
-    char* output = malloc(sizeof(char) * 50);
-    strcpy(output, buffer);
     *bufferPos = 0;
 
-    return output;
+    return buffer;
 }
 
 void charBufferPrint(char* buffer, int *bufferPos) {

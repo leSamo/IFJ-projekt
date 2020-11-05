@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
     Token *currentToken;
     while((currentToken = getToken()) != NULL) {
         printToken(currentToken);
+        free(currentToken);
     }
 
     printf("------------------\n\n");
