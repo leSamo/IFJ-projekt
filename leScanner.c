@@ -18,6 +18,7 @@ Token *getToken() {
     int currentChar;
     state currentState = AS_Default;
 
+    // TODO: improve buffer to be inflatable array
     char charBuffer[MAX_CHAR_BUFFER_SIZE];
     int charBufferPos = 0;
 
@@ -33,7 +34,7 @@ Token *getToken() {
             }
             else if (isAlpha(currentChar) || currentChar == '_') {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
-                currentState = AS_Identif;
+                currentState = AS_Word;
             }
             else if (currentChar == '/') {
                 currentState = AS_Comm_Start;
@@ -68,14 +69,20 @@ Token *getToken() {
             else if (currentChar == '*') {
                 return newHalfToken(TOK_Mul);
             }
-            else if (currentChar == '/') {
-                return newHalfToken(TOK_Div);
+            else if (currentChar == ':') {
+                currentState = AS_Colon;
+            }
+            else if (currentChar == '=') {
+                currentState = AS_Equal;
             }
             else if (currentChar == EOF) {
                 return NULL;
             }
+            else if (currentChar == '\n') {
+                return newHalfToken(TOK_Newline);
+            }
 
-            // if it's whitespace then noop
+            // if it's whitespace other then newline then noop
             break;
         
         case AS_Int:
@@ -105,14 +112,14 @@ Token *getToken() {
             }
             break;
         
-        case AS_Identif:
+        case AS_Word:
             if (isAlpha(currentChar) || isDigit(currentChar) || currentChar == '_') {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
             }
             else {
                 ungetChar(currentChar);
                 char *content = charBufferClear(charBuffer, &charBufferPos);
-                return newToken(TOK_Identifier, content);
+                return newWordToken(content);
             }
             break;
 
@@ -124,7 +131,8 @@ Token *getToken() {
                 currentState = AS_BlockComm;
             }
             else {
-                currentState = AS_Default;
+                ungetChar(currentChar);
+                return newHalfToken(TOK_Div);
             }
             break;
         
@@ -173,6 +181,21 @@ Token *getToken() {
             currentState = AS_String;
             break;
         
+        case AS_Colon:
+            if (currentChar == '=') {
+                return newHalfToken(TOK_Define);
+            }
+            break;
+
+        case AS_Equal:
+            if (currentChar == '=') {
+                return newHalfToken(TOK_Equal);
+            }
+            else {
+                ungetChar(currentChar);
+                return newHalfToken(TOK_Assign);
+            }
+        
         default:
             throwError("Reached invalid state.\n");
             return NULL;
@@ -218,6 +241,21 @@ Token *newFloatToken(float content) {
     return newToken;
 }
 
+Token *newWordToken(char* content) {
+    Token *newToken = malloc(sizeof(Token));
+
+    for (int i = 0; i < KEYWORDS_ARRAY_SIZE; i++) {
+        if (strcmp(content, keywords[i].word) == 0) {
+            newToken->type = keywords[i].type;
+            return newToken;
+        }
+    }
+
+    newToken->type = TOK_Identifier;
+    strcpy(newToken->str, content);
+    return newToken;
+}
+
 Token *newToken(tokenType type, char* content) {
     Token *newToken = malloc(sizeof(Token));
     newToken->type = type;
@@ -243,6 +281,7 @@ void printToken(Token *token) {
             break;
         case TOK_Identifier:
         case TOK_String_Literal:
+            // TODO: Escape newlines when printing to make output prettier
             printf("%s: \"%s\"\n", getTokenName(token->type), token->str);
             break;
         default:
@@ -280,6 +319,30 @@ char* getTokenName(tokenType type) {
             return "Multiplication";
         case TOK_Div:
             return "Division      ";
+        case TOK_Else_Keyword:
+            return "Else          ";
+        case TOK_Float_Keyword:
+            return "Float kw      ";
+        case TOK_For_Keyword:
+            return "For           ";
+        case TOK_Func_Keyword:
+            return "Func          ";
+        case TOK_If_Keyword:
+            return "If            ";
+        case TOK_Int_Keyword:
+            return "Int kw        ";
+        case TOK_Package_Keyword:
+            return "Package       ";
+        case TOK_Return_Keyword:
+            return "Return        ";
+        case TOK_String_Keyword:
+            return "String kw     ";
+        case TOK_Define:
+            return "Define        ";
+        case TOK_Assign:
+            return "Assign        ";
+        case TOK_Newline:
+            return "--";
         default:
             return "Unknown       ";
     }
