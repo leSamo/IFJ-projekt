@@ -82,7 +82,7 @@ Token *getToken() {
                 currentState = AS_More_Then;
             }
             else if (currentChar == '!') {
-                currentChar = AS_Exlamation;
+                currentState = AS_Exlamation;
             }
             else if (currentChar == '\n') {
                 return newHalfToken(TOK_Newline);
@@ -387,6 +387,8 @@ char* getTokenName(tokenType type) {
             return "More then     ";
         case TOK_More_Equal_Then:
             return "More or equal ";
+        case TOK_Equal:
+            return "Equal         ";
         case TOK_Not_Equal:
             return "Not equal     ";
         case TOK_Newline:
