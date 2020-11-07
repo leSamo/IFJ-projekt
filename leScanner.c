@@ -38,6 +38,10 @@ Token *getToken() {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
                 currentState = AS_Word;
             }
+            else if (currentChar == '.') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float;
+            }
             else if (currentChar == '/') {
                 currentState = AS_Comm_Start;
             }
@@ -66,7 +70,8 @@ Token *getToken() {
                 return newHalfToken(TOK_Add);
             }
             else if (currentChar == '-') {
-                return newHalfToken(TOK_Sub);
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Minus;
             }
             else if (currentChar == '*') {
                 return newHalfToken(TOK_Mul);
@@ -84,7 +89,7 @@ Token *getToken() {
                 currentState = AS_More_Then;
             }
             else if (currentChar == '!') {
-                currentState = AS_Exlamation;
+                currentState = AS_Exclamation;
             }
             else if (currentChar == '\n') {
                 return newHalfToken(TOK_Newline);
@@ -245,12 +250,12 @@ Token *getToken() {
             }
             break;
         
-        case AS_Exlamation:
+        case AS_Exclamation:
             if (currentChar == '=') {
                 return newHalfToken(TOK_Not_Equal);
             }
             else {
-                // error
+                return newErrorToken();
             }
             break;
         
@@ -272,6 +277,20 @@ Token *getToken() {
             }  
             else {
                 return newErrorToken();
+            }
+            break;
+
+        case AS_Minus:
+            if (isDigit(currentChar)) {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Int;
+            }
+            else if (currentChar == '.') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float;
+            }
+            else {
+                return newHalfToken(TOK_Sub);
             }
             break;
         

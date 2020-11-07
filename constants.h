@@ -40,7 +40,8 @@ typedef enum {
     AS_Equal,
     AS_Less_Then,
     AS_More_Then,
-    AS_Exlamation
+    AS_Exclamation,
+    AS_Minus
 } state;
 
 /* list of all token types */
