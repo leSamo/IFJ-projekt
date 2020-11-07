@@ -30,7 +30,11 @@ Token *getToken() {
         switch (currentState)
         {
         case AS_Default:
-            if (isDigit(currentChar)) {
+            if (currentChar == '0') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Leading_Zero;
+            }
+            else if (isDigit(currentChar)) {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
                 currentState = AS_Int;
             }
@@ -99,9 +103,32 @@ Token *getToken() {
 
             // if it's whitespace other then newline then noop
             break;
+
+        case AS_Leading_Zero:
+            if (currentChar == '0') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+            }
+            else if (isDigit(currentChar)) {
+                throwError("Leading zero error\n");
+                return newErrorToken();
+            }
+            else if (currentChar == '.') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float;
+            }
+            else if (currentChar == 'e' || currentChar == 'E') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float_Scientific_Start;
+            }
+            else {
+                ungetChar(currentChar);
+                char *content = charBufferPop(charBuffer, &charBufferPos);
+                // TODO: Use 64-bit equivalent to atoi
+                return newIntToken(atoi(content));
+            }
+            break;
         
         case AS_Int:
-            // TODO: Leading zeroes are forbidden
             if (isDigit(currentChar)) {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
             }
@@ -116,6 +143,7 @@ Token *getToken() {
             else {
                 ungetChar(currentChar);
                 char *content = charBufferPop(charBuffer, &charBufferPos);
+                // TODO: Use 64-bit equivalent to atoi
                 return newIntToken(atoi(content));
             }
             break;
@@ -239,6 +267,7 @@ Token *getToken() {
                 currentState = AS_String_Escape_Hex_1;
             }
             else {
+                throwError("Invalid escape sequence\n");
                 return newErrorToken();
             }
             break;
@@ -248,6 +277,7 @@ Token *getToken() {
                 return newHalfToken(TOK_Define);
             }
             else {
+                throwError("Invalid : symbol\n");
                 return newErrorToken();
             }
             break;
@@ -286,6 +316,7 @@ Token *getToken() {
                 return newHalfToken(TOK_Not_Equal);
             }
             else {
+                throwError("Invalid ! symbol\n");
                 return newErrorToken();
             }
             break;
@@ -296,6 +327,7 @@ Token *getToken() {
                 currentState = AS_String_Escape_Hex_2;
             }  
             else {
+                throwError("Invalid hex escape sequence\n");
                 return newErrorToken();
             }
             break;
@@ -307,6 +339,7 @@ Token *getToken() {
                 currentState = AS_String;
             }  
             else {
+                throwError("Invalid hex escape sequence\n");
                 return newErrorToken();
             }
             break;

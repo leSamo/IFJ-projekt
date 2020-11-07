@@ -26,6 +26,7 @@ typedef enum {
 typedef enum {
     AS_Default,
     AS_Word,
+    AS_Leading_Zero,
     AS_Int,
     AS_Float,
     AS_Float_Scientific_Start,
@@ -100,8 +101,8 @@ typedef enum {
 typedef struct {
     tokenType type;
     union {
-        int i;
-        float f;
+        int64_t i;
+        double f;
         char str[MAX_CHAR_BUFFER_SIZE];
     };
 } Token;
