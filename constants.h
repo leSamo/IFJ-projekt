@@ -28,6 +28,8 @@ typedef enum {
     AS_Word,
     AS_Int,
     AS_Float,
+    AS_Float_Scientific_Start,
+    AS_Float_Scientific,
     AS_String,
     AS_String_Escape,
     AS_String_Escape_Hex_1,
@@ -40,8 +42,7 @@ typedef enum {
     AS_Equal,
     AS_Less_Then,
     AS_More_Then,
-    AS_Exclamation,
-    AS_Minus
+    AS_Exclamation
 } state;
 
 /* list of all token types */

@@ -70,8 +70,7 @@ Token *getToken() {
                 return newHalfToken(TOK_Add);
             }
             else if (currentChar == '-') {
-                charBufferPush(charBuffer, &charBufferPos, currentChar);
-                currentState = AS_Minus;
+                return newHalfToken(TOK_Sub);
             }
             else if (currentChar == '*') {
                 return newHalfToken(TOK_Mul);
@@ -102,12 +101,17 @@ Token *getToken() {
             break;
         
         case AS_Int:
+            // TODO: Leading zeroes are forbidden
             if (isDigit(currentChar)) {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
             }
             else if (currentChar == '.') {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
                 currentState = AS_Float;
+            }
+            else if (currentChar == 'e' || currentChar == 'E') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float_Scientific_Start;
             }
             else {
                 ungetChar(currentChar);
@@ -118,6 +122,33 @@ Token *getToken() {
 
         case AS_Float:
             // rework float to be double
+            if (isDigit(currentChar)) {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+            }
+            else if (currentChar == 'e' || currentChar == 'E') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float_Scientific_Start;
+            }
+            else {
+                ungetChar(currentChar);
+                char *content = charBufferPop(charBuffer, &charBufferPos);
+                return newFloatToken(atof(content));
+            }
+            break;
+
+        case AS_Float_Scientific_Start:
+            if (isDigit(currentChar) || currentChar == '+' || currentChar == '-') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float_Scientific;
+            }
+            else {
+                ungetChar(currentChar);
+                char *content = charBufferPop(charBuffer, &charBufferPos);
+                return newFloatToken(atof(content));
+            }
+            break;
+
+        case AS_Float_Scientific:
             if (isDigit(currentChar)) {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
             }
@@ -277,20 +308,6 @@ Token *getToken() {
             }  
             else {
                 return newErrorToken();
-            }
-            break;
-
-        case AS_Minus:
-            if (isDigit(currentChar)) {
-                charBufferPush(charBuffer, &charBufferPos, currentChar);
-                currentState = AS_Int;
-            }
-            else if (currentChar == '.') {
-                charBufferPush(charBuffer, &charBufferPos, currentChar);
-                currentState = AS_Float;
-            }
-            else {
-                return newHalfToken(TOK_Sub);
             }
             break;
         
