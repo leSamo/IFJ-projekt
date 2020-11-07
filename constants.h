@@ -30,6 +30,8 @@ typedef enum {
     AS_Float,
     AS_String,
     AS_String_Escape,
+    AS_String_Escape_Hex_1,
+    AS_String_Escape_Hex_2,
     AS_Comm_Start,
     AS_BlockComm,
     AS_BlockComm_End,
@@ -43,6 +45,7 @@ typedef enum {
 
 /* list of all token types */
 typedef enum {
+    TOK_Error, // signifies lexical error
     TOK_Identifier,
 
     /* assignment operators */

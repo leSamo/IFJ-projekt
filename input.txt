@@ -20,3 +20,7 @@ num = 5*5/2
 if (a < 50) {
     for int float64 identifier;
 }
+
+"\t tab \" quote \\ slash"
+
+"\x41 == A"
