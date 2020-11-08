@@ -17,11 +17,17 @@ void ungetChar(char c);
 /* returns whether char is digit (0-9) */
 bool isDigit(char c);
 
+/* returns whether char is hexadecimal digit (0-9, a-f, A-F) */
+bool isHexDigit(char c);
+
 /* returns whether char is letter (a-z, A-Z) */
 bool isAlpha(char c);
 
 /* returns whether char is whitespace (space, \n, \t, \v, \f, \r) */
 bool isWhiteSpace(char c);
+
+/* converts hex number (represented as two chars) to int corresponding char in ASCII table */
+char hexToChar(char a, char b);
 
 /* creates a new int token and inserts it into tokens array */
 Token *newIntToken(int content);
@@ -37,6 +43,9 @@ Token *newToken(tokenType type, char* content);
 
 /* creates a new attributeless token with passed type and inserts it into tokens array */
 Token *newHalfToken(tokenType type);
+
+/* Creates a new error token signifying lexical error */
+Token *newErrorToken();
 
 /* prints all tokens from tokens array */
 void printToken(Token *token);

@@ -22,19 +22,29 @@ Token *getToken() {
     char charBuffer[MAX_CHAR_BUFFER_SIZE];
     int charBufferPos = 0;
 
+    char hexEscapeBuffer;
+
     while (true) {
         currentChar = getchar();
 
         switch (currentState)
         {
         case AS_Default:
-            if (isDigit(currentChar)) {
+            if (currentChar == '0') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Leading_Zero;
+            }
+            else if (isDigit(currentChar)) {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
                 currentState = AS_Int;
             }
             else if (isAlpha(currentChar) || currentChar == '_') {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
                 currentState = AS_Word;
+            }
+            else if (currentChar == '.') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float;
             }
             else if (currentChar == '/') {
                 currentState = AS_Comm_Start;
@@ -82,7 +92,7 @@ Token *getToken() {
                 currentState = AS_More_Then;
             }
             else if (currentChar == '!') {
-                currentState = AS_Exlamation;
+                currentState = AS_Exclamation;
             }
             else if (currentChar == '\n') {
                 return newHalfToken(TOK_Newline);
@@ -93,6 +103,30 @@ Token *getToken() {
 
             // if it's whitespace other then newline then noop
             break;
+
+        case AS_Leading_Zero:
+            if (currentChar == '0') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+            }
+            else if (isDigit(currentChar)) {
+                throwError("Leading zero error\n");
+                return newErrorToken();
+            }
+            else if (currentChar == '.') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float;
+            }
+            else if (currentChar == 'e' || currentChar == 'E') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float_Scientific_Start;
+            }
+            else {
+                ungetChar(currentChar);
+                char *content = charBufferPop(charBuffer, &charBufferPos);
+                // TODO: Use 64-bit equivalent to atoi
+                return newIntToken(atoi(content));
+            }
+            break;
         
         case AS_Int:
             if (isDigit(currentChar)) {
@@ -102,15 +136,47 @@ Token *getToken() {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
                 currentState = AS_Float;
             }
+            else if (currentChar == 'e' || currentChar == 'E') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float_Scientific_Start;
+            }
             else {
                 ungetChar(currentChar);
                 char *content = charBufferPop(charBuffer, &charBufferPos);
+                // TODO: Use 64-bit equivalent to atoi
                 return newIntToken(atoi(content));
             }
             break;
 
         case AS_Float:
             // rework float to be double
+            if (isDigit(currentChar)) {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+            }
+            else if (currentChar == 'e' || currentChar == 'E') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float_Scientific_Start;
+            }
+            else {
+                ungetChar(currentChar);
+                char *content = charBufferPop(charBuffer, &charBufferPos);
+                return newFloatToken(atof(content));
+            }
+            break;
+
+        case AS_Float_Scientific_Start:
+            if (isDigit(currentChar) || currentChar == '+' || currentChar == '-') {
+                charBufferPush(charBuffer, &charBufferPos, currentChar);
+                currentState = AS_Float_Scientific;
+            }
+            else {
+                ungetChar(currentChar);
+                char *content = charBufferPop(charBuffer, &charBufferPos);
+                return newFloatToken(atof(content));
+            }
+            break;
+
+        case AS_Float_Scientific:
             if (isDigit(currentChar)) {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
             }
@@ -180,19 +246,39 @@ Token *getToken() {
             break;
         
         case AS_String_Escape:
-            // TODO: include all possible escape sequences
+            // TODO: should characters with ascii 31 and less be writable without escape?
             if (currentChar == 'n') {
                 charBufferPush(charBuffer, &charBufferPos, '\n');
+                currentState = AS_String;
+            }
+            else if (currentChar == 't') {
+                charBufferPush(charBuffer, &charBufferPos, '\t');
+                currentState = AS_String;
+            }
+            else if (currentChar == '\\') {
+                charBufferPush(charBuffer, &charBufferPos, '\\');
+                currentState = AS_String;
             }
             else if (currentChar == '\"') {
                 charBufferPush(charBuffer, &charBufferPos, '\"');
+                currentState = AS_String;
             }
-            currentState = AS_String;
+            else if (currentChar == 'x') {
+                currentState = AS_String_Escape_Hex_1;
+            }
+            else {
+                throwError("Invalid escape sequence\n");
+                return newErrorToken();
+            }
             break;
         
         case AS_Colon:
             if (currentChar == '=') {
                 return newHalfToken(TOK_Define);
+            }
+            else {
+                throwError("Invalid : symbol\n");
+                return newErrorToken();
             }
             break;
 
@@ -225,12 +311,36 @@ Token *getToken() {
             }
             break;
         
-        case AS_Exlamation:
+        case AS_Exclamation:
             if (currentChar == '=') {
                 return newHalfToken(TOK_Not_Equal);
             }
             else {
-                // error
+                throwError("Invalid ! symbol\n");
+                return newErrorToken();
+            }
+            break;
+        
+        case AS_String_Escape_Hex_1:
+            if (isHexDigit(currentChar)) {
+                hexEscapeBuffer = currentChar;
+                currentState = AS_String_Escape_Hex_2;
+            }  
+            else {
+                throwError("Invalid hex escape sequence\n");
+                return newErrorToken();
+            }
+            break;
+
+        case AS_String_Escape_Hex_2:
+            if (isHexDigit(currentChar)) {
+                char charFromHex = hexToChar(hexEscapeBuffer, currentChar);
+                charBufferPush(charBuffer, &charBufferPos, charFromHex);
+                currentState = AS_String;
+            }  
+            else {
+                throwError("Invalid hex escape sequence\n");
+                return newErrorToken();
             }
             break;
         
@@ -254,12 +364,23 @@ bool isDigit(char c) {
     return isdigit(c);
 }
 
+bool isHexDigit(char c) {
+    return isxdigit(c);
+}
+
 bool isAlpha(char c) {
     return isalpha(c);
 }
 
 bool isWhiteSpace(char c) {
     return isspace(c);
+}
+
+char hexToChar(char a, char b) {
+    a = (a <= '9') ? a - '0' : (a & 0x7) + 9;
+    b = (b <= '9') ? b - '0' : (b & 0x7) + 9;
+
+    return (a << 4) + b;
 }
 
 /* New token functions */
@@ -305,6 +426,13 @@ Token *newToken(tokenType type, char* content) {
 Token *newHalfToken(tokenType type) {
     Token *newToken = malloc(sizeof(Token));
     newToken->type = type;
+
+    return newToken;
+}
+
+Token *newErrorToken() {
+    Token *newToken = malloc(sizeof(Token));
+    newToken->type = TOK_Error;
 
     return newToken;
 }

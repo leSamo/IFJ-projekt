@@ -26,10 +26,15 @@ typedef enum {
 typedef enum {
     AS_Default,
     AS_Word,
+    AS_Leading_Zero,
     AS_Int,
     AS_Float,
+    AS_Float_Scientific_Start,
+    AS_Float_Scientific,
     AS_String,
     AS_String_Escape,
+    AS_String_Escape_Hex_1,
+    AS_String_Escape_Hex_2,
     AS_Comm_Start,
     AS_BlockComm,
     AS_BlockComm_End,
@@ -38,11 +43,12 @@ typedef enum {
     AS_Equal,
     AS_Less_Then,
     AS_More_Then,
-    AS_Exlamation
+    AS_Exclamation
 } state;
 
 /* list of all token types */
 typedef enum {
+    TOK_Error, // signifies lexical error
     TOK_Identifier,
 
     /* assignment operators */
@@ -95,8 +101,8 @@ typedef enum {
 typedef struct {
     tokenType type;
     union {
-        int i;
-        float f;
+        int64_t i;
+        double f;
         char str[MAX_CHAR_BUFFER_SIZE];
     };
 } Token;

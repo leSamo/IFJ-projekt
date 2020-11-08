@@ -20,6 +20,11 @@ int main(int argc, char* argv[]) {
 
     Token *currentToken;
     while((currentToken = getToken()) != NULL) {
+        if (currentToken->type == TOK_Error) {
+            throwError("Lexical error\n");
+            return LEXICAL_ERROR;
+        }
+
         printToken(currentToken);
         free(currentToken);
     }
