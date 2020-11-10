@@ -6,6 +6,9 @@
 /* Description: Various structures, declarations and constants shared by multiple components
 /* ================================= */
 
+#ifndef CONSTANTS
+#define CONSTANTS
+
 // return codes for various error scenarios
 typedef enum {
     LEXICAL_ERROR = 1, // chyba v programu v rámci lexikální analýzy (chybná struktura aktuálního lexému)
@@ -127,3 +130,5 @@ const keyword keywords[] = {
 
 /* size of keywords array */
 #define KEYWORDS_ARRAY_SIZE 9
+
+#endif
