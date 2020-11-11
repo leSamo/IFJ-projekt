@@ -42,7 +42,7 @@ void handleExpression(Token tokens[], int length) {
         }
         else if (currentToken.type == TOK_R_Paren) {
             if (operatorStack->count == 0) {
-                throwError("Unpaired parentheses error.\n");
+                printError("Unpaired parentheses error.\n");
                 exit(SYNTAX_ERROR);
             }
 
@@ -51,7 +51,7 @@ void handleExpression(Token tokens[], int length) {
                 TokenStackPush(outputQueue, token);
 
                 if (operatorStack->count == 0) {
-                    throwError("Unpaired parentheses error.\n");
+                    printError("Unpaired parentheses error.\n");
                     exit(SYNTAX_ERROR);
                 }
             }
@@ -65,7 +65,7 @@ void handleExpression(Token tokens[], int length) {
         Token token = TokenStackPop(operatorStack);
 
         if (token.type == TOK_L_Paren) {
-            throwError("Unpaired parentheses error.\n");
+            printError("Unpaired parentheses error.\n");
             exit(SYNTAX_ERROR);
         }
 

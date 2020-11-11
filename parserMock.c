@@ -21,15 +21,10 @@ int main(int argc, char* argv[]) {
     printf("\n----- TOKENS -----\n");
 
     Token *currentToken;
-    Token tokensForExpression[50];
+    Token tokensForExpression[1000];
     int position = 0;
 
     while((currentToken = getToken()) != NULL) {
-        if (currentToken->type == TOK_Error) {
-            throwError("Lexical error\n");
-            return LEXICAL_ERROR;
-        }
-
         // mock for expression testing
         tokensForExpression[position++] = *currentToken;
 

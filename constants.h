@@ -51,7 +51,6 @@ typedef enum {
 
 /* list of all token types */
 typedef enum {
-    TOK_Error, // signifies lexical error
     TOK_Identifier,
 
     /* assignment operators */

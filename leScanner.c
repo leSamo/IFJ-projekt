@@ -109,8 +109,8 @@ Token *getToken() {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
             }
             else if (isDigit(currentChar)) {
-                throwError("Leading zero error\n");
-                return newErrorToken();
+                printError("Leading zero error\n");
+                throwLexicalError();
             }
             else if (currentChar == '.') {
                 charBufferPush(charBuffer, &charBufferPos, currentChar);
@@ -267,8 +267,8 @@ Token *getToken() {
                 currentState = AS_String_Escape_Hex_1;
             }
             else {
-                throwError("Invalid escape sequence\n");
-                return newErrorToken();
+                printError("Invalid escape sequence\n");
+                throwLexicalError();
             }
             break;
         
@@ -277,8 +277,8 @@ Token *getToken() {
                 return newHalfToken(TOK_Define);
             }
             else {
-                throwError("Invalid : symbol\n");
-                return newErrorToken();
+                printError("Invalid : symbol\n");
+                throwLexicalError();
             }
             break;
 
@@ -316,8 +316,8 @@ Token *getToken() {
                 return newHalfToken(TOK_Not_Equal);
             }
             else {
-                throwError("Invalid ! symbol\n");
-                return newErrorToken();
+                printError("Invalid ! symbol\n");
+                throwLexicalError();
             }
             break;
         
@@ -327,8 +327,8 @@ Token *getToken() {
                 currentState = AS_String_Escape_Hex_2;
             }  
             else {
-                throwError("Invalid hex escape sequence\n");
-                return newErrorToken();
+                printError("Invalid hex escape sequence\n");
+                throwLexicalError();
             }
             break;
 
@@ -339,19 +339,19 @@ Token *getToken() {
                 currentState = AS_String;
             }  
             else {
-                throwError("Invalid hex escape sequence\n");
-                return newErrorToken();
+                printError("Invalid hex escape sequence\n");
+                throwLexicalError();
             }
             break;
         
         default:
-            throwError("Reached invalid state.\n");
+            printError("Reached invalid state.\n");
             return NULL;
         }
     }
 }
 
-void throwError(char* msg) {
+void printError(char* msg) {
     fprintf(stderr, "%s", msg);
 }
 
@@ -430,11 +430,10 @@ Token *newHalfToken(tokenType type) {
     return newToken;
 }
 
-Token *newErrorToken() {
+void throwLexicalError() {
     Token *newToken = malloc(sizeof(Token));
-    newToken->type = TOK_Error;
-
-    return newToken;
+    printError("Lexical error\n");
+    exit(LEXICAL_ERROR);
 }
 
 void printToken(Token *token) {
