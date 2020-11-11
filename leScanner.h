@@ -9,7 +9,7 @@
 Token *getToken();
 
 /* print out an error message to stderr */
-void throwError(char* msg);
+void printError(char* msg);
 
 /* returns its argument char back to the input stream, reverts getChar() function */
 void ungetChar(char c);
@@ -44,8 +44,8 @@ Token *newToken(tokenType type, char* content);
 /* creates a new attributeless token with passed type and inserts it into tokens array */
 Token *newHalfToken(tokenType type);
 
-/* Creates a new error token signifying lexical error */
-Token *newErrorToken();
+/* Exits the program with error code correspoding to lexical error */
+void throwLexicalError();
 
 /* prints all tokens from tokens array */
 void printToken(Token *token);
