@@ -32,12 +32,12 @@ bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut) {
 
         if (!isValidExpToken(currentToken.type)) {
             // I got one more token then I should have, give it back
-            printf("encountered %s\n", getTokenName(currentToken.type));
+            // printf("encountered %s\n", getTokenName(currentToken.type));
             *overlapTokenOut = currentToken;
             break;
         }
 
-        if (currentToken.type == TOK_Int_Literal || currentToken.type == TOK_Float_Literal) {
+        if (currentToken.type == TOK_Int_Literal || currentToken.type == TOK_Float_Literal || currentToken.type == TOK_Identifier) {
             TokenStackPush(outputQueue, currentToken);
         }
         else if (currentToken.type == TOK_L_Paren) {
@@ -96,8 +96,6 @@ bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut) {
         TokenStackPush(outputQueue, token);
     }
 
-    // TokenStackPrint(outputQueue);
-
     bool ret = verifyOutput(outputQueue);
 
     free(operatorStack);
@@ -107,10 +105,6 @@ bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut) {
 }
 
 bool verifyOutput(TokenStack *outputQueue) {
-    printf("s1:\n");
-    TokenStackPrint(outputQueue);
-    printf("---\n");
-
     for (int i = 0; outputQueue->count > 1; i++) {
         Token currentToken = outputQueue->tokens[i];
 
@@ -121,10 +115,6 @@ bool verifyOutput(TokenStack *outputQueue) {
             i = 0;
         }
     }    
-
-    printf("s2:\n");
-    TokenStackPrint(outputQueue);
-    printf("---\n");
 
     if (outputQueue->count == 1) {
         return true;
@@ -148,16 +138,8 @@ bool TokenStackCollapse(TokenStack *stack, int pos) {
         for (int i = pos + 1; i < stack->count; i++) {
             stack->tokens[i - 2] = stack->tokens[i]; 
         }
-        /*
-        stack->tokens[pos - 1].type = TOK_Int_Literal;
-        stack->tokens[pos - 1].i = 0;
-        */
 
         stack->count -= 2;
-
-        printf("s cont:\n");
-        TokenStackPrint(stack);
-        printf("---\n");
 
         return true;
     }

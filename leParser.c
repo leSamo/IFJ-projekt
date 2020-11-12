@@ -81,6 +81,7 @@ Token *getToken_NL_optional() {
 bool isExpFirst(tokenType type) {
     switch (type) {
         case TOK_Identifier:
+        case TOK_Float_Literal:
         case TOK_Int_Literal:
         case TOK_L_Paren:
             return true;
