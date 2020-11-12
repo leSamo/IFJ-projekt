@@ -8,16 +8,34 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "constants.h"
 #include "expressions.h"
+#include "leScanner.h"
 
-void handleExpression(Token tokens[], int length) {
+bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut) {
     TokenStack *operatorStack = malloc(sizeof(TokenStack));
+    operatorStack->count = 0;
     TokenStack *outputQueue = malloc(sizeof(TokenStack));
+    outputQueue->count = 0;
 
-    for (int i = 0; i < length; i++) {
-        Token currentToken = tokens[i];
+    for (int i = 0; ; i++) {
+        Token currentToken;
+
+        if (i == 0 && overlapTokenIn != NULL){
+            currentToken = *overlapTokenIn;
+        }
+        else {
+            currentToken = *getToken();
+        }
+
+        if (!isValidExpToken(currentToken.type)) {
+            // I got one more token then I should have, give it back
+            printf("encountered %s\n", getTokenName(currentToken.type));
+            *overlapTokenOut = currentToken;
+            break;
+        }
 
         if (currentToken.type == TOK_Int_Literal) {
             TokenStackPush(outputQueue, currentToken);
@@ -43,7 +61,9 @@ void handleExpression(Token tokens[], int length) {
         else if (currentToken.type == TOK_R_Paren) {
             if (operatorStack->count == 0) {
                 printError("Unpaired parentheses error.\n");
-                exit(SYNTAX_ERROR);
+
+                // TODO: memory cleanup
+                return false;
             }
 
             while (TokenStackTop(operatorStack).type != TOK_L_Paren) {
@@ -52,7 +72,9 @@ void handleExpression(Token tokens[], int length) {
 
                 if (operatorStack->count == 0) {
                     printError("Unpaired parentheses error.\n");
-                    exit(SYNTAX_ERROR);
+
+                    // TODO: memory cleanup
+                    return false;
                 }
             }
 
@@ -66,16 +88,20 @@ void handleExpression(Token tokens[], int length) {
 
         if (token.type == TOK_L_Paren) {
             printError("Unpaired parentheses error.\n");
-            exit(SYNTAX_ERROR);
+
+            // TODO: memory cleanup
+            return false;
         }
 
         TokenStackPush(outputQueue, token);
     }
 
-    TokenStackPrint(outputQueue);
+    // TokenStackPrint(outputQueue);
 
     free(operatorStack);
     free(outputQueue);
+
+    return true;
 }
 
 void TokenStackPush(TokenStack *stack, Token token) {
@@ -112,7 +138,7 @@ void TokenStackPrint(TokenStack *stack) {
     }
 }
 
-// priorities are reversed to assignment
+// priorities are reversed to project assignment
 int getPriority(tokenType type) {
     switch (type) {
         case TOK_Mul:
@@ -128,5 +154,28 @@ int getPriority(tokenType type) {
         case TOK_Equal:
         case TOK_Not_Equal:
             return 1;
+    }
+}
+
+bool isValidExpToken(tokenType type) {
+        switch (type) {
+            case TOK_Identifier:
+            case TOK_Int_Literal:
+            // float
+            case TOK_L_Paren:
+            case TOK_R_Paren:
+            case TOK_Mul:
+            case TOK_Div:
+            case TOK_Add:
+            case TOK_Sub:
+            case TOK_Less_Then:
+            case TOK_Less_Equal_Then:
+            case TOK_More_Then:
+            case TOK_More_Equal_Then:
+            case TOK_Equal:
+            case TOK_Not_Equal:
+                return true;
+            default:
+                return false;
     }
 }

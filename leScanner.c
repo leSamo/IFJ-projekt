@@ -15,6 +15,12 @@
 #include "leScanner.h"
 
 Token *getToken() {
+    if (overlapToken != NULL) {
+        Token* tokenToReturn = overlapToken;
+        overlapToken = NULL;
+        return tokenToReturn;
+    }
+
     int currentChar;
     state currentState = AS_Default;
 
@@ -95,9 +101,7 @@ Token *getToken() {
                 currentState = AS_Exclamation;
             }
             else if (currentChar == '\n') {
-                // right now ignore newline
-                // return newHalfToken(TOK_Newline);
-                return getToken();
+                return newHalfToken(TOK_Newline);
             }
             else if (currentChar == EOF) {
                 return newHalfToken(TOK_EOF);
