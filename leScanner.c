@@ -351,8 +351,8 @@ Token *getToken() {
             break;
         
         default:
-            printError("Reached invalid state.\n");
-            return NULL;
+            printError("Lexical error: reached invalid state.\n");
+            exit(LEXICAL_ERROR);
         }
     }
 }
