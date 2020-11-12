@@ -37,7 +37,7 @@ bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut) {
             break;
         }
 
-        if (currentToken.type == TOK_Int_Literal) {
+        if (currentToken.type == TOK_Int_Literal || currentToken.type == TOK_Float_Literal) {
             TokenStackPush(outputQueue, currentToken);
         }
         else if (currentToken.type == TOK_L_Paren) {
@@ -161,7 +161,7 @@ bool isValidExpToken(tokenType type) {
         switch (type) {
             case TOK_Identifier:
             case TOK_Int_Literal:
-            // float
+            case TOK_Float_Literal:
             case TOK_L_Paren:
             case TOK_R_Paren:
             case TOK_Mul:

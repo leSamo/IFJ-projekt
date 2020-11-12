@@ -1,12 +1,12 @@
 /* Program 1, should compile OK */
-
+/*
 package main
 
 func main() {
     a := 5
     b := 6
 }
-
+*/
 /* Program 2, doesn't have EOF at the end, should produce syntactic error */
 /*
 package main
@@ -65,13 +65,11 @@ func main() {
     }
 }
 */
-
 /* Program 6, expression testing, should compile OK */
-/*
+
 package main
 
 func main() {
-    a = 5 + 6
-    b := 4 * (1+8)
+    a = 5.6 + 6.8
+    b := 4. * (1+.8)
 }
-*/
