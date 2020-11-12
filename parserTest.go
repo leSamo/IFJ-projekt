@@ -33,9 +33,30 @@ func main() {
 */
 
 /* Program 4, testing differrent assignment types, should compile OK */
-
+/*
 package main
 
 func main() {
     a = 5
+    b, c = 5, 5
+    d,e,f=0,0,5
+}
+*/
+
+/* Program 5, testing for loop, should compile OK */
+
+package main
+
+func main() {
+    for a := 5; ; a = 6 {
+        a = 4
+    }
+
+    for ;; {
+        b = 5
+    }
+
+    for ;; a,b = 1,2 {
+
+    }
 }

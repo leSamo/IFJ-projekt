@@ -108,6 +108,9 @@ bool NT_Stat() {
     else if (nextToken->type == TOK_If_Keyword) {
         ret = NT_If_Else() && NT_Stat();
     }
+    else if (nextToken->type == TOK_For_Keyword) {
+        ret = NT_For_Decl() && NT_For_Exp() && NT_For_Assign() && NT_Stat() && NT_Stat();
+    }
 
     return ret;
 }
@@ -117,37 +120,37 @@ bool NT_Variable() {
 
     Token *nextToken = getToken();
 
-    if (nextToken->type == TOK_Assign) {
-        ret = NT_Assign();
+    if (nextToken->type == TOK_Define) {
+        ret = NT_Define(); // decl
     }
-    else if (nextToken->type == TOK_Define) {
-        ret = NT_Define();
+    else if (nextToken->type == TOK_Assign) {
+        ret = NT_Exp(); // assign one
+    }
+    else if (nextToken->type == TOK_Comma) {
+        if (getToken()->type == TOK_Identifier) {
+            ret = NT_Assign_N() && NT_Exp() && getToken()->type == TOK_Comma && NT_Exp();
+        }
     }
 
     return ret;
 }
 
-bool NT_Assign() {
-    bool ret = false;
-
-    ret = NT_Exp();
-
-    //return NT_Assign_N() && NT_Exp();
-
-    return ret;
-}
-
-/*
 bool NT_Assign_N() {
     bool ret = false;
 
     Token *nextToken = getToken();
 
-    if (nextToken->type == TOK_as)
+    if (nextToken->type == TOK_Assign) {
+        ret = true;
+    }
+    else if (nextToken->type == TOK_Comma) {
+        if (getToken()->type == TOK_Identifier) {
+            ret = NT_Assign_N() && NT_Exp() && getToken()->type == TOK_Comma;
+        }
+    }
 
     return ret;
 }
-*/
 
 bool NT_Define() {
     return NT_Exp();
@@ -178,6 +181,49 @@ bool NT_If_Else() {
                 }
             }
         }
+    }
+
+    return ret;
+}
+
+bool NT_For_Decl() {
+    bool ret = false;
+
+    Token *nextToken = getToken();
+
+    if (nextToken->type == TOK_Semicolon) {
+        ret = true;
+    }
+    else if (nextToken->type == TOK_Identifier) {
+        ret = getToken()->type == TOK_Define && NT_Exp() && getToken()->type == TOK_Semicolon;
+    }
+
+    return ret;
+}
+
+bool NT_For_Exp() {
+    bool ret = false;
+
+    Token *nextToken = getToken();
+
+    if (nextToken->type == TOK_Semicolon) {
+        ret = true;
+    }
+    // expression
+
+    return ret;
+}
+
+bool NT_For_Assign() {
+    bool ret = false;
+
+    Token *nextToken = getToken();
+
+    if (nextToken->type == TOK_L_Brace) {
+        ret = true;
+    }
+    else if (nextToken->type == TOK_Identifier) {
+        ret = NT_Assign_N() && NT_Exp() && getToken()->type == TOK_L_Brace;
     }
 
     return ret;
