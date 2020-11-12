@@ -43,8 +43,7 @@ bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut) {
         else if (currentToken.type == TOK_L_Paren) {
             TokenStackPush(operatorStack, currentToken);
         }
-        else if (currentToken.type == TOK_Mul || currentToken.type == TOK_Div ||
-                 currentToken.type == TOK_Add || currentToken.type == TOK_Sub) {
+        else if (isOperator(currentToken.type)) {
             if (operatorStack->count > 0) {
                 Token previous = TokenStackPop(operatorStack);
 
@@ -227,6 +226,12 @@ bool isOperator(tokenType type) {
         case TOK_Sub:
         case TOK_Mul:
         case TOK_Div:
+        case TOK_Equal:
+        case TOK_Not_Equal:
+        case TOK_More_Equal_Then:
+        case TOK_More_Then:
+        case TOK_Less_Equal_Then:
+        case TOK_Less_Then:
             return true;
         
         default:

@@ -72,5 +72,5 @@ package main
 func main() {
     a = 5.6 + 6.8
     b := 4. * (1+.8)
-    c = c + 5
+    c = c + 5 > 0
 }
