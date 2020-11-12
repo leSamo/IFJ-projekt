@@ -96,7 +96,8 @@ typedef enum {
     /* separators */
     TOK_Newline,
     TOK_Comma,
-    TOK_Semicolon
+    TOK_Semicolon,
+    TOK_EOF
 } tokenType;
 
 /* represents one token each token has type and some have value of either type int, float or string */

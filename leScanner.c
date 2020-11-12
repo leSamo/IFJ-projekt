@@ -95,10 +95,12 @@ Token *getToken() {
                 currentState = AS_Exclamation;
             }
             else if (currentChar == '\n') {
-                return newHalfToken(TOK_Newline);
+                // right now ignore newline
+                // return newHalfToken(TOK_Newline);
+                return getToken();
             }
             else if (currentChar == EOF) {
-                return NULL;
+                return newHalfToken(TOK_EOF);
             }
 
             // if it's whitespace other then newline then noop
@@ -520,6 +522,8 @@ char* getTokenName(tokenType type) {
             return "Not equal     ";
         case TOK_Newline:
             return "--";
+        case TOK_EOF:
+            return "EOF";
         default:
             return "Unknown       ";
     }
