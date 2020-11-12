@@ -12,8 +12,8 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#include "leParser.h"
 #include "leScanner.c"
+#include "leParser.h"
 #include "expressions.c"
 
 int main(int argc, char* argv[]) {
@@ -53,11 +53,48 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
+Token *getToken_NL_required() {
+    Token *nextToken = getToken();
+
+    if (nextToken->type != TOK_Newline) {
+        printError("Expected newline, found none");
+        exit(SYNTAX_ERROR);
+    }
+
+    do {
+        nextToken = getToken();
+    } while (nextToken->type == TOK_Newline);
+
+    return nextToken;
+}
+
+Token *getToken_NL_optional() {
+    Token *nextToken;
+
+    do {
+        nextToken = getToken();
+    } while (nextToken->type == TOK_Newline);
+
+    return nextToken;
+}
+
+bool isExpFirst(tokenType type) {
+    switch (type) {
+        case TOK_Identifier:
+        case TOK_Int_Literal:
+        case TOK_L_Paren:
+            return true;
+        
+        default:
+            return false;
+    }
+}
+
 // initial non-terminal
 bool NT_Prog() {
     bool ret = false;
 
-    ret = NT_Prolog() && NT_Main() && getToken()->type == TOK_EOF;
+    ret = NT_Prolog() && NT_Main() && getToken_NL_optional()->type == TOK_EOF;
 
     return ret;
 }
@@ -65,7 +102,7 @@ bool NT_Prog() {
 bool NT_Prolog() {
     bool ret = false;
 
-    if (getToken()->type == TOK_Package_Keyword) {
+    if (getToken_NL_optional()->type == TOK_Package_Keyword) {
         Token *nextToken = getToken();
         if (nextToken->type == TOK_Identifier && (strcmp(nextToken->str, "main") == 0)) {
             ret = true;
@@ -78,7 +115,7 @@ bool NT_Prolog() {
 bool NT_Main() {
     bool ret = false;
 
-    if (getToken()->type == TOK_Func_Keyword) {
+    if (getToken_NL_optional()->type == TOK_Func_Keyword) {
         Token *nextToken = getToken();
         if (nextToken->type == TOK_Identifier && (strcmp(nextToken->str, "main") == 0)) {
             if (getToken()->type == TOK_L_Paren) {
@@ -97,7 +134,7 @@ bool NT_Main() {
 bool NT_Stat() {
     bool ret = false;
 
-    Token *nextToken = getToken();
+    Token *nextToken = getToken_NL_optional();
 
     if (nextToken->type == TOK_Identifier) {
         ret = NT_Variable() && NT_Stat();
@@ -124,11 +161,11 @@ bool NT_Variable() {
         ret = NT_Define(); // decl
     }
     else if (nextToken->type == TOK_Assign) {
-        ret = NT_Exp(); // assign one
+        ret = NT_Exp(NULL); // assign one
     }
     else if (nextToken->type == TOK_Comma) {
         if (getToken()->type == TOK_Identifier) {
-            ret = NT_Assign_N() && NT_Exp() && getToken()->type == TOK_Comma && NT_Exp();
+            ret = NT_Assign_N() && NT_Exp(NULL) && getToken()->type == TOK_Comma && NT_Exp(NULL);
         }
     }
 
@@ -145,7 +182,7 @@ bool NT_Assign_N() {
     }
     else if (nextToken->type == TOK_Comma) {
         if (getToken()->type == TOK_Identifier) {
-            ret = NT_Assign_N() && NT_Exp() && getToken()->type == TOK_Comma;
+            ret = NT_Assign_N() && NT_Exp(NULL) && getToken()->type == TOK_Comma;
         }
     }
 
@@ -153,23 +190,25 @@ bool NT_Assign_N() {
 }
 
 bool NT_Define() {
-    return NT_Exp();
+    return NT_Exp(NULL);
 }
 
-bool NT_Exp() {
+bool NT_Exp(Token *overlapTokenIn) {
+    bool ret = false;
+
     // pass it to expression parser
-    // ret = handleExpression();
+    Token* overlapTokenOut = malloc(sizeof(Token));
+    ret = handleExpression(overlapTokenIn, overlapTokenOut);
 
-    // for now just get one token
-    getToken();
+    overlapToken = overlapTokenOut;
 
-    return true;
+    return ret;
 }
 
 bool NT_If_Else() {
     bool ret = false;
 
-    if (NT_Exp()) {
+    if (NT_Exp(NULL)) {
         if (getToken()->type == TOK_L_Brace) {
             if (NT_Stat()) {
                 if (getToken()->type == TOK_Else_Keyword) {
@@ -195,7 +234,7 @@ bool NT_For_Decl() {
         ret = true;
     }
     else if (nextToken->type == TOK_Identifier) {
-        ret = getToken()->type == TOK_Define && NT_Exp() && getToken()->type == TOK_Semicolon;
+        ret = getToken()->type == TOK_Define && NT_Exp(NULL) && getToken()->type == TOK_Semicolon;
     }
 
     return ret;
@@ -206,10 +245,9 @@ bool NT_For_Exp() {
 
     Token *nextToken = getToken();
 
-    if (nextToken->type == TOK_Semicolon) {
-        ret = true;
+    if (isExpFirst(nextToken->type)) {
+        ret = NT_Exp(nextToken) && getToken()->type == TOK_Semicolon;
     }
-    // expression
 
     return ret;
 }
@@ -223,7 +261,7 @@ bool NT_For_Assign() {
         ret = true;
     }
     else if (nextToken->type == TOK_Identifier) {
-        ret = NT_Assign_N() && NT_Exp() && getToken()->type == TOK_L_Brace;
+        ret = NT_Assign_N() && NT_Exp(NULL) && getToken()->type == TOK_L_Brace;
     }
 
     return ret;

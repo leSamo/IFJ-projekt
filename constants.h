@@ -110,6 +110,8 @@ typedef struct {
     };
 } Token;
 
+Token *overlapToken;
+
 typedef struct {
     char* word;
     tokenType type;

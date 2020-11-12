@@ -1,12 +1,12 @@
 /* Program 1, should compile OK */
-/*
+
 package main
 
 func main() {
     a := 5
     b := 6
 }
-*/
+
 /* Program 2, doesn't have EOF at the end, should produce syntactic error */
 /*
 package main
@@ -44,19 +44,34 @@ func main() {
 */
 
 /* Program 5, testing for loop, should compile OK */
-
+/*
 package main
 
 func main() {
-    for a := 5; ; a = 6 {
+    for b := 6 ; 6 ; a = 5 {
+        a = 5
+    }
+    
+    for a := 5; (1+3) * 6 ; {
         a = 4
     }
 
-    for ;; {
+    for ; 5; {
         b = 5
     }
 
-    for ;; a,b = 1,2 {
+    for ; 12 + 3; a,b = 1,2 {
 
     }
 }
+*/
+
+/* Program 6, expression testing, should compile OK */
+/*
+package main
+
+func main() {
+    a = 5 + 6
+    b := 4 * (1+8)
+}
+*/

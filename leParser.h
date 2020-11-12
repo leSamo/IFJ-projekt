@@ -6,6 +6,10 @@
  * Description: Syntactic analysis using recursive descent
  * ================================= */
 
+Token *getToken_NL_required();
+
+Token *getToken_NL_optional();
+
 bool NT_Prog();
 
 bool NT_Prolog();
