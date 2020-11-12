@@ -16,8 +16,6 @@ bool NT_Stat();
 
 bool NT_Variable();
 
-bool NT_Assign();
-
 bool NT_Assign_N();
 
 bool NT_Define();
@@ -25,3 +23,9 @@ bool NT_Define();
 bool NT_If_Else();
 
 bool NT_Exp();
+
+bool NT_For_Decl();
+
+bool NT_For_Exp();
+
+bool NT_For_Assign();
