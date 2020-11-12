@@ -24,6 +24,12 @@ typedef struct ExpressionNode {
 /* From tokens array in infix notation creates postfix notation */
 bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut);
 
+/* Verify output queue syntax */
+bool verifyOutput(TokenStack *outputQueue);
+
+/* */
+bool TokenStackCollapse(TokenStack *stack, int pos);
+
 /* Pushes one token into supplied stack */
 void TokenStackPush(TokenStack *stack, Token token);
 
@@ -41,3 +47,5 @@ int getPriority(tokenType type);
 
 /* Returns true if a token is valid for expression */
 bool isValidExpToken(tokenType type);
+
+bool isOperator(tokenType type);

@@ -98,10 +98,69 @@ bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut) {
 
     // TokenStackPrint(outputQueue);
 
+    bool ret = verifyOutput(outputQueue);
+
     free(operatorStack);
     free(outputQueue);
 
-    return true;
+    return ret;
+}
+
+bool verifyOutput(TokenStack *outputQueue) {
+    printf("s1:\n");
+    TokenStackPrint(outputQueue);
+    printf("---\n");
+
+    for (int i = 0; outputQueue->count > 1; i++) {
+        Token currentToken = outputQueue->tokens[i];
+
+        if (isOperator(currentToken.type)) {
+            if (!TokenStackCollapse(outputQueue, i)) {
+                return false;
+            }
+            i = 0;
+        }
+    }    
+
+    printf("s2:\n");
+    TokenStackPrint(outputQueue);
+    printf("---\n");
+
+    if (outputQueue->count == 1) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool TokenStackCollapse(TokenStack *stack, int pos) {
+    if (pos < 2 || stack->count < 2) {
+        return false;
+    }
+    else {
+        // both should be numbers
+        if (isOperator(stack->tokens[pos - 2].type) || isOperator(stack->tokens[pos - 1].type)) {
+            printf("here");
+            return false;
+        }
+    
+        for (int i = pos + 1; i < stack->count; i++) {
+            stack->tokens[i - 2] = stack->tokens[i]; 
+        }
+        /*
+        stack->tokens[pos - 1].type = TOK_Int_Literal;
+        stack->tokens[pos - 1].i = 0;
+        */
+
+        stack->count -= 2;
+
+        printf("s cont:\n");
+        TokenStackPrint(stack);
+        printf("---\n");
+
+        return true;
+    }
 }
 
 void TokenStackPush(TokenStack *stack, Token token) {
@@ -158,24 +217,37 @@ int getPriority(tokenType type) {
 }
 
 bool isValidExpToken(tokenType type) {
-        switch (type) {
-            case TOK_Identifier:
-            case TOK_Int_Literal:
-            case TOK_Float_Literal:
-            case TOK_L_Paren:
-            case TOK_R_Paren:
-            case TOK_Mul:
-            case TOK_Div:
-            case TOK_Add:
-            case TOK_Sub:
-            case TOK_Less_Then:
-            case TOK_Less_Equal_Then:
-            case TOK_More_Then:
-            case TOK_More_Equal_Then:
-            case TOK_Equal:
-            case TOK_Not_Equal:
-                return true;
-            default:
-                return false;
+    switch (type) {
+        case TOK_Identifier:
+        case TOK_Int_Literal:
+        case TOK_Float_Literal:
+        case TOK_L_Paren:
+        case TOK_R_Paren:
+        case TOK_Mul:
+        case TOK_Div:
+        case TOK_Add:
+        case TOK_Sub:
+        case TOK_Less_Then:
+        case TOK_Less_Equal_Then:
+        case TOK_More_Then:
+        case TOK_More_Equal_Then:
+        case TOK_Equal:
+        case TOK_Not_Equal:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool isOperator(tokenType type) {
+    switch (type) {
+        case TOK_Add:
+        case TOK_Sub:
+        case TOK_Mul:
+        case TOK_Div:
+            return true;
+        
+        default:
+            return false;
     }
 }
