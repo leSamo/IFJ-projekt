@@ -19,10 +19,6 @@
 int main(int argc, char* argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0); // for debug, remove before submitting
 
-    Token *currentToken;
-    Token tokensForExpression[1000];
-    int position = 0;
-
     /*
     while((currentToken = getToken()) != NULL) {
         // mock for expression testing
@@ -33,6 +29,7 @@ int main(int argc, char* argv[]) {
     }
     */
 
+    // recursive descent start
     if (NT_Prog()) {
         printError("All OK\n");
     }
@@ -44,27 +41,27 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-Token *getToken_NL_required() {
-    Token *nextToken = getToken();
+Token getToken_NL_required() {
+    Token nextToken = getToken();
 
-    if (nextToken->type != TOK_Newline) {
+    if (nextToken.type != TOK_Newline) {
         printError("Expected newline, found none");
         exit(SYNTAX_ERROR);
     }
 
     do {
         nextToken = getToken();
-    } while (nextToken->type == TOK_Newline);
+    } while (nextToken.type == TOK_Newline);
 
     return nextToken;
 }
 
-Token *getToken_NL_optional() {
-    Token *nextToken;
+Token getToken_NL_optional() {
+    Token nextToken;
 
     do {
         nextToken = getToken();
-    } while (nextToken->type == TOK_Newline);
+    } while (nextToken.type == TOK_Newline);
 
     return nextToken;
 }
@@ -86,7 +83,7 @@ bool isExpFirst(tokenType type) {
 bool NT_Prog() {
     bool ret = false;
 
-    ret = NT_Prolog() && NT_Main() && getToken_NL_optional()->type == TOK_EOF;
+    ret = NT_Prolog() && NT_Main() && getToken_NL_optional().type == TOK_EOF;
 
     return ret;
 }
@@ -94,9 +91,9 @@ bool NT_Prog() {
 bool NT_Prolog() {
     bool ret = false;
 
-    if (getToken_NL_optional()->type == TOK_Package_Keyword) {
-        Token *nextToken = getToken();
-        if (nextToken->type == TOK_Identifier && (strcmp(nextToken->str, "main") == 0)) {
+    if (getToken_NL_optional().type == TOK_Package_Keyword) {
+        Token nextToken = getToken();
+        if (nextToken.type == TOK_Identifier && (strcmp(nextToken.str, "main") == 0)) {
             ret = true;
         }
     }
@@ -107,12 +104,12 @@ bool NT_Prolog() {
 bool NT_Main() {
     bool ret = false;
 
-    if (getToken_NL_optional()->type == TOK_Func_Keyword) {
-        Token *nextToken = getToken();
-        if (nextToken->type == TOK_Identifier && (strcmp(nextToken->str, "main") == 0)) {
-            if (getToken()->type == TOK_L_Paren) {
-                if (getToken()->type == TOK_R_Paren) {
-                    if (getToken()->type == TOK_L_Brace) {
+    if (getToken_NL_optional().type == TOK_Func_Keyword) {
+        Token nextToken = getToken();
+        if (nextToken.type == TOK_Identifier && (strcmp(nextToken.str, "main") == 0)) {
+            if (getToken().type == TOK_L_Paren) {
+                if (getToken().type == TOK_R_Paren) {
+                    if (getToken().type == TOK_L_Brace) {
                         ret = NT_Stat();
                     }
                 }
@@ -126,21 +123,21 @@ bool NT_Main() {
 bool NT_Stat() {
     bool ret = false;
 
-    Token *nextToken = getToken_NL_optional();
+    Token nextToken = getToken_NL_optional();
 
-    if (nextToken->type == TOK_Identifier) {
+    if (nextToken.type == TOK_Identifier) {
         ret = NT_Variable() && NT_Stat();
     }
-    else if (nextToken->type == TOK_R_Brace) {
+    else if (nextToken.type == TOK_R_Brace) {
         ret = true;
     }
-    else if (nextToken->type == TOK_If_Keyword) {
+    else if (nextToken.type == TOK_If_Keyword) {
         ret = NT_If_Else() && NT_Stat();
     }
-    else if (nextToken->type == TOK_For_Keyword) {
+    else if (nextToken.type == TOK_For_Keyword) {
         ret = NT_For_Decl() && NT_For_Exp() && NT_For_Assign() && NT_Stat() && NT_Stat();
     }
-    else if (nextToken->type == TOK_Return_Keyword) {
+    else if (nextToken.type == TOK_Return_Keyword) {
         // return
     }
 
@@ -150,17 +147,17 @@ bool NT_Stat() {
 bool NT_Variable() {
     bool ret = false;
 
-    Token *nextToken = getToken();
+    Token nextToken = getToken();
 
-    if (nextToken->type == TOK_Define) {
+    if (nextToken.type == TOK_Define) {
         ret = NT_Define(); // decl
     }
-    else if (nextToken->type == TOK_Assign) {
-        ret = NT_Exp(NULL); // assign one
+    else if (nextToken.type == TOK_Assign) {
+        ret = NT_Exp(EMPTY_TOKEN); // assign one
     }
-    else if (nextToken->type == TOK_Comma) {
-        if (getToken()->type == TOK_Identifier) {
-            ret = NT_Assign_N() && NT_Exp(NULL) && getToken()->type == TOK_Comma && NT_Exp(NULL);
+    else if (nextToken.type == TOK_Comma) {
+        if (getToken().type == TOK_Identifier) {
+            ret = NT_Assign_N() && NT_Exp(EMPTY_TOKEN) && getToken().type == TOK_Comma && NT_Exp(EMPTY_TOKEN);
         }
     }
 
@@ -170,14 +167,14 @@ bool NT_Variable() {
 bool NT_Assign_N() {
     bool ret = false;
 
-    Token *nextToken = getToken();
+    Token nextToken = getToken();
 
-    if (nextToken->type == TOK_Assign) {
+    if (nextToken.type == TOK_Assign) {
         ret = true;
     }
-    else if (nextToken->type == TOK_Comma) {
-        if (getToken()->type == TOK_Identifier) {
-            ret = NT_Assign_N() && NT_Exp(NULL) && getToken()->type == TOK_Comma;
+    else if (nextToken.type == TOK_Comma) {
+        if (getToken().type == TOK_Identifier) {
+            ret = NT_Assign_N() && NT_Exp(EMPTY_TOKEN) && getToken().type == TOK_Comma;
         }
     }
 
@@ -185,17 +182,18 @@ bool NT_Assign_N() {
 }
 
 bool NT_Define() {
-    return NT_Exp(NULL);
+    return NT_Exp(EMPTY_TOKEN);
 }
 
-bool NT_Exp(Token *overlapTokenIn) {
+bool NT_Exp(Token overlapTokenIn) {
     bool ret = false;
 
     // pass it to expression parser
     Token* overlapTokenOut = malloc(sizeof(Token));
     ret = handleExpression(overlapTokenIn, overlapTokenOut);
 
-    overlapToken = overlapTokenOut;
+    overlapToken = *overlapTokenOut;
+    free(overlapTokenOut);
 
     return ret;
 }
@@ -203,11 +201,11 @@ bool NT_Exp(Token *overlapTokenIn) {
 bool NT_If_Else() {
     bool ret = false;
 
-    if (NT_Exp(NULL)) {
-        if (getToken()->type == TOK_L_Brace) {
+    if (NT_Exp(EMPTY_TOKEN)) {
+        if (getToken().type == TOK_L_Brace) {
             if (NT_Stat()) {
-                if (getToken()->type == TOK_Else_Keyword) {
-                    if (getToken()->type == TOK_L_Brace) {
+                if (getToken().type == TOK_Else_Keyword) {
+                    if (getToken().type == TOK_L_Brace) {
                         if (NT_Stat()) {
                             ret = true;
                         }
@@ -223,13 +221,13 @@ bool NT_If_Else() {
 bool NT_For_Decl() {
     bool ret = false;
 
-    Token *nextToken = getToken();
+    Token nextToken = getToken();
 
-    if (nextToken->type == TOK_Semicolon) {
+    if (nextToken.type == TOK_Semicolon) {
         ret = true;
     }
-    else if (nextToken->type == TOK_Identifier) {
-        ret = getToken()->type == TOK_Define && NT_Exp(NULL) && getToken()->type == TOK_Semicolon;
+    else if (nextToken.type == TOK_Identifier) {
+        ret = getToken().type == TOK_Define && NT_Exp(EMPTY_TOKEN) && getToken().type == TOK_Semicolon;
     }
 
     return ret;
@@ -238,10 +236,10 @@ bool NT_For_Decl() {
 bool NT_For_Exp() {
     bool ret = false;
 
-    Token *nextToken = getToken();
+    Token nextToken = getToken();
 
-    if (isExpFirst(nextToken->type)) {
-        ret = NT_Exp(nextToken) && getToken()->type == TOK_Semicolon;
+    if (isExpFirst(nextToken.type)) {
+        ret = NT_Exp(nextToken) && getToken().type == TOK_Semicolon;
     }
 
     return ret;
@@ -250,13 +248,13 @@ bool NT_For_Exp() {
 bool NT_For_Assign() {
     bool ret = false;
 
-    Token *nextToken = getToken();
+    Token nextToken = getToken();
 
-    if (nextToken->type == TOK_L_Brace) {
+    if (nextToken.type == TOK_L_Brace) {
         ret = true;
     }
-    else if (nextToken->type == TOK_Identifier) {
-        ret = NT_Assign_N() && NT_Exp(NULL) && getToken()->type == TOK_L_Brace;
+    else if (nextToken.type == TOK_Identifier) {
+        ret = NT_Assign_N() && NT_Exp(EMPTY_TOKEN) && getToken().type == TOK_L_Brace;
     }
 
     return ret;

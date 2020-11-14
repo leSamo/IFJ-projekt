@@ -15,7 +15,7 @@ typedef struct TokenBuffer {
 } TokenBuffer;
 
 /* From tokens array in infix notation creates postfix notation */
-bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut);
+bool handleExpression(Token overlapTokenIn, Token *overlapTokenOut);
 
 /* Verify if output queue syntax is correct */
 bool verifyOutput(TokenBuffer *outputQueue);

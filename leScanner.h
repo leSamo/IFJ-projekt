@@ -6,7 +6,7 @@
  * ================================= */
 
 /* reads input from stdin and sends a token */
-Token *getToken();
+Token getToken();
 
 /* print out an error message to stderr */
 void printError(char* msg);
@@ -30,25 +30,25 @@ bool isWhiteSpace(char c);
 char hexToChar(char a, char b);
 
 /* creates a new int token and inserts it into tokens array */
-Token *newIntToken(int content);
+Token newIntToken(int content);
 
 /* creates a new float token and inserts it into tokens array */
-Token *newFloatToken(float content);
+Token newFloatToken(float content);
 
 /* decides whether content is keyword or identifier, creates a new token and inserts it into tokens array */
-Token *newWordToken(char* content);
+Token newWordToken(char* content);
 
 /* creates a new token with passed type and value and inserts it into tokens array */
-Token *newToken(tokenType type, char* content);
+Token newToken(tokenType type, char* content);
 
 /* creates a new attributeless token with passed type and inserts it into tokens array */
-Token *newHalfToken(tokenType type);
+Token newHalfToken(tokenType type);
 
 /* Exits the program with error code correspoding to lexical error */
 void throwLexicalError();
 
 /* prints all tokens from tokens array */
-void printToken(Token *token);
+void printToken(Token token);
 
 /* debug function to convert token type enum int to string for printing */
 char* getTokenName(tokenType type);

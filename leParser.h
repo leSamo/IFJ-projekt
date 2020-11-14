@@ -6,9 +6,9 @@
  * Description: Syntactic analysis using recursive descent
  * ================================= */
 
-Token *getToken_NL_required();
+Token getToken_NL_required();
 
-Token *getToken_NL_optional();
+Token getToken_NL_optional();
 
 bool NT_Prog();
 
@@ -26,7 +26,7 @@ bool NT_Define();
 
 bool NT_If_Else();
 
-bool NT_Exp();
+bool NT_Exp(Token overlapTokenIn);
 
 bool NT_For_Decl();
 

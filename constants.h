@@ -51,6 +51,7 @@ typedef enum {
 
 /* list of all token types */
 typedef enum {
+    TOK_Empty,
     TOK_Identifier,
 
     /* assignment operators */
@@ -110,7 +111,8 @@ typedef struct {
     };
 } Token;
 
-Token *overlapToken;
+const Token EMPTY_TOKEN = {TOK_Empty};
+Token overlapToken = {TOK_Empty};
 
 typedef struct {
     char* word;

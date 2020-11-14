@@ -14,18 +14,18 @@
 #include "expressions.h"
 #include "leScanner.h"
 
-bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut) {
+bool handleExpression(Token overlapTokenIn, Token *overlapTokenOut) {
     TokenBuffer *operatorStack = TokenBufferCreate();
     TokenBuffer *outputQueue = TokenBufferCreate();
 
     for (int i = 0; ; i++) {
         Token currentToken;
 
-        if (i == 0 && overlapTokenIn != NULL){
-            currentToken = *overlapTokenIn;
+        if (i == 0 && overlapTokenIn.type != TOK_Empty){
+            currentToken = overlapTokenIn;
         }
         else {
-            currentToken = *getToken();
+            currentToken = getToken();
         }
 
         if (!isValidExpToken(currentToken.type)) {

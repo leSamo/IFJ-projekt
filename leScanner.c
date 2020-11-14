@@ -14,10 +14,10 @@
 #include "constants.h"
 #include "leScanner.h"
 
-Token *getToken() {
-    if (overlapToken != NULL) {
-        Token* tokenToReturn = overlapToken;
-        overlapToken = NULL;
+Token getToken() {
+    if (overlapToken.type != TOK_Empty) {
+        Token tokenToReturn = overlapToken;
+        overlapToken.type = TOK_Empty;
         return tokenToReturn;
     }
 
@@ -390,73 +390,72 @@ char hexToChar(char a, char b) {
 }
 
 /* New token functions */
-Token *newIntToken(int content) {
-    Token *newToken = malloc(sizeof(Token));
-    newToken->type = TOK_Int_Literal;
-    newToken->i = content;
+Token newIntToken(int content) {
+    Token newToken;
+    newToken.type = TOK_Int_Literal;
+    newToken.i = content;
 
     return newToken;
 }
 
-Token *newFloatToken(float content) {
-    Token *newToken = malloc(sizeof(Token));
-    newToken->type = TOK_Float_Literal;
-    newToken->f = content;
+Token newFloatToken(float content) {
+    Token newToken;
+    newToken.type = TOK_Float_Literal;
+    newToken.f = content;
 
     return newToken;
 }
 
-Token *newWordToken(char* content) {
-    Token *newToken = malloc(sizeof(Token));
+Token newWordToken(char* content) {
+    Token newToken;
 
     for (int i = 0; i < KEYWORDS_ARRAY_SIZE; i++) {
         if (strcmp(content, keywords[i].word) == 0) {
-            newToken->type = keywords[i].type;
+            newToken.type = keywords[i].type;
             return newToken;
         }
     }
 
-    newToken->type = TOK_Identifier;
-    strcpy(newToken->str, content);
+    newToken.type = TOK_Identifier;
+    strcpy(newToken.str, content);
     return newToken;
 }
 
-Token *newToken(tokenType type, char* content) {
-    Token *newToken = malloc(sizeof(Token));
-    newToken->type = type;
-    strcpy(newToken->str, content);
+Token newToken(tokenType type, char* content) {
+    Token newToken;
+    newToken.type = type;
+    strcpy(newToken.str, content);
 
     return newToken;
 }
 
-Token *newHalfToken(tokenType type) {
-    Token *newToken = malloc(sizeof(Token));
-    newToken->type = type;
+Token newHalfToken(tokenType type) {
+    Token newToken;
+    newToken.type = type;
 
     return newToken;
 }
 
 void throwLexicalError() {
-    Token *newToken = malloc(sizeof(Token));
     printError("Lexical error\n");
     exit(LEXICAL_ERROR);
 }
 
-void printToken(Token *token) {
-    switch (token->type) {
+void printToken(Token token) {
+    switch (token.type) {
         case TOK_Int_Literal:
-            printf("%s: \"%d\"\n", getTokenName(token->type), token->i);
+            printf("%s: \"%d\"\n", getTokenName(token.type), token.i);
             break;
         case TOK_Float_Literal:
-            printf("%s: \"%f\"\n", getTokenName(token->type), token->f);
+            printf("%s: \"%f\"\n", getTokenName(token.type), token.f);
             break;
         case TOK_Identifier:
         case TOK_String_Literal:
             // TODO: Escape newlines when printing to make output prettier
-            printf("%s: \"%s\"\n", getTokenName(token->type), token->str);
+            printf("%s: \"%s\"\n", getTokenName(token.type), token.str);
             break;
         default:
-            printf("%s \n", getTokenName(token->type));
+            printf("%s \n", getTokenName(token.type));
     }
 }
 

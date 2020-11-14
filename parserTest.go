@@ -7,6 +7,7 @@ func main() {
     b := 6
 }
 */
+
 /* Program 2, doesn't have EOF at the end, should produce syntactic error */
 /*
 package main
@@ -65,6 +66,7 @@ func main() {
     }
 }
 */
+
 /* Program 6, expression testing, should compile OK */
 
 package main
