@@ -19,8 +19,6 @@
 int main(int argc, char* argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0); // for debug, remove before submitting
 
-    //printf("\n----- TOKENS -----\n");
-
     Token *currentToken;
     Token tokensForExpression[1000];
     int position = 0;
@@ -36,19 +34,12 @@ int main(int argc, char* argv[]) {
     */
 
     if (NT_Prog()) {
-        printf("alles klar\n");
+        printError("All OK\n");
     }
     else {
         printError("Syntactic error\n");
         return SYNTAX_ERROR;
     }
-
-    //printf("\n------------------\n");
-
-    // if you want to handle input as an expression uncomment below line
-    // handleExpression(tokensForExpression, position);
-
-    //printf("------------------\n\n");
 
     return 0;
 }
@@ -148,6 +139,9 @@ bool NT_Stat() {
     }
     else if (nextToken->type == TOK_For_Keyword) {
         ret = NT_For_Decl() && NT_For_Exp() && NT_For_Assign() && NT_Stat() && NT_Stat();
+    }
+    else if (nextToken->type == TOK_Return_Keyword) {
+        // return
     }
 
     return ret;

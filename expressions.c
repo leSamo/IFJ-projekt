@@ -15,10 +15,8 @@
 #include "leScanner.h"
 
 bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut) {
-    TokenStack *operatorStack = malloc(sizeof(TokenStack));
-    operatorStack->count = 0;
-    TokenStack *outputQueue = malloc(sizeof(TokenStack));
-    outputQueue->count = 0;
+    TokenBuffer *operatorStack = TokenBufferCreate();
+    TokenBuffer *outputQueue = TokenBufferCreate();
 
     for (int i = 0; ; i++) {
         Token currentToken;
@@ -32,83 +30,88 @@ bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut) {
 
         if (!isValidExpToken(currentToken.type)) {
             // I got one more token then I should have, give it back
-            // printf("encountered %s\n", getTokenName(currentToken.type));
             *overlapTokenOut = currentToken;
             break;
         }
 
         if (currentToken.type == TOK_Int_Literal || currentToken.type == TOK_Float_Literal || currentToken.type == TOK_Identifier) {
-            TokenStackPush(outputQueue, currentToken);
+            TokenBufferPush(outputQueue, currentToken);
         }
         else if (currentToken.type == TOK_L_Paren) {
-            TokenStackPush(operatorStack, currentToken);
+            TokenBufferPush(operatorStack, currentToken);
         }
         else if (isOperator(currentToken.type)) {
             if (operatorStack->count > 0) {
-                Token previous = TokenStackPop(operatorStack);
+                Token previous = TokenBufferPop(operatorStack);
 
                 if (previous.type != TOK_L_Paren && getPriority(currentToken.type) <= getPriority(previous.type)) {
-                    TokenStackPush(outputQueue, previous);
+                    TokenBufferPush(outputQueue, previous);
                 }
                 else {
-                    TokenStackPush(operatorStack, previous);
+                    TokenBufferPush(operatorStack, previous);
                 }
             }
 
-            TokenStackPush(operatorStack, currentToken);
+            TokenBufferPush(operatorStack, currentToken);
         }
         else if (currentToken.type == TOK_R_Paren) {
             if (operatorStack->count == 0) {
                 printError("Unpaired parentheses error.\n");
 
-                // TODO: memory cleanup
+                TokenBufferDispose(operatorStack);
+                TokenBufferDispose(outputQueue);
+
                 return false;
             }
 
-            while (TokenStackTop(operatorStack).type != TOK_L_Paren) {
-                Token token = TokenStackPop(operatorStack);
-                TokenStackPush(outputQueue, token);
+            while (TokenBufferTop(operatorStack).type != TOK_L_Paren) {
+                Token token = TokenBufferPop(operatorStack);
+                TokenBufferPush(outputQueue, token);
 
                 if (operatorStack->count == 0) {
                     printError("Unpaired parentheses error.\n");
 
-                    // TODO: memory cleanup
+                    TokenBufferDispose(operatorStack);
+                    TokenBufferDispose(outputQueue);
+
                     return false;
                 }
             }
 
             // pop left paren
-            TokenStackPop(operatorStack);
+            TokenBufferPop(operatorStack);
         }        
     }
 
     while (operatorStack->count > 0) {
-        Token token = TokenStackPop(operatorStack);
+        Token token = TokenBufferPop(operatorStack);
 
         if (token.type == TOK_L_Paren) {
             printError("Unpaired parentheses error.\n");
 
-            // TODO: memory cleanup
+            TokenBufferDispose(operatorStack);
+            TokenBufferDispose(outputQueue);
+
             return false;
         }
 
-        TokenStackPush(outputQueue, token);
+        TokenBufferPush(outputQueue, token);
     }
 
     bool ret = verifyOutput(outputQueue);
 
-    free(operatorStack);
-    free(outputQueue);
+    TokenBufferDispose(operatorStack);
+    TokenBufferDispose(outputQueue);
 
     return ret;
 }
 
-bool verifyOutput(TokenStack *outputQueue) {
+bool verifyOutput(TokenBuffer *outputQueue) {
     for (int i = 0; outputQueue->count > 1; i++) {
         Token currentToken = outputQueue->tokens[i];
 
         if (isOperator(currentToken.type)) {
-            if (!TokenStackCollapse(outputQueue, i)) {
+            if (!TokenBufferCollapse(outputQueue, i)) {
                 return false;
             }
             i = 0;
@@ -123,52 +126,83 @@ bool verifyOutput(TokenStack *outputQueue) {
     }
 }
 
-bool TokenStackCollapse(TokenStack *stack, int pos) {
-    if (pos < 2 || stack->count < 2) {
+TokenBuffer* TokenBufferCreate() {
+    TokenBuffer *buffer = malloc(sizeof(TokenBuffer));
+    buffer->tokens = malloc(sizeof(Token) * INITIAL_BUFFER_LENGTH);
+
+    if (buffer == NULL) {
+        printError("Memory allocation error\n");
+        exit(INTERNAL_ERROR);
+    }
+
+    buffer->count = 0;
+    buffer->capacity = INITIAL_BUFFER_LENGTH;
+
+    return buffer;
+}
+
+bool TokenBufferCollapse(TokenBuffer *buffer, int pos) {
+    if (pos < 2 || buffer->count < 2) {
         return false;
     }
     else {
         // both should be numbers
-        if (isOperator(stack->tokens[pos - 2].type) || isOperator(stack->tokens[pos - 1].type)) {
-            printf("here");
+        if (isOperator(buffer->tokens[pos - 2].type) || isOperator(buffer->tokens[pos - 1].type)) {
             return false;
         }
     
-        for (int i = pos + 1; i < stack->count; i++) {
-            stack->tokens[i - 2] = stack->tokens[i]; 
+        for (int i = pos + 1; i < buffer->count; i++) {
+            buffer->tokens[i - 2] = buffer->tokens[i]; 
         }
 
-        stack->count -= 2;
+        buffer->count -= 2;
 
         return true;
     }
 }
 
-void TokenStackPush(TokenStack *stack, Token token) {
-    stack->tokens[stack->count++] = token;
+void TokenBufferPush(TokenBuffer *buffer, Token token) {
+    if (buffer->count + 1 == buffer->capacity) {
+        buffer->capacity *= 2;
+        Token* newArray = realloc(buffer->tokens, sizeof(Token) * buffer->capacity);
+
+        if (newArray == NULL) {
+            TokenBufferDispose(buffer);
+            printError("Memory allocation error\n");
+            exit(INTERNAL_ERROR);
+        }
+        else {
+            buffer->tokens = newArray;
+        }
+
+        buffer->tokens[buffer->count++] = token;
+    }
+    else {
+        buffer->tokens[buffer->count++] = token;
+    }
 }
 
-Token TokenStackTop(TokenStack *stack) {
-    if (stack->count > 0) {
-        return stack->tokens[stack->count - 1];
+Token TokenBufferTop(TokenBuffer *buffer) {
+    if (buffer->count > 0) {
+        return buffer->tokens[buffer->count - 1];
     }
     else {
         // throw error
     }
 }
 
-Token TokenStackPop(TokenStack *stack) {
-    if (stack->count > 0) {
-        return stack->tokens[--stack->count];
+Token TokenBufferPop(TokenBuffer *buffer) {
+    if (buffer->count > 0) {
+        return buffer->tokens[--buffer->count];
     }
     else {
         // throw error
     }
 }
 
-void TokenStackPrint(TokenStack *stack) {
-    for (int i = 0; i < stack->count; i++) {
-        Token currentToken = stack->tokens[i];
+void TokenBufferPrint(TokenBuffer *buffer) {
+    for (int i = 0; i < buffer->count; i++) {
+        Token currentToken = buffer->tokens[i];
         if (currentToken.type == TOK_Int_Literal) {
             printf("%s: %d\n", getTokenName(currentToken.type), currentToken.i);
         }
@@ -176,6 +210,11 @@ void TokenStackPrint(TokenStack *stack) {
             printf("%s\n", getTokenName(currentToken.type));
         }
     }
+}
+
+void TokenBufferDispose(TokenBuffer *buffer) {
+    free(buffer->tokens);
+    free(buffer);
 }
 
 // priorities are reversed to project assignment

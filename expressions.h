@@ -6,46 +6,46 @@
  * Description: Precedence syntactic analysis for expressions using shunting-yard algorithm
  * ================================= */
 
-#define MAX_STACK_LENGTH 50
+#define INITIAL_BUFFER_LENGTH 10
 
-typedef struct TokenStack {
-    Token tokens[MAX_STACK_LENGTH];
+typedef struct TokenBuffer {
     int count;
-} TokenStack;
-
-/*
-typedef struct ExpressionNode {
-    Token token;
-    ExpressionNode* lPtr;
-    ExpressionNode* rPtr;    
-} ExpressionNode;
-*/
+    int capacity;
+    Token *tokens; // flexible array member
+} TokenBuffer;
 
 /* From tokens array in infix notation creates postfix notation */
 bool handleExpression(Token *overlapTokenIn, Token *overlapTokenOut);
 
-/* Verify output queue syntax */
-bool verifyOutput(TokenStack *outputQueue);
+/* Verify if output queue syntax is correct */
+bool verifyOutput(TokenBuffer *outputQueue);
 
-/* */
-bool TokenStackCollapse(TokenStack *stack, int pos);
+/* Allocates, initates and returns a token buffer */
+TokenBuffer* TokenBufferCreate();
 
-/* Pushes one token into supplied stack */
-void TokenStackPush(TokenStack *stack, Token token);
+/* If possible collapse items inside buffer on pos, pos-1 and pos-2 into one item */
+bool TokenBufferCollapse(TokenBuffer *buffer, int pos);
 
-/* Returns token on the top of the stack */
-Token TokenStackTop(TokenStack *stack);
+/* Pushes one token into supplied buffer */
+void TokenBufferPush(TokenBuffer *buffer, Token token);
 
-/* Returns token on the top of the stack and removes it from the stack */
-Token TokenStackPop(TokenStack *stack);
+/* Returns token on the top of the buffer */
+Token TokenBufferTop(TokenBuffer *buffer);
 
-/* Debug function to print out all the items from the stack */
-void TokenStackPrint(TokenStack *stack);
+/* Returns token on the top of the buffer and removes it from the buffer */
+Token TokenBufferPop(TokenBuffer *buffer);
+
+/* Debug function to print out all the items from the buffer */
+void TokenBufferPrint(TokenBuffer *buffer);
+
+/* Deallocated token buffer */
+void TokenBufferDispose(TokenBuffer *buffer);
 
 /* Returns priority for that token (1,2,3) */
 int getPriority(tokenType type);
 
-/* Returns true if a token is valid for expression */
+/* Returns true if token type is valid for expression */
 bool isValidExpToken(tokenType type);
 
+/* Returns true if token type is operator (+,-,*,/,<,<=,>,>=,==,!=) */
 bool isOperator(tokenType type);
