@@ -22,9 +22,6 @@ typedef enum {
     INTERNAL_ERROR = 99 // interní chyba překladače tj. neovlivněná vstupním programem (např. chyba alokace paměti, atd.)
 } errorCode;
 
-/* size of char buffer for scanner */
-#define MAX_CHAR_BUFFER_SIZE 50
-
 /* list of all posible automaton states */
 typedef enum {
     AS_Default,
@@ -107,7 +104,7 @@ typedef struct {
     union {
         int64_t i;
         double f;
-        char str[MAX_CHAR_BUFFER_SIZE];
+        char *str;
     };
 } Token;
 

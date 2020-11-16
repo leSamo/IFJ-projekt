@@ -5,6 +5,17 @@
  * Date: November 2020
  * ================================= */
 
+#ifndef SCANNER
+#define SCANNER
+
+#define INITIAL_CHAR_BUFFER_SIZE 20
+
+typedef struct charBuffer {
+    char* content;
+    int position;
+    int capacity;
+} charBuffer;
+
 /* reads input from stdin and sends a token */
 Token getToken();
 
@@ -53,11 +64,19 @@ void printToken(Token token);
 /* debug function to convert token type enum int to string for printing */
 char* getTokenName(tokenType type);
 
-/* pushes character at the end of buffer */
-void charBufferPush(char* buffer, int *bufferPos, char character);
+/* allocates, initializes and returns a new char buffer */
+charBuffer* charBufferCreate();
 
-/* clears buffer and bufferPos and returns its content */
-char* charBufferPop(char* buffer, int *bufferPos);
+/* pushes character at the end of buffer */
+void charBufferPush(charBuffer* buffer, char character);
+
+/* clears buffer and its position and returns its content */
+char* charBufferGet(charBuffer* buffer);
 
 /* debug function to print content of buffer */
-void charBufferPrint(char* buffer, int *bufferPos);
+void charBufferPrint(charBuffer* buffer);
+
+/* deallocated char buffer) */
+void charBufferDispose(charBuffer* buffer);
+
+#endif

@@ -128,7 +128,7 @@ bool verifyOutput(TokenBuffer *outputQueue) {
 
 TokenBuffer* TokenBufferCreate() {
     TokenBuffer *buffer = malloc(sizeof(TokenBuffer));
-    buffer->tokens = malloc(sizeof(Token) * INITIAL_BUFFER_LENGTH);
+    buffer->tokens = malloc(sizeof(Token) * INITIAL_BUFFER_SIZE);
 
     if (buffer == NULL) {
         printError("Memory allocation error\n");
@@ -136,7 +136,7 @@ TokenBuffer* TokenBufferCreate() {
     }
 
     buffer->count = 0;
-    buffer->capacity = INITIAL_BUFFER_LENGTH;
+    buffer->capacity = INITIAL_BUFFER_SIZE;
 
     return buffer;
 }

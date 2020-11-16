@@ -6,7 +6,7 @@
  * Description: Precedence syntactic analysis for expressions using shunting-yard algorithm
  * ================================= */
 
-#define INITIAL_BUFFER_LENGTH 10
+#define INITIAL_BUFFER_SIZE 10
 
 typedef struct TokenBuffer {
     int count;
