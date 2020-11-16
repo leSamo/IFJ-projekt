@@ -104,6 +104,13 @@ Token getToken() {
             else if (currentChar == EOF) {
                 return newHalfToken(TOK_EOF);
             }
+            else if (isWhiteSpace(currentChar)) {
+                break;
+            }
+            else {
+                printError("Encountered unknown symbol\n");
+                throwLexicalError();
+            }
 
             // if it's whitespace other then newline then noop
             break;
@@ -219,11 +226,18 @@ Token getToken() {
             if (currentChar == '\n') {
                 currentState = AS_Default;
             }
+            else if (currentChar == EOF) {
+                return newHalfToken(TOK_EOF);
+            }
             break;
 
         case AS_BlockComm:
             if (currentChar == '*') {
                 currentState = AS_BlockComm_End;
+            }
+            else if (currentChar == EOF) {
+                printError("Unexpected EOF inside block comment\n");
+                throwLexicalError();
             }
             break;
         
@@ -243,6 +257,10 @@ Token getToken() {
             }
             else if (currentChar == '\\') {
                 currentState = AS_String_Escape;
+            }
+            else if (currentChar == EOF) {
+                printError("Unexpected EOF inside string\n");
+                throwLexicalError();
             }
             else {
                 charBufferPush(charBuffer, currentChar);
@@ -423,6 +441,7 @@ Token newWordToken(char* content) {
 Token newToken(tokenType type, char* content) {
     Token newToken;
     newToken.type = type;
+    newToken.str = malloc(sizeof(char) * (strlen(content) + 1));
     strcpy(newToken.str, content);
 
     return newToken;
