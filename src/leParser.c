@@ -145,7 +145,7 @@ bool NT_Param_List_N() {
         ret = true;
     }
     else if (nextToken.type == TOK_Comma) {
-        if (getToken().type == TOK_Identifier)  {
+        if (getToken_NL_optional().type == TOK_Identifier)  {
             ret = NT_Type() && NT_Param_List_N();
         }
     }
@@ -220,7 +220,7 @@ bool NT_Stat() {
     Token nextToken = getToken_NL_optional();
 
     if (nextToken.type == TOK_Identifier) {
-        ret = NT_Variable() && NT_Stat();
+        ret = NT_Var() && NT_Stat();
     }
     else if (nextToken.type == TOK_R_Brace) {
         ret = true;
@@ -229,30 +229,99 @@ bool NT_Stat() {
         ret = NT_If_Else() && NT_Stat();
     }
     else if (nextToken.type == TOK_For_Keyword) {
-        ret = NT_For_Decl() && NT_For_Exp() && NT_For_Assign() && NT_Stat() && NT_Stat();
+        ret = NT_For_Def() && NT_For_Exp() && NT_For_Assign() && NT_Stat() && NT_Stat();
     }
     else if (nextToken.type == TOK_Return_Keyword) {
-        // return
+        ret = NT_Exps() && NT_Stat();
     }
 
     return ret;
 }
 
-bool NT_Variable() {
+bool NT_Var() {
     bool ret = false;
 
     Token nextToken = getToken();
 
-    if (nextToken.type == TOK_Define) {
-        ret = NT_Define(); // decl
+    if (nextToken.type == TOK_Assign) {
+        ret = NT_Exps();
     }
-    else if (nextToken.type == TOK_Assign) {
-        ret = NT_Exp(EMPTY_TOKEN); // assign one
+    else if (nextToken.type == TOK_Define) {
+        ret = NT_Exps();
     }
     else if (nextToken.type == TOK_Comma) {
         if (getToken().type == TOK_Identifier) {
-            ret = NT_Assign_N() && NT_Exp(EMPTY_TOKEN) && getToken().type == TOK_Comma && NT_Exp(EMPTY_TOKEN);
+            ret = NT_Var();
         }
+    }
+    else if (nextToken.type == TOK_L_Paren) {
+        ret = NT_Func_Args();
+    }
+
+    return ret;
+}
+
+bool NT_Exps() {
+    bool ret = false;
+
+    Token firstToken = getToken_NL_optional();
+
+    if (isExpFirst(firstToken.type)) {
+        Token secondToken = getToken();
+
+        if (firstToken.type == TOK_Identifier && secondToken.type == TOK_L_Paren) {
+            ret = NT_Func_Args();
+        }
+        else {
+            overlapToken = secondToken;
+            ret = NT_Exp(firstToken) && NT_Exps_N();
+        }
+    }
+
+    return ret;
+}
+
+bool NT_Func_Args() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_R_Paren) {
+        ret = true;
+    }
+    else {
+        overlapToken = nextToken;
+        ret = NT_Term() && NT_Func_Args_N();
+    }
+
+    return ret;
+}
+
+bool NT_Func_Args_N() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_R_Paren) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_Comma) {
+        ret = NT_Term() && NT_Func_Args_N();
+    }
+
+    return ret;
+}
+
+bool NT_Exps_N() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_Comma) {
+        ret = NT_Exp(EMPTY_TOKEN) && NT_Exps_N();
+    }
+    else if (nextToken.type == TOK_Newline) {
+        ret = true;
     }
 
     return ret;
@@ -273,10 +342,6 @@ bool NT_Assign_N() {
     }
 
     return ret;
-}
-
-bool NT_Define() {
-    return NT_Exp(EMPTY_TOKEN);
 }
 
 bool NT_Exp(Token overlapTokenIn) {
@@ -300,9 +365,7 @@ bool NT_If_Else() {
             if (NT_Stat()) {
                 if (getToken().type == TOK_Else_Keyword) {
                     if (getToken().type == TOK_L_Brace) {
-                        if (NT_Stat()) {
-                            ret = true;
-                        }
+                        ret = NT_Stat();
                     }
                 }
             }
@@ -312,7 +375,7 @@ bool NT_If_Else() {
     return ret;
 }
 
-bool NT_For_Decl() {
+bool NT_For_Def() {
     bool ret = false;
 
     Token nextToken = getToken();
@@ -321,7 +384,40 @@ bool NT_For_Decl() {
         ret = true;
     }
     else if (nextToken.type == TOK_Identifier) {
-        ret = getToken().type == TOK_Define && NT_Exp(EMPTY_TOKEN) && getToken().type == TOK_Semicolon;
+        ret = NT_For_Def_Var();
+    }
+
+    return ret;
+}
+
+bool NT_For_Def_Var() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_Comma) {
+        if (getToken().type == TOK_Identifier) {
+            ret = NT_For_Def_Var();
+        }
+    }
+    else if (nextToken.type == TOK_Define) {
+        ret = NT_Exp(EMPTY_TOKEN) && NT_For_Def_Exp_N();
+    }
+
+    return ret;
+}
+
+
+bool NT_For_Def_Exp_N() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_Semicolon) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_Comma) {
+        ret = NT_Exp(EMPTY_TOKEN) && NT_For_Def_Exp_N();
     }
 
     return ret;
@@ -330,7 +426,7 @@ bool NT_For_Decl() {
 bool NT_For_Exp() {
     bool ret = false;
 
-    Token nextToken = getToken();
+    Token nextToken = getToken_NL_optional();
 
     if (isExpFirst(nextToken.type)) {
         ret = NT_Exp(nextToken) && getToken().type == TOK_Semicolon;
@@ -348,7 +444,60 @@ bool NT_For_Assign() {
         ret = true;
     }
     else if (nextToken.type == TOK_Identifier) {
-        ret = NT_Assign_N() && NT_Exp(EMPTY_TOKEN) && getToken().type == TOK_L_Brace;
+        ret = NT_For_Assign_Var();
+    }
+
+    return ret;
+}
+
+bool NT_For_Assign_Var() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_Comma) {
+        if (getToken().type == TOK_Identifier) {
+            ret = NT_For_Assign_Var();
+        }
+    }
+    else if (nextToken.type == TOK_Assign) {
+        ret = NT_Exp(EMPTY_TOKEN) && NT_For_Assign_Exp_N();
+    }
+
+    return ret;
+}
+
+bool NT_For_Assign_Exp_N() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_L_Brace) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_Comma) {
+        ret = NT_Exp(EMPTY_TOKEN) && NT_For_Assign_Exp_N();
+    }
+
+    return ret;
+}
+
+bool NT_Term() {
+    bool ret = false;
+
+    Token nextToken = getToken_NL_optional();
+
+    if (nextToken.type == TOK_Identifier) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_Int_Literal) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_Float_Literal) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_String_Literal) {
+        ret = true;
     }
 
     return ret;

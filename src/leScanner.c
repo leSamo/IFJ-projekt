@@ -246,7 +246,7 @@ Token getToken() {
         
         case AS_LineComm:
             if (currentChar == '\n') {
-                currentState = AS_Default;
+                return newHalfToken(TOK_Newline);
             }
             else if (currentChar == EOF) {
                 return newHalfToken(TOK_EOF);

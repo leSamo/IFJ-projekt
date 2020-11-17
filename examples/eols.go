@@ -2,7 +2,7 @@
 package main
 
 func add(i /*zde se nesmi odradkovat*/ int,
-	j int /*zde se nesmi odradkovat*/) int /*zde se nesmi odradkovat*/ {
+	j int /*zde se nesmi odradkovat*/) (int) /*zde se nesmi odradkovat*/ {
 	return i + j
 }
 
