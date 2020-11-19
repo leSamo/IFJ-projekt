@@ -105,6 +105,7 @@ Token getToken() {
                 return newHalfToken(TOK_EOF);
             }
             else if (isWhiteSpace(currentChar)) {
+                // if it's whitespace other then newline then noop
                 break;
             }
             else {
@@ -112,7 +113,6 @@ Token getToken() {
                 throwLexicalError();
             }
 
-            // if it's whitespace other then newline then noop
             break;
 
         case AS_Leading_Zero:

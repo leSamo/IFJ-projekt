@@ -116,6 +116,10 @@ bool verifyOutput(TokenBuffer *outputQueue) {
             }
             i = 0;
         }
+
+        if (i > outputQueue->count) {
+            return false;
+        }
     }    
 
     if (outputQueue->count == 1) {
@@ -142,7 +146,7 @@ TokenBuffer* TokenBufferCreate() {
 }
 
 bool TokenBufferCollapse(TokenBuffer *buffer, int pos) {
-    if (pos < 2 || buffer->count < 2) {
+    if (pos < 2 || buffer->count < 3) {
         return false;
     }
     else {
