@@ -46,10 +46,6 @@ Token getToken() {
                 charBufferPush(charBuffer, currentChar);
                 currentState = AS_Word;
             }
-            else if (currentChar == '.') {
-                charBufferPush(charBuffer, currentChar);
-                currentState = AS_Float;
-            }
             else if (currentChar == '/') {
                 currentState = AS_Comm_Start;
             }
@@ -125,7 +121,7 @@ Token getToken() {
             }
             else if (currentChar == '.') {
                 charBufferPush(charBuffer, currentChar);
-                currentState = AS_Float;
+                currentState = AS_Float_Start;
             }
             else if (currentChar == 'e' || currentChar == 'E') {
                 charBufferPush(charBuffer, currentChar);
@@ -145,7 +141,7 @@ Token getToken() {
             }
             else if (currentChar == '.') {
                 charBufferPush(charBuffer, currentChar);
-                currentState = AS_Float;
+                currentState = AS_Float_Start;
             }
             else if (currentChar == 'e' || currentChar == 'E') {
                 charBufferPush(charBuffer, currentChar);
@@ -158,9 +154,19 @@ Token getToken() {
                 return newIntToken(atoi(content));
             }
             break;
+        
+        case AS_Float_Start:
+            if (isDigit(currentChar)) {
+                charBufferPush(charBuffer, currentChar);
+                currentState = AS_Float;
+            }
+            else {
+                printError("Incorrect float literal\n");
+                throwLexicalError();
+            }
+            break;
 
         case AS_Float:
-            // rework float to be double
             if (isDigit(currentChar)) {
                 charBufferPush(charBuffer, currentChar);
             }
@@ -176,14 +182,28 @@ Token getToken() {
             break;
 
         case AS_Float_Scientific_Start:
-            if (isDigit(currentChar) || currentChar == '+' || currentChar == '-') {
+            if (isDigit(currentChar)) {
+                charBufferPush(charBuffer, currentChar);
+                currentState = AS_Float_Scientific;
+            }
+            else if (currentChar == '+' || currentChar == '-') {
+                charBufferPush(charBuffer, currentChar);
+                currentState = AS_Float_Scientific_Start_2;
+            }
+            else {
+                printError("Incorrect float literal\n");
+                throwLexicalError();
+            }
+            break;
+        
+        case AS_Float_Scientific_Start_2:
+            if (isDigit(currentChar)) {
                 charBufferPush(charBuffer, currentChar);
                 currentState = AS_Float_Scientific;
             }
             else {
-                ungetChar(currentChar);
-                char *content = charBufferGet(charBuffer);
-                return newFloatToken(atof(content));
+                printError("Incorrect float literal\n");
+                throwLexicalError();
             }
             break;
 
