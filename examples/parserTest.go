@@ -68,7 +68,7 @@ func main() {
 */
 
 /* Program 6, expression testing, should compile OK */
-
+/*
 package main
 
 func main() {
@@ -80,7 +80,7 @@ func main() {
     e = 5 + ( 5 + (5))
     f = (45)
 }
-
+*/
 /* Program 7, expression testing, each line should produce syntactit error */
 /*
 package main
@@ -95,3 +95,26 @@ func main() {
     g = 5 0.6
 }
 */
+
+/* Program 8, float testing */
+
+package main
+
+func main() {
+    // good
+    a = 0.0
+    b = 000000
+    c = 5.4e12
+    d = 5e+4
+    e = 5.8074e-0
+
+    // bad
+    
+    //a = .0
+    //b = 0.
+    //c = .
+    //d = -5
+    //e = 5e
+    //f = 5e+
+    //g = 5e-
+}
