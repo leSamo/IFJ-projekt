@@ -19,13 +19,11 @@
 int main(int argc, char* argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0); // for debug, remove before submitting
 
-    /* UNCOMMENT THIS BLOCK IF YOU WANT TO DO ONLY LEXICAL ANALYSIS
-    while((currentToken = getToken()) != NULL) {
-        // mock for expression testing
-        tokensForExpression[position++] = *currentToken;
-
+    //UNCOMMENT THIS BLOCK IF YOU WANT TO DO ONLY LEXICAL ANALYSIS
+    /*
+    Token currentToken;
+    while((currentToken = getToken()).type != TOK_Empty) {
         printToken(currentToken);
-        free(currentToken);
 
         return 0;
     }

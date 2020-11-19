@@ -76,4 +76,22 @@ func main() {
     a = 5.6 + 6.8
     b := 4. * (1+.8)
     c = c + 5 > 0
+    d = 55
+    e = 5 + ( 5 + (5))
+    f = (45)
 }
+
+/* Program 7, expression testing, each line should produce syntactit error */
+/*
+package main
+
+func main() {
+    a = 
+    b = 5 + +
+    c = -6
+    d = c ++5
+    e = (-5)
+    f = 5 * 9 ( 5 + 4)
+    g = 5 0.6
+}
+*/

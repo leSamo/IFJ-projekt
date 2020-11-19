@@ -16,6 +16,30 @@ typedef struct charBuffer {
     int capacity;
 } charBuffer;
 
+/* list of all posible automaton states */
+typedef enum {
+    AS_Default,
+    AS_Word,
+    AS_Leading_Zero,
+    AS_Int,
+    AS_Float,
+    AS_Float_Scientific_Start,
+    AS_Float_Scientific,
+    AS_String,
+    AS_String_Escape,
+    AS_String_Escape_Hex_1,
+    AS_String_Escape_Hex_2,
+    AS_Comm_Start,
+    AS_BlockComm,
+    AS_BlockComm_End,
+    AS_LineComm,
+    AS_Colon,
+    AS_Equal,
+    AS_Less_Then,
+    AS_More_Then,
+    AS_Exclamation
+} state;
+
 /* reads input from stdin and sends a token */
 Token getToken();
 
