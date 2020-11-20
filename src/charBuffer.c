@@ -5,6 +5,8 @@
  * Date: November 2020
  * ================================= */
 
+#include <stdlib.h>
+
 #include "constants.h"
 #include "charBuffer.h"
 
