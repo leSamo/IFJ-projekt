@@ -17,6 +17,7 @@ TokenBuffer* TokenBufferCreate() {
 
     if (buffer == NULL) {
         printError("Memory allocation error\n");
+        deallocateAll();
         exit(INTERNAL_ERROR);
     }
 
@@ -54,6 +55,7 @@ void TokenBufferPush(TokenBuffer *buffer, Token token) {
         if (newArray == NULL) {
             TokenBufferDispose(buffer);
             printError("Memory allocation error\n");
+            deallocateAll();
             exit(INTERNAL_ERROR);
         }
         else {

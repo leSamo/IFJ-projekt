@@ -18,9 +18,19 @@ bool isExpFirst(tokenType type);
 /* NON-TERMINALS */
 bool NT_Prog();
 
-bool NT_Prolog();
+bool NT_Func_Def_List();
 
-bool NT_Main();
+bool NT_Func_Def();
+
+bool NT_Param_List();
+
+bool NT_Param_List_N();
+
+bool NT_Type();
+
+bool NT_Return_Types();
+
+bool NT_Prolog();
 
 bool NT_Stat();
 

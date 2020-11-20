@@ -9,6 +9,7 @@
 
 #include "constants.h"
 #include "charBuffer.h"
+#include "memoryManager.h"
 
 /* Char buffer functions */
 charBuffer* charBufferCreate() {
@@ -16,6 +17,7 @@ charBuffer* charBufferCreate() {
 
     if (buffer == NULL) {
         printf("Memory allocation error\n");
+        deallocateAll();
         exit(INTERNAL_ERROR);
     }
 
@@ -34,6 +36,7 @@ void charBufferPush(charBuffer* buffer, char character) {
         if (newArray == NULL) {
             free(buffer);
             printError("Memory allocation error\n");
+            deallocateAll();
             exit(INTERNAL_ERROR);
         }
         else {
@@ -57,6 +60,9 @@ void charBufferPrint(charBuffer* buffer) {
 }
 
 void charBufferDispose(charBuffer* buffer) {
-    free(buffer->content);
+    if (buffer != NULL) {
+        free(buffer->content);
+    }
+
     free(buffer);
 }

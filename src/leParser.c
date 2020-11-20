@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
     scannerBuffer = charBufferCreate();
     stringBuffer = StringBufferCreate();
 
-    //UNCOMMENT THIS BLOCK IF YOU WANT TO DO ONLY LEXICAL ANALYSIS
+    // LEXICAL ANALYSIS
     /*
     Token currentToken;
     while((currentToken = getToken()).type != TOK_EOF) {
@@ -50,6 +50,7 @@ Token getToken_NL_required() {
 
     if (nextToken.type != TOK_Newline) {
         printError("Expected newline, found none");
+        deallocateAll();
         exit(SYNTAX_ERROR);
     }
 
@@ -87,7 +88,94 @@ bool isExpFirst(tokenType type) {
 bool NT_Prog() {
     bool ret = false;
 
-    ret = NT_Prolog() && NT_Main() && getToken_NL_optional().type == TOK_EOF;
+    ret = NT_Prolog() && NT_Func_Def_List();
+
+    return ret;
+}
+
+bool NT_Func_Def_List() {
+    bool ret = false;
+
+    Token nextToken = getToken_NL_optional();
+
+    if (nextToken.type == TOK_EOF) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_Func_Keyword) {
+        ret = NT_Func_Def() && NT_Func_Def_List();
+    }
+
+    return ret;
+}
+
+bool NT_Func_Def() {
+    bool ret = false;
+
+    if (getToken().type == TOK_Identifier) {
+        if (getToken().type == TOK_L_Paren) {
+            ret = NT_Param_List() && NT_Return_Types() && NT_Stat();
+        }
+    }
+
+    return ret;
+}
+
+bool NT_Param_List() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_R_Paren) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_Identifier) {
+        ret = NT_Type() && NT_Param_List_N();
+    }
+
+    return ret;
+}
+
+bool NT_Param_List_N() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_R_Paren) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_Comma) {
+        if (getToken().type == TOK_Identifier)  {
+            ret = NT_Type() && NT_Param_List_N();
+        }
+    }
+
+    return ret;
+}
+
+bool NT_Type() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_Int_Keyword) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_Float_Keyword) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_String_Keyword) {
+        ret = true;
+    }
+
+    return ret;
+}
+
+bool NT_Return_Types() {
+    bool ret = false;
+
+    if (getToken().type == TOK_L_Brace) {
+        ret = true;
+    }
 
     return ret;
 }
@@ -99,25 +187,6 @@ bool NT_Prolog() {
         Token nextToken = getToken();
         if (nextToken.type == TOK_Identifier && (strcmp(nextToken.str, "main") == 0)) {
             ret = true;
-        }
-    }
-
-    return ret;
-}
-
-bool NT_Main() {
-    bool ret = false;
-
-    if (getToken_NL_optional().type == TOK_Func_Keyword) {
-        Token nextToken = getToken();
-        if (nextToken.type == TOK_Identifier && (strcmp(nextToken.str, "main") == 0)) {
-            if (getToken().type == TOK_L_Paren) {
-                if (getToken().type == TOK_R_Paren) {
-                    if (getToken().type == TOK_L_Brace) {
-                        ret = NT_Stat();
-                    }
-                }
-            }
         }
     }
 

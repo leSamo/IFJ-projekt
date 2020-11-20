@@ -96,7 +96,7 @@ func main() {
 */
 
 /* Program 8, float testing, should compile OK */
-
+/*
 package main
 
 func main() {
@@ -106,7 +106,7 @@ func main() {
     d = 5e+4
     e = 5.8074e-0
 }
-
+*/
 /* Program 9, float testing, each line should produce lexical/syntactic error */
 /*
 package main
@@ -121,3 +121,18 @@ func main() {
     //g = 5e-
 }
 */
+
+/* Program 10, function testing, should compile OK */
+package main
+
+func main() {
+
+}
+
+func whatever(a float64) {
+
+}
+
+func ahoj(b int, c string) {
+
+}

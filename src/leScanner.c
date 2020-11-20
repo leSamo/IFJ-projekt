@@ -390,6 +390,7 @@ Token getToken() {
         
         default:
             printError("Lexical error: reached invalid state.\n");
+            deallocateAll();
             exit(LEXICAL_ERROR);
         }
     }
@@ -478,6 +479,7 @@ Token newHalfToken(tokenType type) {
 
 void throwLexicalError() {
     printError("Lexical error\n");
+    deallocateAll();
     exit(LEXICAL_ERROR);
 }
 

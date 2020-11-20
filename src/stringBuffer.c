@@ -16,6 +16,7 @@ StringBuffer* StringBufferCreate() {
 
     if (buffer == NULL) {
         printError("Memory allocation error\n");
+        deallocateAll();
         exit(INTERNAL_ERROR);
     }
 
@@ -31,8 +32,9 @@ void StringBufferPush(StringBuffer *buffer, char *string) {
         char** newArray = realloc(buffer->content, sizeof(char*) * buffer->capacity);
 
         if (newArray == NULL) {
-            StringBufferDispose(buffer);
+            StringBufferDispose(buffer); // most likely unnecessary because deallocateAll does that
             printError("Memory allocation error\n");
+            deallocateAll();
             exit(INTERNAL_ERROR);
         }
         else {
