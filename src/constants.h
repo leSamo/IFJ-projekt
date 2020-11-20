@@ -85,7 +85,6 @@ typedef struct {
 } Token;
 
 const Token EMPTY_TOKEN = {TOK_Empty};
-Token overlapToken = {TOK_Empty};
 
 typedef struct {
     char* word;

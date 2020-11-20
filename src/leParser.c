@@ -19,13 +19,15 @@
 int main(int argc, char* argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0); // for debug, remove before submitting
 
+    // setup necessary data structures
+    scannerBuffer = charBufferCreate();
+    stringBuffer = StringBufferCreate();
+
     //UNCOMMENT THIS BLOCK IF YOU WANT TO DO ONLY LEXICAL ANALYSIS
     /*
     Token currentToken;
-    while((currentToken = getToken()).type != TOK_Empty) {
+    while((currentToken = getToken()).type != TOK_EOF) {
         printToken(currentToken);
-
-        return 0;
     }
     */
 
@@ -35,9 +37,11 @@ int main(int argc, char* argv[]) {
     }
     else {
         printError("Syntactic error\n");
+        deallocateAll();
         return SYNTAX_ERROR;
     }
 
+    deallocateAll();
     return 0;
 }
 

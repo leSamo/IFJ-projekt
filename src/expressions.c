@@ -11,6 +11,7 @@
 #include <stdbool.h>
 
 #include "constants.h"
+#include "tokenBuffer.c"
 #include "expressions.h"
 #include "leScanner.h"
 
@@ -128,97 +129,6 @@ bool verifyOutput(TokenBuffer *outputQueue) {
     else {
         return false;
     }
-}
-
-TokenBuffer* TokenBufferCreate() {
-    TokenBuffer *buffer = malloc(sizeof(TokenBuffer));
-    buffer->tokens = malloc(sizeof(Token) * INITIAL_BUFFER_SIZE);
-
-    if (buffer == NULL) {
-        printError("Memory allocation error\n");
-        exit(INTERNAL_ERROR);
-    }
-
-    buffer->count = 0;
-    buffer->capacity = INITIAL_BUFFER_SIZE;
-
-    return buffer;
-}
-
-bool TokenBufferCollapse(TokenBuffer *buffer, int pos) {
-    if (pos < 2 || buffer->count < 3) {
-        return false;
-    }
-    else {
-        // both should be numbers
-        if (isOperator(buffer->tokens[pos - 2].type) || isOperator(buffer->tokens[pos - 1].type)) {
-            return false;
-        }
-    
-        for (int i = pos + 1; i < buffer->count; i++) {
-            buffer->tokens[i - 2] = buffer->tokens[i]; 
-        }
-
-        buffer->count -= 2;
-
-        return true;
-    }
-}
-
-void TokenBufferPush(TokenBuffer *buffer, Token token) {
-    if (buffer->count + 1 == buffer->capacity) {
-        buffer->capacity *= 2;
-        Token* newArray = realloc(buffer->tokens, sizeof(Token) * buffer->capacity);
-
-        if (newArray == NULL) {
-            TokenBufferDispose(buffer);
-            printError("Memory allocation error\n");
-            exit(INTERNAL_ERROR);
-        }
-        else {
-            buffer->tokens = newArray;
-        }
-
-        buffer->tokens[buffer->count++] = token;
-    }
-    else {
-        buffer->tokens[buffer->count++] = token;
-    }
-}
-
-Token TokenBufferTop(TokenBuffer *buffer) {
-    if (buffer->count > 0) {
-        return buffer->tokens[buffer->count - 1];
-    }
-    else {
-        // throw error
-    }
-}
-
-Token TokenBufferPop(TokenBuffer *buffer) {
-    if (buffer->count > 0) {
-        return buffer->tokens[--buffer->count];
-    }
-    else {
-        // throw error
-    }
-}
-
-void TokenBufferPrint(TokenBuffer *buffer) {
-    for (int i = 0; i < buffer->count; i++) {
-        Token currentToken = buffer->tokens[i];
-        if (currentToken.type == TOK_Int_Literal) {
-            printf("%s: %d\n", getTokenName(currentToken.type), currentToken.i);
-        }
-        else {
-            printf("%s\n", getTokenName(currentToken.type));
-        }
-    }
-}
-
-void TokenBufferDispose(TokenBuffer *buffer) {
-    free(buffer->tokens);
-    free(buffer);
 }
 
 // priorities are reversed to project assignment

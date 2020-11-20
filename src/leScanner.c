@@ -13,6 +13,10 @@
 
 #include "constants.h"
 #include "leScanner.h"
+#include "charBuffer.c"
+#include "memoryManager.c"
+
+Token overlapToken = {TOK_Empty};
 
 Token getToken() {
     if (overlapToken.type != TOK_Empty) {
@@ -24,8 +28,6 @@ Token getToken() {
     int currentChar;
     state currentState = AS_Default;
 
-    charBuffer *charBuffer = charBufferCreate();
-
     char hexEscapeBuffer;
 
     while (true) {
@@ -35,15 +37,15 @@ Token getToken() {
         {
         case AS_Default:
             if (currentChar == '0') {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Leading_Zero;
             }
             else if (isDigit(currentChar)) {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Int;
             }
             else if (isAlpha(currentChar) || currentChar == '_') {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Word;
             }
             else if (currentChar == '/') {
@@ -113,23 +115,23 @@ Token getToken() {
 
         case AS_Leading_Zero:
             if (currentChar == '0') {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
             }
             else if (isDigit(currentChar)) {
                 printError("Leading zero error\n");
                 throwLexicalError();
             }
             else if (currentChar == '.') {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Float_Start;
             }
             else if (currentChar == 'e' || currentChar == 'E') {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Float_Scientific_Start;
             }
             else {
                 ungetChar(currentChar);
-                char *content = charBufferGet(charBuffer);
+                char *content = charBufferGet(scannerBuffer);
                 // TODO: Use 64-bit equivalent to atoi
                 return newIntToken(atoi(content));
             }
@@ -137,19 +139,19 @@ Token getToken() {
         
         case AS_Int:
             if (isDigit(currentChar)) {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
             }
             else if (currentChar == '.') {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Float_Start;
             }
             else if (currentChar == 'e' || currentChar == 'E') {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Float_Scientific_Start;
             }
             else {
                 ungetChar(currentChar);
-                char *content = charBufferGet(charBuffer);
+                char *content = charBufferGet(scannerBuffer);
                 // TODO: Use 64-bit equivalent to atoi
                 return newIntToken(atoi(content));
             }
@@ -157,7 +159,7 @@ Token getToken() {
         
         case AS_Float_Start:
             if (isDigit(currentChar)) {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Float;
             }
             else {
@@ -168,26 +170,26 @@ Token getToken() {
 
         case AS_Float:
             if (isDigit(currentChar)) {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
             }
             else if (currentChar == 'e' || currentChar == 'E') {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Float_Scientific_Start;
             }
             else {
                 ungetChar(currentChar);
-                char *content = charBufferGet(charBuffer);
+                char *content = charBufferGet(scannerBuffer);
                 return newFloatToken(atof(content));
             }
             break;
 
         case AS_Float_Scientific_Start:
             if (isDigit(currentChar)) {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Float_Scientific;
             }
             else if (currentChar == '+' || currentChar == '-') {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Float_Scientific_Start_2;
             }
             else {
@@ -198,7 +200,7 @@ Token getToken() {
         
         case AS_Float_Scientific_Start_2:
             if (isDigit(currentChar)) {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Float_Scientific;
             }
             else {
@@ -209,22 +211,22 @@ Token getToken() {
 
         case AS_Float_Scientific:
             if (isDigit(currentChar)) {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
             }
             else {
                 ungetChar(currentChar);
-                char *content = charBufferGet(charBuffer);
+                char *content = charBufferGet(scannerBuffer);
                 return newFloatToken(atof(content));
             }
             break;
         
         case AS_Word:
             if (isAlpha(currentChar) || isDigit(currentChar) || currentChar == '_') {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
             }
             else {
                 ungetChar(currentChar);
-                char *content = charBufferGet(charBuffer);
+                char *content = charBufferGet(scannerBuffer);
                 return newWordToken(content);
             }
             break;
@@ -272,8 +274,8 @@ Token getToken() {
         
         case AS_String:
             if (currentChar == '\"') {
-                char *content = charBufferGet(charBuffer);
-                return newToken(TOK_String_Literal, content);
+                char *content = charBufferGet(scannerBuffer);
+                return newStringToken(content);
             }
             else if (currentChar == '\\') {
                 currentState = AS_String_Escape;
@@ -283,26 +285,26 @@ Token getToken() {
                 throwLexicalError();
             }
             else {
-                charBufferPush(charBuffer, currentChar);
+                charBufferPush(scannerBuffer, currentChar);
             }
             break;
         
         case AS_String_Escape:
             // TODO: should characters with ascii 31 and less be writable without escape?
             if (currentChar == 'n') {
-                charBufferPush(charBuffer, '\n');
+                charBufferPush(scannerBuffer, '\n');
                 currentState = AS_String;
             }
             else if (currentChar == 't') {
-                charBufferPush(charBuffer, '\t');
+                charBufferPush(scannerBuffer, '\t');
                 currentState = AS_String;
             }
             else if (currentChar == '\\') {
-                charBufferPush(charBuffer, '\\');
+                charBufferPush(scannerBuffer, '\\');
                 currentState = AS_String;
             }
             else if (currentChar == '\"') {
-                charBufferPush(charBuffer, '\"');
+                charBufferPush(scannerBuffer, '\"');
                 currentState = AS_String;
             }
             else if (currentChar == 'x') {
@@ -377,7 +379,7 @@ Token getToken() {
         case AS_String_Escape_Hex_2:
             if (isHexDigit(currentChar)) {
                 char charFromHex = hexToChar(hexEscapeBuffer, currentChar);
-                charBufferPush(charBuffer, charFromHex);
+                charBufferPush(scannerBuffer, charFromHex);
                 currentState = AS_String;
             }  
             else {
@@ -453,15 +455,15 @@ Token newWordToken(char* content) {
     }
 
     newToken.type = TOK_Identifier;
-    newToken.str = malloc(sizeof(char) * (strlen(content) + 1));
+    newToken.str = newString((strlen(content)));
     strcpy(newToken.str, content);
     return newToken;
 }
 
-Token newToken(tokenType type, char* content) {
+Token newStringToken(char* content) {
     Token newToken;
-    newToken.type = type;
-    newToken.str = malloc(sizeof(char) * (strlen(content) + 1));
+    newToken.type = TOK_String_Literal;
+    newToken.str = newString((strlen(content)));
     strcpy(newToken.str, content);
 
     return newToken;
@@ -568,54 +570,4 @@ char* getTokenName(tokenType type) {
         default:
             return "Unknown       ";
     }
-}
-
-charBuffer* charBufferCreate() {
-    charBuffer *buffer = malloc(sizeof(charBuffer));
-
-    if (buffer == NULL) {
-        printf("Memory allocation error\n");
-        exit(INTERNAL_ERROR);
-    }
-
-    buffer->content = malloc(sizeof(char) * INITIAL_CHAR_BUFFER_SIZE);
-    buffer->position = 0;
-    buffer->capacity = INITIAL_CHAR_BUFFER_SIZE;
-
-    return buffer;
-}
-
-/* Char buffer functions */
-void charBufferPush(charBuffer* buffer, char character) {
-    if (buffer->position + 1 == buffer->capacity) {
-        buffer->capacity *= 2;
-        char *newArray = realloc(buffer->content, sizeof(char) * buffer->capacity);
-
-        if (newArray == NULL) {
-            free(buffer);
-            printError("Memory allocation error\n");
-            exit(INTERNAL_ERROR);
-        }
-        else {
-            buffer->content = newArray;
-        }
-    }
-
-    buffer->content[(buffer->position)++] = character;
-}
-
-char* charBufferGet(charBuffer* buffer) {
-    buffer->content[buffer->position] = '\0';
-    buffer->position = 0;
-
-    return buffer->content;
-}
-
-void charBufferPrint(charBuffer* buffer) {
-    buffer->content[buffer->position] = '\0';
-    printf("Char buffer: %s\n", buffer->content);
-}
-
-void charBufferDispose(charBuffer* buffer) {
-    free(buffer);
 }
