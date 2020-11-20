@@ -45,7 +45,7 @@ func main() {
 */
 
 /* Program 5, testing for loop, should compile OK */
-/*
+
 package main
 
 func main() {
@@ -65,7 +65,6 @@ func main() {
 
     }
 }
-*/
 
 /* Program 6, expression testing, should compile OK */
 /*
@@ -97,7 +96,7 @@ func main() {
 */
 
 /* Program 8, float testing */
-
+/*
 package main
 
 func main() {
@@ -118,3 +117,4 @@ func main() {
     //f = 5e+
     //g = 5e-
 }
+*/

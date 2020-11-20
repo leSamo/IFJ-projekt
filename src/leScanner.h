@@ -8,14 +8,6 @@
 #ifndef SCANNER
 #define SCANNER
 
-#define INITIAL_CHAR_BUFFER_SIZE 20
-
-typedef struct charBuffer {
-    char* content;
-    int position;
-    int capacity;
-} charBuffer;
-
 /* list of all posible automaton states */
 typedef enum {
     AS_Default,
@@ -75,8 +67,8 @@ Token newFloatToken(float content);
 /* decides whether content is keyword or identifier, creates a new token and inserts it into tokens array */
 Token newWordToken(char* content);
 
-/* creates a new token with passed type and value and inserts it into tokens array */
-Token newToken(tokenType type, char* content);
+/* creates a new string token and inserts it into tokens array */
+Token newStringToken(char* content);
 
 /* creates a new attributeless token with passed type and inserts it into tokens array */
 Token newHalfToken(tokenType type);
@@ -89,20 +81,5 @@ void printToken(Token token);
 
 /* debug function to convert token type enum int to string for printing */
 char* getTokenName(tokenType type);
-
-/* allocates, initializes and returns a new char buffer */
-charBuffer* charBufferCreate();
-
-/* pushes character at the end of buffer */
-void charBufferPush(charBuffer* buffer, char character);
-
-/* clears buffer and its position and returns its content */
-char* charBufferGet(charBuffer* buffer);
-
-/* debug function to print content of buffer */
-void charBufferPrint(charBuffer* buffer);
-
-/* deallocated char buffer) */
-void charBufferDispose(charBuffer* buffer);
 
 #endif
