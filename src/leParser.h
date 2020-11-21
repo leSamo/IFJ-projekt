@@ -30,6 +30,8 @@ bool NT_Type();
 
 bool NT_Return_Types();
 
+bool NT_Return_Types_N();
+
 bool NT_Prolog();
 
 bool NT_Stat();

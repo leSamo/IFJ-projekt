@@ -173,8 +173,28 @@ bool NT_Type() {
 bool NT_Return_Types() {
     bool ret = false;
 
-    if (getToken().type == TOK_L_Brace) {
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_L_Brace) {
         ret = true;
+    }
+    else if (nextToken.type == TOK_L_Paren) {
+        ret = NT_Type() && NT_Return_Types_N() && getToken().type == TOK_L_Brace;
+    }
+
+    return ret;
+}
+
+bool NT_Return_Types_N() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_R_Paren) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_Comma) {
+        ret = NT_Type() && NT_Return_Types_N();
     }
 
     return ret;

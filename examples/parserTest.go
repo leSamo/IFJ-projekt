@@ -129,10 +129,10 @@ func main() {
 
 }
 
-func whatever(a float64) {
+func whatever(a float64) (int) {
 
 }
 
-func ahoj(b int, c string) {
+func ahoj(b int, c string) (string, float64) {
 
 }
