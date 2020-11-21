@@ -232,7 +232,7 @@ bool NT_Stat() {
         ret = NT_For_Def() && NT_For_Exp() && NT_For_Assign() && NT_Stat() && NT_Stat();
     }
     else if (nextToken.type == TOK_Return_Keyword) {
-        ret = NT_Exp(EMPTY_TOKEN) && NT_Stat();
+        ret = NT_Exps() && NT_Stat();
     }
 
     return ret;
