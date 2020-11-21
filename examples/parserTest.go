@@ -40,7 +40,7 @@ package main
 func main() {
     a = 5
     b, c = 5, 5
-    d,e,f=0,0,5
+    d,e,f:=0,0,5
 }
 */
 
@@ -49,10 +49,9 @@ func main() {
 package main
 
 func main() {
-    for b := 6 ; 6 ; a = 5 {
+    for ; 6 ; a = 5 {
         a = 5
     }
-    
     for a := 5; (1+3) * 6 ; {
         a = 4
     }
@@ -67,7 +66,7 @@ func main() {
 }
 */
 /* Program 6, expression testing, should compile OK */
-
+/*
 package main
 
 func main() {
@@ -81,7 +80,7 @@ func main() {
     g = "ahojky"
     h = "ahoj" + " " + "kamarat"
 }
-
+*/
 /* Program 7, expression testing, each line should produce lexical/syntactic error  */
 /*
 package main
@@ -124,7 +123,7 @@ func main() {
 }
 */
 
-/* Program 10, function testing, should compile OK */
+/* Program 10, function definitions, should compile OK */
 /*
 package main
 
@@ -140,3 +139,17 @@ func ahoj(b int, c string) (string, float64) {
 
 }
 */
+
+/* Program 11, function invocations, should compile OK */
+
+package main
+
+func main() {
+    a = ahoj()
+    b,c := cau()
+    d = ako(sa)
+    mas := kamarat(moj)
+    pozicias = hm(min, 5, eur)
+
+    print("ok", "bro")
+}

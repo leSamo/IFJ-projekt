@@ -36,18 +36,28 @@ bool NT_Prolog();
 
 bool NT_Stat();
 
-bool NT_Variable();
+bool NT_Var();
+
+bool NT_Exps();
+
+bool NT_Func_Args();
+
+bool NT_Func_Args_N();
+
+bool NT_Exps_N();
 
 bool NT_Assign_N();
-
-bool NT_Define();
 
 bool NT_If_Else();
 
 bool NT_Exp(Token overlapTokenIn);
 
-bool NT_For_Decl();
+bool NT_For_Def();
+
+bool NT_For_Var();
 
 bool NT_For_Exp();
 
 bool NT_For_Assign();
+
+bool NT_Term();
