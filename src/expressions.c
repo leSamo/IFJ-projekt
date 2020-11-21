@@ -19,17 +19,25 @@ bool handleExpression(Token overlapTokenIn, Token *overlapTokenOut) {
     TokenBuffer *operatorStack = TokenBufferCreate();
     TokenBuffer *outputQueue = TokenBufferCreate();
 
-    for (int i = 0; ; i++) {
-        Token currentToken;
+    Token currentToken = EMPTY_TOKEN, previousToken = EMPTY_TOKEN;
 
+    for (int i = 0; ; i++) {
         if (i == 0 && overlapTokenIn.type != TOK_Empty){
             currentToken = overlapTokenIn;
         }
         else {
+            previousToken = currentToken;
             currentToken = getToken();
         }
 
-        if (!isValidExpToken(currentToken.type)) {
+        if (currentToken.type == TOK_Newline) {
+            if (!canHaveNewlineAfter(previousToken.type)) {
+                // I got one more token then I should have, give it back
+                *overlapTokenOut = currentToken;
+                break;
+            }
+        }
+        else if (!isValidExpToken(currentToken.type)) {
             // I got one more token then I should have, give it back
             *overlapTokenOut = currentToken;
             break;
@@ -192,4 +200,8 @@ bool isOperator(tokenType type) {
         default:
             return false;
     }
+}
+
+bool canHaveNewlineAfter(tokenType type) {
+    return isOperator(type) || type == TOK_L_Paren || type == TOK_Newline;
 }

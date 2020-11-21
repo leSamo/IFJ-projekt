@@ -1,6 +1,6 @@
 // Pouziti: go run mycode.go ifj20.go
 // POZOR! mycode.go musi zachovat priponu go, jinak bude problem s oznacenim package jako main dle prologu v zadani.
-// Zajisteni zakladni kompatibility IFJ20->Go @ Merlin, verze 0.4
+// Zajisteni zakladni kompatibility IFJ20->Go @ Merlin, verze 0.5
 
 package main
 
@@ -68,7 +68,7 @@ func inputb() (bool, int) {
 
 func substr(s string, i int, n int) (string, int) {
 	var l int = len(s)
-	if i < 0 || i > l {
+	if i < 0 || i >= l {
 		return "", 1
 	}
 
@@ -84,7 +84,7 @@ func substr(s string, i int, n int) (string, int) {
 }
 
 func ord(s string, i int) (int, int) {
-	if i < 0 || i > len(s) {
+	if i < 0 || i >= len(s) {
 		return 0, 1
 	} else {
 		return int(s[i]), 0

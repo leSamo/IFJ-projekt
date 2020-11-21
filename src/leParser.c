@@ -145,7 +145,7 @@ bool NT_Param_List_N() {
         ret = true;
     }
     else if (nextToken.type == TOK_Comma) {
-        if (getToken().type == TOK_Identifier)  {
+        if (getToken_NL_optional().type == TOK_Identifier)  {
             ret = NT_Type() && NT_Param_List_N();
         }
     }
@@ -264,7 +264,7 @@ bool NT_Var() {
 bool NT_Exps() {
     bool ret = false;
 
-    Token firstToken = getToken();
+    Token firstToken = getToken_NL_optional();
 
     if (isExpFirst(firstToken.type)) {
         Token secondToken = getToken();
@@ -426,7 +426,7 @@ bool NT_For_Def_Exp_N() {
 bool NT_For_Exp() {
     bool ret = false;
 
-    Token nextToken = getToken();
+    Token nextToken = getToken_NL_optional();
 
     if (isExpFirst(nextToken.type)) {
         ret = NT_Exp(nextToken) && getToken().type == TOK_Semicolon;
@@ -485,7 +485,7 @@ bool NT_For_Assign_Exp_N() {
 bool NT_Term() {
     bool ret = false;
 
-    Token nextToken = getToken();
+    Token nextToken = getToken_NL_optional();
 
     if (nextToken.type == TOK_Identifier) {
         ret = true;

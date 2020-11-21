@@ -20,3 +20,6 @@ bool isValidExpToken(tokenType type);
 
 /* Returns true if token type is operator (+,-,*,/,<,<=,>,>=,==,!=) */
 bool isOperator(tokenType type);
+
+/* Returns true if token can be legally followed by newline symbol (+,-,*,/,(,<,<=,>,>=,==,!=)*/
+bool canHaveNewlineAfter(tokenType type);
