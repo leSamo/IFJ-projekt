@@ -67,7 +67,7 @@ func main() {
 }
 */
 /* Program 6, expression testing, should compile OK */
-/*
+
 package main
 
 func main() {
@@ -78,8 +78,10 @@ func main() {
     d = 55
     e = 5 + ( 5 + (5))
     f = (45)
+    g = "ahojky"
+    h = "ahoj" + " " + "kamarat"
 }
-*/
+
 /* Program 7, expression testing, each line should produce lexical/syntactic error  */
 /*
 package main
@@ -123,6 +125,7 @@ func main() {
 */
 
 /* Program 10, function testing, should compile OK */
+/*
 package main
 
 func main() {
@@ -136,3 +139,4 @@ func whatever(a float64) (int) {
 func ahoj(b int, c string) (string, float64) {
 
 }
+*/

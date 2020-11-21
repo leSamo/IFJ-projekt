@@ -76,6 +76,7 @@ bool isExpFirst(tokenType type) {
         case TOK_Identifier:
         case TOK_Float_Literal:
         case TOK_Int_Literal:
+        case TOK_String_Literal:
         case TOK_L_Paren:
             return true;
         
