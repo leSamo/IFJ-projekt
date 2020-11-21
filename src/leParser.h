@@ -54,10 +54,16 @@ bool NT_Exp(Token overlapTokenIn);
 
 bool NT_For_Def();
 
-bool NT_For_Var();
+bool NT_For_Def_Var();
+
+bool NT_For_Def_Exp_N();
 
 bool NT_For_Exp();
 
 bool NT_For_Assign();
+
+bool NT_For_Assign_Var();
+
+bool NT_For_Assign_Exp_N();
 
 bool NT_Term();

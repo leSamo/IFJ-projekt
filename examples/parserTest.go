@@ -1,12 +1,13 @@
 /* Program 1, should compile OK */
-/*
+
 package main
 
 func main() {
     a := 5
-    b := 6
+    a = print(i)
+    b := c + 6
 }
-*/
+
 
 /* Program 2, doesn't have EOF at the end, should produce syntactic error */
 /*
@@ -60,7 +61,7 @@ func main() {
         b = 5
     }
 
-    for ; 12 + 3; a,b = 1,2 {
+    for ; 12; a, b = 1, 2 {
 
     }
 }
@@ -141,7 +142,7 @@ func ahoj(b int, c string) (string, float64) {
 */
 
 /* Program 11, function invocations, should compile OK */
-
+/*
 package main
 
 func main() {
@@ -153,3 +154,4 @@ func main() {
 
     print("ok", "bro")
 }
+*/

@@ -384,24 +384,40 @@ bool NT_For_Def() {
         ret = true;
     }
     else if (nextToken.type == TOK_Identifier) {
-        ret = NT_For_Var() && getToken().type == TOK_Semicolon;
+        ret = NT_For_Def_Var();
     }
 
     return ret;
 }
 
-bool NT_For_Var() {
+bool NT_For_Def_Var() {
     bool ret = false;
 
     Token nextToken = getToken();
 
-    if (nextToken.type == TOK_Define) {
-        ret = NT_Exps();
+    if (nextToken.type == TOK_Comma) {
+        if (getToken().type == TOK_Identifier) {
+            ret = NT_For_Def_Var();
+        }
+    }
+    else if (nextToken.type == TOK_Define) {
+        ret = NT_Exp(EMPTY_TOKEN) && NT_For_Def_Exp_N();
+    }
+
+    return ret;
+}
+
+
+bool NT_For_Def_Exp_N() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_Semicolon) {
+        ret = true;
     }
     else if (nextToken.type == TOK_Comma) {
-        if (getToken().type == TOK_Identifier) {
-            ret = NT_For_Var();
-        }
+        ret = NT_Exp(EMPTY_TOKEN) && NT_For_Def_Exp_N();
     }
 
     return ret;
@@ -428,7 +444,39 @@ bool NT_For_Assign() {
         ret = true;
     }
     else if (nextToken.type == TOK_Identifier) {
-        ret = NT_Var() && getToken().type == TOK_L_Brace;
+        ret = NT_For_Assign_Var();
+    }
+
+    return ret;
+}
+
+bool NT_For_Assign_Var() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_Comma) {
+        if (getToken().type == TOK_Identifier) {
+            ret = NT_For_Assign_Var();
+        }
+    }
+    else if (nextToken.type == TOK_Assign) {
+        ret = NT_Exp(EMPTY_TOKEN) && NT_For_Assign_Exp_N();
+    }
+
+    return ret;
+}
+
+bool NT_For_Assign_Exp_N() {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_L_Brace) {
+        ret = true;
+    }
+    else if (nextToken.type == TOK_Comma) {
+        ret = NT_Exp(EMPTY_TOKEN) && NT_For_Assign_Exp_N();
     }
 
     return ret;
