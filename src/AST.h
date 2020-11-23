@@ -29,7 +29,7 @@ typedef enum ASTNodeType {
     NODE_Literal_String
 } ASTNodeType;
 
-#define AST_NODE_CHILDREN 10
+#define AST_NODE_CHILDREN 50
 
 typedef struct ASTNode {
     int id;

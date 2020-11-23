@@ -1,4 +1,4 @@
-CFLAGS = -pedantic -Wall -Wextra -std=c11 # -Werror
+CFLAGS = -std=c11 -pedantic -Werror -Wall -Wextra
 CC = gcc
 
 all:

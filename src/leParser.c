@@ -122,9 +122,9 @@ bool NT_Func_Def(ASTNode *parentNode) {
 
     if (getToken().type == TOK_Identifier) {
         if (getToken().type == TOK_L_Paren) {
-            ASTNode *node = AST_CreateNode(parentNode, NODE_Func_Def);
-            ASTNode *blockNode = AST_CreateNode(node, NODE_Block);
-            ret = NT_Param_List(node) && NT_Return_Types(node) && NT_Stat(blockNode);
+            ASTNode *funcNode = AST_CreateNode(parentNode, NODE_Func_Def);
+            ASTNode *blockNode = AST_CreateNode(funcNode, NODE_Block);
+            ret = NT_Param_List(funcNode) && NT_Return_Types(funcNode) && NT_Stat(blockNode);
         }
     }
 
@@ -236,7 +236,7 @@ bool NT_Stat(ASTNode *parentNode) {
     Token nextToken = getToken_NL_optional();
 
     if (nextToken.type == TOK_Identifier) {
-        ret = NT_Var(parentNode) && NT_Stat(parentNode);
+        ret = NT_Var(parentNode, nextToken) && NT_Stat(parentNode);
     }
     else if (nextToken.type == TOK_R_Brace) {
         ret = true;
@@ -258,22 +258,49 @@ bool NT_Stat(ASTNode *parentNode) {
     return ret;
 }
 
-bool NT_Var(ASTNode *parentNode) {
+bool NT_Var(ASTNode *parentNode, Token identifierToken) {
     bool ret = false;
 
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Assign) {
-        ASTNode *node = AST_CreateNode(parentNode, NODE_Assign);
-        ret = NT_Exps(parentNode);
+        ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
+        ASTNode *idNode = AST_CreateNode(assignNode, NODE_Identifier);
+        ret = NT_Exps(assignNode);
     }
     else if (nextToken.type == TOK_Define) {
-        ASTNode *node = AST_CreateNode(parentNode, NODE_Define);
-        ret = NT_Exps(parentNode);
+        ASTNode *defineNode = AST_CreateNode(parentNode, NODE_Define);
+        ASTNode *idNode = AST_CreateNode(defineNode, NODE_Identifier);
+        ret = NT_Exp(defineNode, EMPTY_TOKEN);
     }
     else if (nextToken.type == TOK_Comma) {
-        if (getToken().type == TOK_Identifier) {
-            ret = NT_Var(parentNode);
+        Token secondToken = getToken();
+        if (secondToken.type == TOK_Identifier) {
+            ret = NT_Var_N(parentNode, secondToken);
+        }
+    }
+    else if (nextToken.type == TOK_L_Paren) {
+        ASTNode *node = AST_CreateNode(parentNode, NODE_Func_Call);
+        ret = NT_Func_Args(node);
+    }
+
+    return ret;
+}
+
+bool NT_Var_N(ASTNode *parentNode, Token identifierToken) {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_Assign) {
+        ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
+        ASTNode *idNode = AST_CreateNode(parentNode, NODE_Identifier);
+        ret = NT_Exps(assignNode);
+    }
+    else if (nextToken.type == TOK_Comma) {
+        Token secondToken = getToken();
+        if (secondToken.type == TOK_Identifier) {
+            ret = NT_Var_N(parentNode, secondToken);
         }
     }
     else if (nextToken.type == TOK_L_Paren) {

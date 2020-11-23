@@ -38,7 +38,9 @@ bool NT_Prolog(); // no semantic value
 
 bool NT_Stat(ASTNode *parentNode);
 
-bool NT_Var(ASTNode *parentNode);
+bool NT_Var(ASTNode *parentNode, Token identifierToken);
+
+bool NT_Var_N(ASTNode *parentNode, Token identifierToken);
 
 bool NT_Exps(ASTNode *parentNode);
 
