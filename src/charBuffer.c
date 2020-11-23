@@ -16,7 +16,7 @@ charBuffer* charBufferCreate() {
     charBuffer *buffer = malloc(sizeof(charBuffer));
 
     if (buffer == NULL) {
-        printf("Memory allocation error\n");
+        printError(INTERNAL_ERROR, "Memory allocation error\n");
         deallocateAll();
         exit(INTERNAL_ERROR);
     }
@@ -35,7 +35,7 @@ void charBufferPush(charBuffer* buffer, char character) {
 
         if (newArray == NULL) {
             free(buffer);
-            printError("Memory allocation error\n");
+            printError(INTERNAL_ERROR, "Memory allocation error\n");
             deallocateAll();
             exit(INTERNAL_ERROR);
         }

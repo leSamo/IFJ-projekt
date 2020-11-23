@@ -33,10 +33,10 @@ int main(int argc, char *argv[]) {
 
     // recursive descent start
     if (NT_Prog()) {
-        printError("\n~~~~~~~~~~~~~~~~~~~~ \nSyntactic analysis: All OK\n~~~~~~~~~~~~~~~~~~~~\n\n");
+        printf("\n~~~~~~~~~~~~~~~~~~~~ \nSyntactic analysis: All OK\n~~~~~~~~~~~~~~~~~~~~\n\n");
     }
     else {
-        printError("Syntactic error\n");
+        printError(SYNTAX_ERROR, "Syntactic error\n");
         deallocateAll();
         return SYNTAX_ERROR;
     }
@@ -49,7 +49,7 @@ Token getToken_NL_required() {
     Token nextToken = getToken();
 
     if (nextToken.type != TOK_Newline) {
-        printError("Expected newline, found none");
+        printError(SYNTAX_ERROR, "Expected newline, found none");
         deallocateAll();
         exit(SYNTAX_ERROR);
     }

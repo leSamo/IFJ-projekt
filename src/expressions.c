@@ -66,7 +66,7 @@ bool handleExpression(Token overlapTokenIn, Token *overlapTokenOut) {
         }
         else if (currentToken.type == TOK_R_Paren) {
             if (operatorStack->count == 0) {
-                printError("Unpaired parentheses error.\n");
+                printError(SYNTAX_ERROR, "Unpaired parentheses error.\n");
 
                 TokenBufferDispose(operatorStack);
                 TokenBufferDispose(outputQueue);
@@ -79,7 +79,7 @@ bool handleExpression(Token overlapTokenIn, Token *overlapTokenOut) {
                 TokenBufferPush(outputQueue, token);
 
                 if (operatorStack->count == 0) {
-                    printError("Unpaired parentheses error.\n");
+                    printError(SYNTAX_ERROR, "Unpaired parentheses error.\n");
 
                     TokenBufferDispose(operatorStack);
                     TokenBufferDispose(outputQueue);
@@ -97,7 +97,7 @@ bool handleExpression(Token overlapTokenIn, Token *overlapTokenOut) {
         Token token = TokenBufferPop(operatorStack);
 
         if (token.type == TOK_L_Paren) {
-            printError("Unpaired parentheses error.\n");
+            printError(SYNTAX_ERROR, "Unpaired parentheses error.\n");
 
             TokenBufferDispose(operatorStack);
             TokenBufferDispose(outputQueue);

@@ -16,7 +16,7 @@ TokenBuffer* TokenBufferCreate() {
     buffer->tokens = malloc(sizeof(Token) * INITIAL_TOKEN_BUFFER_SIZE);
 
     if (buffer == NULL) {
-        printError("Memory allocation error\n");
+        printError(INTERNAL_ERROR, "Memory allocation error\n");
         deallocateAll();
         exit(INTERNAL_ERROR);
     }
@@ -36,9 +36,13 @@ bool TokenBufferCollapse(TokenBuffer *buffer, int pos) {
         if (isOperator(buffer->tokens[pos - 2].type) || isOperator(buffer->tokens[pos - 1].type)) {
             return false;
         }
+
+        Token leftOperand  = buffer->tokens[pos - 2];
+        Token rightOperand = buffer->tokens[pos - 1];
+        Token operator     = buffer->tokens[  pos  ];
     
         for (int i = pos + 1; i < buffer->count; i++) {
-            buffer->tokens[i - 2] = buffer->tokens[i]; 
+            buffer->tokens[i - 2] = buffer->tokens[i];
         }
 
         buffer->count -= 2;
@@ -54,7 +58,7 @@ void TokenBufferPush(TokenBuffer *buffer, Token token) {
 
         if (newArray == NULL) {
             TokenBufferDispose(buffer);
-            printError("Memory allocation error\n");
+            printError(INTERNAL_ERROR, "Memory allocation error\n");
             deallocateAll();
             exit(INTERNAL_ERROR);
         }

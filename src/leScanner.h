@@ -38,7 +38,7 @@ typedef enum {
 Token getToken();
 
 /* print out an error message to stderr */
-void printError(char* msg);
+void printError(int errorCode, char* msg);
 
 /* returns its argument char back to the input stream, reverts getChar() function */
 void ungetChar(char c);
