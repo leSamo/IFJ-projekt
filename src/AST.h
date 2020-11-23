@@ -29,17 +29,36 @@ typedef enum ASTNodeType {
     NODE_Literal_String
 } ASTNodeType;
 
+typedef enum typeTag {
+    TAG_None,
+    TAG_Int,
+    TAG_Float,
+    TAG_String
+} typeTag;
+
+typedef union typeUnion {
+    int64_t i;
+    double f;
+    char *str;
+} typeUnion;
+
 #define AST_NODE_CHILDREN 50
 
 typedef struct ASTNode {
     int id;
     ASTNodeType type;
+
     struct ASTNode *parent;
     struct ASTNode *children[AST_NODE_CHILDREN];
     int childrenCount;
+
+    typeTag contentType;
+    typeUnion content;
 } ASTNode;
 
-ASTNode* AST_CreateNode(ASTNode *parent, ASTNodeType type);
+ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag contentType, typeUnion content);
+
+void AST_PrettyPrint(ASTNode *nodePtr, int level);
 
 void AST_Print(ASTNode *nodePtr);
 

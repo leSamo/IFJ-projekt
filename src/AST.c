@@ -15,7 +15,31 @@
 
 int AST_consecutiveId = 0;
 
+ASTNode* AST_CreateIntNode(ASTNode *parent, ASTNodeType type, int i) {
+    typeUnion tu = { .i = i };
+
+    return AST_CreateNodeGeneral(parent, type, TAG_Int, tu);
+}
+
+ASTNode* AST_CreateFloatNode(ASTNode *parent, ASTNodeType type, double f) {
+    typeUnion tu = { .f = f };
+
+    return AST_CreateNodeGeneral(parent, type, TAG_Float, tu);
+}
+
+ASTNode* AST_CreateStringNode(ASTNode *parent, ASTNodeType type, char* str) {
+    typeUnion tu = { .str = str };
+
+    return AST_CreateNodeGeneral(parent, type, TAG_String, tu);
+}
+
 ASTNode* AST_CreateNode(ASTNode *parent, ASTNodeType type) {
+    typeUnion tu;
+
+    return AST_CreateNodeGeneral(parent, type, TAG_None, tu);
+}
+
+ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag contentType, typeUnion content) {
     ASTNode *node = malloc(sizeof(ASTNode));
 
     if (parent != NULL) {
@@ -24,14 +48,43 @@ ASTNode* AST_CreateNode(ASTNode *parent, ASTNodeType type) {
 
     node->id = AST_consecutiveId++;
     node->parent = parent;
-    node->type = type;
     node->childrenCount = 0;
     
     for (int i = 0; i < AST_NODE_CHILDREN; i++) {
         node->children[i] = NULL;
     }
 
+    node->type = type;
+    node->contentType = contentType;
+    node->content = content;
+
     return node;
+}
+
+void AST_PrettyPrint(ASTNode *nodePtr, int level) {
+    for (int i = 0; i < level; i++) {
+        printf("  ");
+    }
+
+    printf("%s", AST_GetNodeName(nodePtr->type));
+
+    switch (nodePtr->contentType) {
+        case TAG_Int:
+            printf(" - %d\n", nodePtr->content.i);
+            break;
+        case TAG_Float:
+            printf(" - %f\n", nodePtr->content.f);
+            break;
+        case TAG_String:
+            printf(" - %s\n", nodePtr->content.str);
+            break;
+        default:
+            printf("\n");
+    }
+
+    for (int i = 0; i < nodePtr->childrenCount; i++) {
+        AST_PrettyPrint(nodePtr->children[i], level + 1);
+    }
 }
 
 void AST_Print(ASTNode *nodePtr) {

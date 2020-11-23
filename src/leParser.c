@@ -89,6 +89,8 @@ bool isExpFirst(tokenType type) {
     }
 }
 
+typeUnion NO_CONTENT;
+
 // initial non-terminal
 bool NT_Prog() {
     bool ret = false;
@@ -97,7 +99,7 @@ bool NT_Prog() {
 
     ret = NT_Prolog() && NT_Func_Def_List(ASTRoot);
 
-    AST_Print(ASTRoot); // print whole tree
+    AST_PrettyPrint(ASTRoot, 0); // print whole tree
 
     return ret;
 }
@@ -120,9 +122,11 @@ bool NT_Func_Def_List(ASTNode *parentNode) {
 bool NT_Func_Def(ASTNode *parentNode) {
     bool ret = false;
 
-    if (getToken().type == TOK_Identifier) {
+    Token identifierNode = getToken();
+
+    if (identifierNode.type == TOK_Identifier) {
         if (getToken().type == TOK_L_Paren) {
-            ASTNode *funcNode = AST_CreateNode(parentNode, NODE_Func_Def);
+            ASTNode *funcNode = AST_CreateStringNode(parentNode, NODE_Func_Def, identifierNode.str);
             ASTNode *blockNode = AST_CreateNode(funcNode, NODE_Block);
             ret = NT_Param_List(funcNode) && NT_Return_Types(funcNode) && NT_Stat(blockNode);
         }
@@ -265,12 +269,12 @@ bool NT_Var(ASTNode *parentNode, Token identifierToken) {
 
     if (nextToken.type == TOK_Assign) {
         ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
-        ASTNode *idNode = AST_CreateNode(assignNode, NODE_Identifier);
+        ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, identifierToken.str);
         ret = NT_Exps(assignNode);
     }
     else if (nextToken.type == TOK_Define) {
         ASTNode *defineNode = AST_CreateNode(parentNode, NODE_Define);
-        ASTNode *idNode = AST_CreateNode(defineNode, NODE_Identifier);
+        ASTNode *idNode = AST_CreateStringNode(defineNode, NODE_Identifier, identifierToken.str);
         ret = NT_Exp(defineNode, EMPTY_TOKEN);
     }
     else if (nextToken.type == TOK_Comma) {
@@ -280,7 +284,7 @@ bool NT_Var(ASTNode *parentNode, Token identifierToken) {
         }
     }
     else if (nextToken.type == TOK_L_Paren) {
-        ASTNode *node = AST_CreateNode(parentNode, NODE_Func_Call);
+        ASTNode *node = AST_CreateStringNode(parentNode, NODE_Func_Call, identifierToken.str);
         ret = NT_Func_Args(node);
     }
 
@@ -294,7 +298,7 @@ bool NT_Var_N(ASTNode *parentNode, Token identifierToken) {
 
     if (nextToken.type == TOK_Assign) {
         ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
-        ASTNode *idNode = AST_CreateNode(parentNode, NODE_Identifier);
+        ASTNode *idNode = AST_CreateStringNode(parentNode, NODE_Identifier, identifierToken.str);
         ret = NT_Exps(assignNode);
     }
     else if (nextToken.type == TOK_Comma) {
@@ -304,7 +308,7 @@ bool NT_Var_N(ASTNode *parentNode, Token identifierToken) {
         }
     }
     else if (nextToken.type == TOK_L_Paren) {
-        ASTNode *node = AST_CreateNode(parentNode, NODE_Func_Call);
+        ASTNode *node = AST_CreateStringNode(parentNode, NODE_Func_Call, identifierToken.str);
         ret = NT_Func_Args(node);
     }
 
@@ -542,19 +546,19 @@ bool NT_Term(ASTNode *parentNode) {
     Token nextToken = getToken_NL_optional();
 
     if (nextToken.type == TOK_Identifier) {
-        AST_CreateNode(parentNode, NODE_Identifier);
+        AST_CreateStringNode(parentNode, NODE_Identifier, nextToken.str);
         ret = true;
     }
     else if (nextToken.type == TOK_Int_Literal) {
-        AST_CreateNode(parentNode, NODE_Literal_Int);
+        AST_CreateIntNode(parentNode, NODE_Literal_Int, nextToken.i);
         ret = true;
     }
     else if (nextToken.type == TOK_Float_Literal) {
-        AST_CreateNode(parentNode, NODE_Literal_Float);
+        AST_CreateFloatNode(parentNode, NODE_Literal_Float, nextToken.f);
         ret = true;
     }
     else if (nextToken.type == TOK_String_Literal) {
-        AST_CreateNode(parentNode, NODE_Literal_String);
+        AST_CreateStringNode(parentNode, NODE_Identifier, nextToken.str);
         ret = true;
     }
 

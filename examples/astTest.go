@@ -1,14 +1,9 @@
 package main
 
 func main() {
-	a = 5
 	b := 6
-
 	a,b = 6,5
-}
 
-/*
-func main() {
     if n < 2 {
 		a = 4
 	} else {
@@ -25,4 +20,3 @@ func ahoj(a string, b float64) (int) {
 
   return a, b
 }
-*/
