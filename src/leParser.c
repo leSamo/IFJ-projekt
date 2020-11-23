@@ -1,4 +1,4 @@
-/* ========= parserMock.c ==========
+/* ========== leParser.c ===========
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
  * Author: Emma Krompaščíková (xkromp00), Samuel Olekšák (xoleks00), Michal Findra (xfindr00)
@@ -16,67 +16,111 @@
 #include "leParser.h"
 #include "expressions.c"
 
-typedef struct {
-    char *name;
-    int current;
-    int parent;
-    int child[10];
-} node;
+typedef enum ASTNodeType {
+    NODE_Prog,
+    NODE_Func_Def,
+    NODE_Func_Def_Params,
+    NODE_Func_Def_Return,
+    NODE_Stat,
+    NODE_If_Else,
+    NODE_For,
+    NODE_Func_Call,
+    NODE_Return,
+    NODE_Assign,
+    NODE_Define,
+    NODE_Exp, // do not go further, thats the job of expressions.c
+    NODE_Type
+} ASTNodeType;
 
-node a[15];
-int NT_cnt = 0;
-int T_cnt = 0;
-int Active_Parent = 0;
+char* ASTNode_GetName(ASTNodeType type) {
+    switch (type) {
+        case NODE_Prog:
+            return "Prog";
+        case NODE_Func_Def:
+            return "Func def";
+        case NODE_Func_Def_Params:
+            return "Func def params";
+        case NODE_Func_Def_Return:
+            return "Func def return types";
+        case NODE_Stat:
+            return "Statement";
+        case NODE_If_Else:
+            return "If-else";
+        case NODE_For:
+            return "For loop";
+        case NODE_Func_Call:
+            return "Func call";
+        case NODE_Return:
+            return "Return";
+        case NODE_Assign:
+            return "Assignment";
+        case NODE_Define:
+            return "Definition";
+        case NODE_Exp:
+            return "Expression";
+        case NODE_Type:
+            return "Type";
+        default:
+            return "Unknown AST node type";
+    }
+}
 
-void PrintNode(node nodeptr) {
+#define AST_NODE_CHILDREN 10
+
+typedef struct ASTNode {
+    int id;
+    ASTNodeType type;
+    struct ASTNode *parent;
+    struct ASTNode *children[AST_NODE_CHILDREN];
+    int childrenCount;
+} ASTNode;
+
+int AST_consecutiveId = 0;
+
+ASTNode* AST_CreateNode(ASTNode *parent, ASTNodeType type) {
+    ASTNode *node = malloc(sizeof(ASTNode));
+
+    if (parent != NULL) {
+        parent->children[parent->childrenCount++] = node;
+    }
+
+    node->id = AST_consecutiveId;
+    node->parent = parent;
+    node->type = type;
+    node->childrenCount = 0;
+    
+    for (int i = 0; i < AST_NODE_CHILDREN; i++) {
+        node->children[i] = NULL;
+    }
+
+    AST_consecutiveId++;
+
+    return node;
+}
+
+void AST_Print(ASTNode *nodePtr) {
     printf("========================\n");
-    printf("name: %s id: %d\n", nodeptr.name, nodeptr.current);
-    if (nodeptr.parent != -1)
-        printf("parent: %d\n", nodeptr.parent);
-    for (int i = 0; i < 10; i++) {
-        if (nodeptr.child[i] != -1) {
-            printf("child: %d\n", nodeptr.child[i]);
-        }
-        else {
-            if (i == 0) {
-                printf("Node has no Children\n");
-                break;
-            }
-        }
+    printf("%s [%d]\n", ASTNode_GetName(nodePtr->type), nodePtr->id);
+
+    if (nodePtr->parent != NULL) {
+        printf("Parent: [%d]\n", nodePtr->parent->id);
     }
-}
 
-void add_node(char *name) {
-    int i = 0;
-    NT_cnt++;
-    a[NT_cnt].current = NT_cnt;
-    a[NT_cnt].parent = Active_Parent;
-    a[NT_cnt].name = name;
-    while (a[a[NT_cnt].parent].child[i] != -1) {
-        i++;
+    // print children count
+    printf("%d children ", nodePtr->childrenCount);
+
+    for (int i = 0; i < nodePtr->childrenCount; i++) {
+        printf("[%d] ", nodePtr->children[i]->id);
     }
-    a[a[NT_cnt].parent].child[i] = a[NT_cnt].current;
-}
+    printf("\n");
 
-int find_node(char *id) {
-
-    //rework to work from selected node up, so it takes cloesest name !!!!!!!!!!
-
-    for (int i = 0; i < 50; i++) {
-        if (strcmp(id, a[i].name) == 0)
-            return a[i].current;
+    // recursivelly check children
+    for (int i = 0; i < nodePtr->childrenCount; i++) {
+        AST_Print(nodePtr->children[i]);
     }
 }
 
 int main(int argc, char *argv[]) {
-
-    for (int i = 0; i < 15; i++) {
-        a->parent = -1;
-        for (int j = 0; j < 10; j++) {
-            a[i].child[j] = -1;
-        }
-    }
-
     setvbuf(stdout, NULL, _IONBF, 0); // for debug, remove before submitting
 
     // setup necessary data structures
@@ -93,15 +137,12 @@ int main(int argc, char *argv[]) {
 
     // recursive descent start
     if (NT_Prog()) {
-        printError("All OK\n");
+        printError("\n~~~~~~~~~~~~~~~~~~~~ \nSyntactic analysis: All OK\n~~~~~~~~~~~~~~~~~~~~\n\n");
     }
     else {
         printError("Syntactic error\n");
         deallocateAll();
         return SYNTAX_ERROR;
-    }
-    for (int i = 0; i < 15; i++) {
-        PrintNode(a[i]);
     }
 
     deallocateAll();
@@ -137,19 +178,14 @@ Token getToken_NL_optional() {
 bool isExpFirst(tokenType type) {
     switch (type) {
         case TOK_Identifier:
-            add_node("TOK_Identifier");
             return true;
         case TOK_Float_Literal:
-            add_node("TOK_Float_Literal");
             return true;
         case TOK_Int_Literal:
-            add_node("Int_Literal");
             return true;
         case TOK_String_Literal:
-            add_node("TOK_String_Literal");
             return true;
         case TOK_L_Paren:
-            add_node("L_Paren");
             return true;
 
         default:
@@ -160,90 +196,88 @@ bool isExpFirst(tokenType type) {
 // initial non-terminal
 bool NT_Prog() {
     bool ret = false;
-    a[NT_cnt].name = "Nt_Prog";
-    Active_Parent = a[NT_cnt].current;
-    ret = NT_Prolog() && NT_Func_Def_List();
+    
+    ASTNode *node = AST_CreateNode(NULL, NODE_Prog); // is root, has no parent
+
+    ret = NT_Prolog() && NT_Func_Def_List(node);
+
+    AST_Print(node); // print whole tree
 
     return ret;
 }
 
-bool NT_Func_Def_List() {
-
+bool NT_Func_Def_List(ASTNode *parentNode) {
     bool ret = false;
 
     Token nextToken = getToken_NL_optional();
 
     if (nextToken.type == TOK_EOF) {
-        add_node("TOK_EOF");
         ret = true;
     }
     else if (nextToken.type == TOK_Func_Keyword) {
-        add_node("Tok_Func_Keyword");
-        Active_Parent = find_node("Tok_Func_Keyword");
-        ret = NT_Func_Def() && NT_Func_Def_List();
+
+        ret = NT_Func_Def(parentNode) && NT_Func_Def_List(parentNode);
     }
 
     return ret;
 }
 
-bool NT_Func_Def() {
+bool NT_Func_Def(ASTNode *parentNode) {
     bool ret = false;
 
+    ASTNode *node = AST_CreateNode(parentNode, NODE_Func_Def);
+
     if (getToken().type == TOK_Identifier) {
-        add_node("Tok_Identifier");
         if (getToken().type == TOK_L_Paren) {
-            add_node("Tok_L_Paren");
-            ret = NT_Param_List() && NT_Return_Types() && NT_Stat();
+            ret = NT_Param_List(node) && NT_Return_Types(node) && NT_Stat(node);
         }
     }
 
     return ret;
 }
 
-bool NT_Param_List() {
+bool NT_Param_List(ASTNode *parentNode) {
     bool ret = false;
 
     Token nextToken = getToken();
 
+    ASTNode *node = AST_CreateNode(parentNode, NODE_Func_Def_Params);
+
     if (nextToken.type == TOK_R_Paren) {
-        add_node("Tok_R_Paren");
         ret = true;
     }
     else if (nextToken.type == TOK_Identifier) {
-        add_node("TOK_Identifier");
-        ret = NT_Type() && NT_Param_List_N();
+        ret = NT_Type(node) && NT_Param_List_N(node);
     }
 
     return ret;
 }
 
-bool NT_Param_List_N() {
+bool NT_Param_List_N(ASTNode *parentNode) {
     bool ret = false;
 
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_R_Paren) {
-        add_node("TOK_R_Paren");
         ret = true;
     }
     else if (nextToken.type == TOK_Comma) {
-        add_node("TOK_Comma");
         if (getToken_NL_optional().type == TOK_Identifier)  {
-            add_node("TOK_Identifier");
-            ret = NT_Type() && NT_Param_List_N();
+            ret = NT_Type(parentNode) && NT_Param_List_N(parentNode);
         }
     }
 
     return ret;
 }
 
-bool NT_Type() {
+bool NT_Type(ASTNode *parentNode) {
     bool ret = false;
 
     Token nextToken = getToken();
 
+    ASTNode *node = AST_CreateNode(parentNode, NODE_Type);
+
     if (nextToken.type == TOK_Int_Keyword) {
-        add_node("Tok_Int_Keyword");
         ret = true;
     }
     else if (nextToken.type == TOK_Float_Keyword) {
@@ -256,35 +290,33 @@ bool NT_Type() {
     return ret;
 }
 
-bool NT_Return_Types() {
+bool NT_Return_Types(ASTNode *parentNode) {
     bool ret = false;
 
     Token nextToken = getToken();
 
+    ASTNode *node = AST_CreateNode(parentNode, NODE_Func_Def_Return);
+
     if (nextToken.type == TOK_L_Brace) {
-        add_node("Tok_L_Brace");
         ret = true;
     }
     else if (nextToken.type == TOK_L_Paren) {
-        add_node("Tok_L_Paren");
-        ret = NT_Type() && NT_Return_Types_N() && getToken().type == TOK_L_Brace;
+        ret = NT_Type(node) && NT_Return_Types_N(node) && getToken().type == TOK_L_Brace;
     }
 
     return ret;
 }
 
-bool NT_Return_Types_N() {
+bool NT_Return_Types_N(ASTNode *parentNode) {
     bool ret = false;
 
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_R_Paren) {
-        add_node("TOK_R_Paren");
         ret = true;
     }
     else if (nextToken.type == TOK_Comma) {
-        add_node("TOK_Comma");
-        ret = NT_Type() && NT_Return_Types_N();
+        ret = NT_Type(parentNode) && NT_Return_Types_N(parentNode);
     }
 
     return ret;
@@ -294,10 +326,8 @@ bool NT_Prolog() {
     bool ret = false;
 
     if (getToken_NL_optional().type == TOK_Package_Keyword) {
-        add_node("TOK_Package_Keyword");
         Token nextToken = getToken();       
         if (nextToken.type == TOK_Identifier && (strcmp(nextToken.str, "main") == 0)) {
-            add_node("Tok_main");
             ret = true;
         }
     }
@@ -305,56 +335,51 @@ bool NT_Prolog() {
     return ret;
 }
 
-bool NT_Stat() {
+bool NT_Stat(ASTNode *parentNode) {
     bool ret = false;
-    add_node("NT_Stat");
-    Active_Parent = find_node("NT_Stat");
     Token nextToken = getToken_NL_optional();
 
     if (nextToken.type == TOK_Identifier) {
-        add_node("TOK_Identifier");
-        ret = NT_Var() && NT_Stat();
+        ret = NT_Var(parentNode) && NT_Stat(parentNode);
     }
     else if (nextToken.type == TOK_R_Brace) {
-        add_node("TOK_R_Brace");
         ret = true;
     }
     else if (nextToken.type == TOK_If_Keyword) {
-        add_node("TOK_If_Keyword");
-        ret = NT_If_Else() && NT_Stat();
+        ASTNode *node = AST_CreateNode(parentNode, NODE_If_Else);
+        ret = NT_If_Else(node) && NT_Stat(parentNode);
     }
     else if (nextToken.type == TOK_For_Keyword) {
-        ret = NT_For_Def() && NT_For_Exp() && NT_For_Assign() && NT_Stat() && NT_Stat();
+        ASTNode *node = AST_CreateNode(parentNode, NODE_For);
+        ret = NT_For_Def() && NT_For_Exp() && NT_For_Assign() && NT_Stat(parentNode) && NT_Stat(parentNode);
     }
     else if (nextToken.type == TOK_Return_Keyword) {
-        ret = NT_Exps() && NT_Stat();
+        ASTNode *node = AST_CreateNode(parentNode, NODE_Return);
+        ret = NT_Exps() && NT_Stat(parentNode);
     }
 
     return ret;
 }
 
-bool NT_Var() {
+bool NT_Var(ASTNode *parentNode) {
     bool ret = false;
 
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Assign) {
-        add_node("TOK_Assign");
+        ASTNode *node = AST_CreateNode(parentNode, NODE_Assign);
         ret = NT_Exps();
     }
     else if (nextToken.type == TOK_Define) {
-        add_node("TOK_Define");
+        ASTNode *node = AST_CreateNode(parentNode, NODE_Define);
         ret = NT_Exps();
     }
     else if (nextToken.type == TOK_Comma) {
-        add_node("TOK_Comma");
         if (getToken().type == TOK_Identifier) {
-            add_node("TOK_Identifier");
-            ret = NT_Var();
+            ret = NT_Var(parentNode);
         }
     }
     else if (nextToken.type == TOK_L_Paren) {
-        add_node("TOK_L_Paren");
         ret = NT_Func_Args();
     }
 
@@ -370,8 +395,6 @@ bool NT_Exps() {
         Token secondToken = getToken();
 
         if (firstToken.type == TOK_Identifier && secondToken.type == TOK_L_Paren) {
-            add_node("TOK_Identifier");
-            add_node("TOK_L_Paren");
             ret = NT_Func_Args();
         }
         else {
@@ -389,7 +412,6 @@ bool NT_Func_Args() {
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_R_Paren) {
-        add_node("TOK_R_Paren");
         ret = true;
     }
     else {
@@ -406,11 +428,9 @@ bool NT_Func_Args_N() {
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_R_Paren) {
-        add_node("TOK_R_Paren");
         ret = true;
     }
     else if (nextToken.type == TOK_Comma) {
-        add_node("TOK_Comma");
         ret = NT_Term() && NT_Func_Args_N();
     }
 
@@ -438,13 +458,10 @@ bool NT_Assign_N() {
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Assign) {
-        add_node("TOK_Assign");
         ret = true;
     }
     else if (nextToken.type == TOK_Comma) {
-        add_node("TOK_Comma");
         if (getToken().type == TOK_Identifier) {
-            add_node("TOK_Identifier");
             ret = NT_Assign_N() && NT_Exp(EMPTY_TOKEN) && getToken().type == TOK_Comma;
         }
     }
@@ -465,18 +482,15 @@ bool NT_Exp(Token overlapTokenIn) {
     return ret;
 }
 
-bool NT_If_Else() {
+bool NT_If_Else(ASTNode *parentNode) {
     bool ret = false;
 
     if (NT_Exp(EMPTY_TOKEN)) {
         if (getToken().type == TOK_L_Brace) {
-            add_node("TOK_L_Brace");
-            if (NT_Stat()) {
+            if (NT_Stat(parentNode)) {
                 if (getToken().type == TOK_Else_Keyword) {
-                    add_node("TOK_Else_Keyword");
                     if (getToken().type == TOK_L_Brace) {
-                        add_node("TOK_L_Brace");
-                        ret = NT_Stat();
+                        ret = NT_Stat(parentNode);
                     }
                 }
             }
@@ -492,11 +506,9 @@ bool NT_For_Def() {
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Semicolon) {
-        add_node("TOK_Semicolon");
         ret = true;
     }
     else if (nextToken.type == TOK_Identifier) {
-        add_node("TOK_Identifier");
         ret = NT_For_Def_Var();
     }
 
@@ -509,14 +521,11 @@ bool NT_For_Def_Var() {
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Comma) {
-        add_node("TOK_Comma");
         if (getToken().type == TOK_Identifier) {
-            add_node("TOK_Identifier");
             ret = NT_For_Def_Var();
         }
     }
     else if (nextToken.type == TOK_Define) {
-        add_node("TOK_Define");
         ret = NT_Exp(EMPTY_TOKEN) && NT_For_Def_Exp_N();
     }
 
@@ -530,11 +539,9 @@ bool NT_For_Def_Exp_N() {
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Semicolon) {
-        add_node("TOK_Semicolon");
         ret = true;
     }
     else if (nextToken.type == TOK_Comma) {
-        add_node("TOK_Comma");
         ret = NT_Exp(EMPTY_TOKEN) && NT_For_Def_Exp_N();
     }
 
@@ -559,11 +566,9 @@ bool NT_For_Assign() {
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_L_Brace) {
-        add_node("TOK_L_Brace");
         ret = true;
     }
     else if (nextToken.type == TOK_Identifier) {
-        add_node("TOK_Identifier");
         ret = NT_For_Assign_Var();
     }
 
@@ -576,14 +581,11 @@ bool NT_For_Assign_Var() {
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Comma) {
-        add_node("TOK_Comma");
         if (getToken().type == TOK_Identifier) {
-            add_node("TOK_Identifier");
             ret = NT_For_Assign_Var();
         }
     }
     else if (nextToken.type == TOK_Assign) {
-        add_node("TOK_Assign");
         ret = NT_Exp(EMPTY_TOKEN) && NT_For_Assign_Exp_N();
     }
 
@@ -596,11 +598,9 @@ bool NT_For_Assign_Exp_N() {
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_L_Brace) {
-        add_node("TOK_L_Brace");
         ret = true;
     }
     else if (nextToken.type == TOK_Comma) {
-        add_node("TOK_Comma");
         ret = NT_Exp(EMPTY_TOKEN) && NT_For_Assign_Exp_N();
     }
 
@@ -613,19 +613,15 @@ bool NT_Term() {
     Token nextToken = getToken_NL_optional();
 
     if (nextToken.type == TOK_Identifier) {
-        add_node("TOK_Identifier");
         ret = true;
     }
     else if (nextToken.type == TOK_Int_Literal) {
-        add_node("TOK_Int_Literal");
         ret = true;
     }
     else if (nextToken.type == TOK_Float_Literal) {
-        add_node("TOK_Float_Literal");
         ret = true;
     }
     else if (nextToken.type == TOK_String_Literal) {
-        add_node("TOK_String_Literal");
         ret = true;
     }
 

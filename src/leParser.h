@@ -1,4 +1,4 @@
-/* ========= parserMock.h ==========
+/* ========== leParser.h ===========
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
  * Author: Emma Krompaščíková (xkromp00), Samuel Olekšák (xoleks00), Michal Findra (xfindr00)
