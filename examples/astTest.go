@@ -13,5 +13,7 @@ func ahoj(a string, b float64) (int) {
 	a = 5 + 6
   }
 
+  print("ahoj", 580, "kamarat", 3.14)
+
   return a, b
 }

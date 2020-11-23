@@ -10,9 +10,11 @@
 #include "constants.h"
 #include "stringBuffer.c"
 #include "charBuffer.h"
+#include "AST.c"
 
 StringBuffer *stringBuffer;
 charBuffer *scannerBuffer;
+ASTNode *ASTRoot;
 
 char* newString(unsigned int length) {
     char* string = malloc(sizeof(char) * (length + 1));
@@ -26,4 +28,7 @@ void deallocateAll() {
 
     // free all strings
     StringBufferDispose(stringBuffer);
+
+    // free semantic AST
+    AST_Delete(ASTRoot);
 }
