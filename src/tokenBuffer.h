@@ -21,9 +21,6 @@ typedef struct TokenBuffer {
 /* Allocates, initates and returns a token buffer */
 TokenBuffer* TokenBufferCreate();
 
-/* If possible collapse items inside buffer on pos, pos-1 and pos-2 into one item */
-bool TokenBufferCollapse(TokenBuffer *buffer, int pos);
-
 /* Pushes one token into supplied buffer */
 void TokenBufferPush(TokenBuffer *buffer, Token token);
 

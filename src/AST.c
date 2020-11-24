@@ -55,10 +55,16 @@ ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag conten
     }
 
     node->type = type;
+    node->isOperatorResult = false;
     node->contentType = contentType;
     node->content = content;
 
     return node;
+}
+
+void AST_AttachNode(ASTNode *parent, ASTNode* child) {
+    parent->children[parent->childrenCount++] = child;
+    child->parent = parent;
 }
 
 void AST_PrettyPrint(ASTNode *nodePtr, int level) {
@@ -161,6 +167,26 @@ char* AST_GetNodeName(ASTNodeType type) {
             return "Float literal";
         case NODE_Literal_String:
             return "String literal";
+        case NODE_Add:
+            return "Addition";
+        case NODE_Sub:
+            return "Subtraction";
+        case NODE_Mul:
+            return "Multiplication";
+        case NODE_Div:
+            return "Division";
+        case NODE_Less_Then:
+            return "Less then";
+        case NODE_More_Then:
+            return "More then";
+        case NODE_Less_Equal_Then:
+            return "Less or equal then";
+        case NODE_More_Equal_Then:
+            return "More or equal then";
+        case NODE_Equal:
+            return "Equal";
+        case NODE_Not_Equal:
+            return "Not equal";
         default:
             return "Unknown AST node type";
     }

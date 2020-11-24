@@ -9,7 +9,6 @@
 #include <stdbool.h>
 
 #include "tokenBuffer.h"
-#include "expressions.h"
 
 TokenBuffer* TokenBufferCreate() {
     TokenBuffer *buffer = malloc(sizeof(TokenBuffer));
@@ -25,30 +24,6 @@ TokenBuffer* TokenBufferCreate() {
     buffer->capacity = INITIAL_TOKEN_BUFFER_SIZE;
 
     return buffer;
-}
-
-bool TokenBufferCollapse(TokenBuffer *buffer, int pos) {
-    if (pos < 2 || buffer->count < 3) {
-        return false;
-    }
-    else {
-        // both should be numbers
-        if (isOperator(buffer->tokens[pos - 2].type) || isOperator(buffer->tokens[pos - 1].type)) {
-            return false;
-        }
-
-        Token leftOperand  = buffer->tokens[pos - 2];
-        Token rightOperand = buffer->tokens[pos - 1];
-        Token operator     = buffer->tokens[  pos  ];
-    
-        for (int i = pos + 1; i < buffer->count; i++) {
-            buffer->tokens[i - 2] = buffer->tokens[i];
-        }
-
-        buffer->count -= 2;
-
-        return true;
-    }
 }
 
 void TokenBufferPush(TokenBuffer *buffer, Token token) {

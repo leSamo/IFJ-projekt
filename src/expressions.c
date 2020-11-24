@@ -14,8 +14,9 @@
 #include "tokenBuffer.c"
 #include "expressions.h"
 #include "leScanner.h"
+#include "AST.c"
 
-bool handleExpression(Token overlapTokenIn, Token *overlapTokenOut) {
+bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapTokenOut) {
     TokenBuffer *operatorStack = TokenBufferCreate();
     TokenBuffer *outputQueue = TokenBufferCreate();
 
@@ -108,7 +109,14 @@ bool handleExpression(Token overlapTokenIn, Token *overlapTokenOut) {
         TokenBufferPush(outputQueue, token);
     }
 
-    bool ret = verifyOutput(outputQueue);
+    ASTNode *expHead = verifyOutput(outputQueue);
+
+    bool ret = false;
+
+    if (expHead != NULL) {
+        ret = true;
+        AST_AttachNode(expRoot, expHead);
+    }
 
     TokenBufferDispose(operatorStack);
     TokenBufferDispose(outputQueue);
@@ -116,27 +124,110 @@ bool handleExpression(Token overlapTokenIn, Token *overlapTokenOut) {
     return ret;
 }
 
-bool verifyOutput(TokenBuffer *outputQueue) {
-    for (int i = 0; outputQueue->count > 1; i++) {
-        Token currentToken = outputQueue->tokens[i];
+ASTNode* verifyOutput(TokenBuffer *outputQueue) {
+    NodeBuffer *nodeBuffer = malloc(sizeof(NodeBuffer));
+    nodeBuffer->count = outputQueue->count;
+    nodeBuffer->nodes = malloc(sizeof(ASTNode*) * outputQueue->count);
 
-        if (isOperator(currentToken.type)) {
-            if (!TokenBufferCollapse(outputQueue, i)) {
-                return false;
+    for (int i = 0; i < outputQueue->count; i++) {
+        switch (outputQueue->tokens[i].type) {
+            case TOK_Int_Literal:
+                nodeBuffer->nodes[i] = AST_CreateIntNode(NULL, NODE_Literal_Int, outputQueue->tokens[i].i);
+                break;
+            case TOK_Float_Literal:
+                nodeBuffer->nodes[i] = AST_CreateFloatNode(NULL, NODE_Literal_Float, outputQueue->tokens[i].f);
+                break;
+            case TOK_String_Literal:
+                nodeBuffer->nodes[i] = AST_CreateStringNode(NULL, NODE_Literal_String, outputQueue->tokens[i].str);
+                break;
+            case TOK_Identifier:
+                nodeBuffer->nodes[i] = AST_CreateStringNode(NULL, NODE_Identifier, outputQueue->tokens[i].str);
+                break;
+            case TOK_Add:
+                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Add);
+                break;
+            case TOK_Sub:
+                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Sub);
+                break;
+            case TOK_Mul:
+                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Mul);
+                break;
+            case TOK_Div:
+                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Div);
+                break;
+            case TOK_Less_Then:
+                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Less_Then);
+                break;
+            case TOK_More_Then:
+                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_More_Then);
+                break;
+            case TOK_Less_Equal_Then:
+                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Less_Equal_Then);
+                break;
+            case TOK_More_Equal_Then:
+                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_More_Equal_Then);
+                break;
+            case TOK_Equal:
+                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Equal);
+                break;
+            case TOK_Not_Equal:
+                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Not_Equal);
+                break;
+        }
+    }
+
+    for (int i = 0; nodeBuffer->count > 1; i++) {
+        ASTNode *currentNode = nodeBuffer->nodes[i];
+
+        if (isNodeOperator(currentNode->type) && !currentNode->isOperatorResult) {
+            if (!NodeBufferCollapse(nodeBuffer, i)) {
+                return NULL;
             }
             i = 0;
         }
 
-        if (i > outputQueue->count) {
-            return false;
+        if (i > nodeBuffer->count ) {
+            return NULL;
         }
     }    
 
-    if (outputQueue->count == 1) {
-        return true;
+    if (nodeBuffer->count == 1) {
+        return nodeBuffer->nodes[0];
     }
     else {
+        return NULL;
+    }
+}
+
+bool NodeBufferCollapse(NodeBuffer *buffer, int pos) {
+    if (pos < 2 || buffer->count < 3) {
         return false;
+    }
+    else {
+        // both should be numbers
+        if ((isNodeOperator(buffer->nodes[pos - 2]->type) && !buffer->nodes[pos - 2]->isOperatorResult)
+         || (isNodeOperator(buffer->nodes[pos - 1]->type) && !buffer->nodes[pos - 1]->isOperatorResult)) {
+            return false;
+        }
+
+        ASTNode *leftOperand  = buffer->nodes[pos - 2];
+        ASTNode *rightOperand = buffer->nodes[pos - 1];
+        ASTNode *operator     = buffer->nodes[  pos  ];
+
+        AST_AttachNode(operator, leftOperand);
+        AST_AttachNode(operator, rightOperand);
+
+        operator->isOperatorResult = true;
+    
+        for (int i = pos + 1; i < buffer->count; i++) {
+            buffer->nodes[i - 2] = buffer->nodes[i];
+        }
+
+        buffer->nodes[pos - 2] = operator;
+
+        buffer->count -= 2;
+
+        return true;
     }
 }
 
@@ -180,6 +271,19 @@ bool isValidExpToken(tokenType type) {
             return true;
         default:
             return false;
+    }
+}
+
+bool isNodeOperator(ASTNodeType type) {
+    switch (type) {
+        case NODE_Identifier:
+        case NODE_Literal_String:
+        case NODE_Literal_Int:
+        case NODE_Literal_Float:
+            return false;
+    
+        default:
+            return true;
     }
 }
 

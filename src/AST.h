@@ -26,7 +26,17 @@ typedef enum ASTNodeType {
     NODE_Identifier,
     NODE_Literal_Int,
     NODE_Literal_Float,
-    NODE_Literal_String
+    NODE_Literal_String,
+    NODE_Add,
+    NODE_Sub,
+    NODE_Mul,
+    NODE_Div,
+    NODE_Less_Then,
+    NODE_More_Then,
+    NODE_Less_Equal_Then,
+    NODE_More_Equal_Then,
+    NODE_Equal,
+    NODE_Not_Equal
 } ASTNodeType;
 
 typedef enum typeTag {
@@ -52,11 +62,16 @@ typedef struct ASTNode {
     struct ASTNode *children[AST_NODE_CHILDREN];
     int childrenCount;
 
+    bool isOperatorResult;
+    typeTag operatorType;
+
     typeTag contentType;
     typeUnion content;
 } ASTNode;
 
 ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag contentType, typeUnion content);
+
+void AST_AttachNode(ASTNode *parent, ASTNode* child);
 
 void AST_PrettyPrint(ASTNode *nodePtr, int level);
 

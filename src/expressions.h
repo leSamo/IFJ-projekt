@@ -6,17 +6,27 @@
  * Description: Precedence syntactic analysis for expressions using shunting-yard algorithm
  * ================================= */
 
+typedef struct {
+    ASTNode** nodes;
+    int count;
+} NodeBuffer;
+
 /* From tokens array in infix notation creates postfix notation */
-bool handleExpression(Token overlapTokenIn, Token *overlapTokenOut);
+bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapTokenOut);
 
 /* Verify if output queue syntax is correct */
-bool verifyOutput(TokenBuffer *outputQueue);
+ASTNode* verifyOutput(TokenBuffer *outputQueue);
+
+/* If possible collapse items inside buffer on pos, pos-1 and pos-2 into one item */
+bool NodeBufferCollapse(NodeBuffer *buffer, int pos);
 
 /* Returns priority for that token (1,2,3) */
 int getPriority(tokenType type);
 
 /* Returns true if token type is valid for expression */
 bool isValidExpToken(tokenType type);
+
+bool isNodeOperator(ASTNodeType type);
 
 /* Returns true if token type is operator (+,-,*,/,<,<=,>,>=,==,!=) */
 bool isOperator(tokenType type);

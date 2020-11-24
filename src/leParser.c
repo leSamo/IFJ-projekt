@@ -89,8 +89,6 @@ bool isExpFirst(tokenType type) {
     }
 }
 
-typeUnion NO_CONTENT;
-
 // initial non-terminal
 bool NT_Prog() {
     bool ret = false;
@@ -405,7 +403,7 @@ bool NT_Exp(ASTNode *parentNode, Token overlapTokenIn) {
 
     // pass it to expression parser
     Token* overlapTokenOut = malloc(sizeof(Token));
-    ret = handleExpression(overlapTokenIn, overlapTokenOut);
+    ret = handleExpression(node, overlapTokenIn, overlapTokenOut);
 
     overlapToken = *overlapTokenOut;
     free(overlapTokenOut);

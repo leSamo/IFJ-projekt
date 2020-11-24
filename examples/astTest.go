@@ -3,6 +3,7 @@ package main
 func main() {
 	b := 6
 	a,b = 6,5
+	c = 5 * 8 + 5 * 8 * (5 + 9595)
 
     if n < 2 {
 		a = 4
