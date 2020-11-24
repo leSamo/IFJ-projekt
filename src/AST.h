@@ -36,7 +36,8 @@ typedef enum ASTNodeType {
     NODE_Less_Equal_Then,
     NODE_More_Equal_Then,
     NODE_Equal,
-    NODE_Not_Equal
+    NODE_Not_Equal,
+    NODE_Multi_L_Value
 } ASTNodeType;
 
 typedef enum typeTag {

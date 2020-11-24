@@ -4,6 +4,7 @@ func main() {
 	b := 6
 	a,b = 6,5
 	c = 5 * 8 + 5 * 8 * (5 + 9595)
+	a = a * c
 
     if n < 2 {
 		a = 4
@@ -13,7 +14,7 @@ func main() {
 }
 
 func ahoj(a string, b float64) (int) {
-  for ; 0 ; {
+  for ; 0 ; a = 5 {
 	a = 5 + 6
   }
 

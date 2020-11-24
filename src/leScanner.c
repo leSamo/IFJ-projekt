@@ -401,7 +401,7 @@ Token getToken() {
 }
 
 void printError(int errorCode, char* msg) {
-    fprintf(stderr, "[%d] Line %d: %s", errorCode, currentLine ,msg);
+    fprintf(stderr, "[%d] Around line %d: %s", errorCode, currentLine ,msg);
 }
 
 void ungetChar(char c) {

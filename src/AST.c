@@ -187,6 +187,8 @@ char* AST_GetNodeName(ASTNodeType type) {
             return "Equal";
         case NODE_Not_Equal:
             return "Not equal";
+        case NODE_Multi_L_Value:
+            return "Multi L-Value";
         default:
             return "Unknown AST node type";
     }

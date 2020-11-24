@@ -38,29 +38,27 @@ bool NT_Prolog(); // no semantic value
 
 bool NT_Stat(ASTNode *parentNode);
 
-bool NT_Var(ASTNode *parentNode, Token identifierToken);
+bool NT_Var(ASTNode *parentNode);
 
-bool NT_Var_N(ASTNode *parentNode, Token identifierToken);
+bool NT_Var_N(ASTNode *parentNode);
 
-bool NT_Exps(ASTNode *parentNode);
+bool NT_Exps(ASTNode *parentNode, bool createAssignment);
 
 bool NT_Func_Args(ASTNode *parentNode);
 
 bool NT_Func_Args_N(ASTNode *parentNode);
 
-bool NT_Exps_N(ASTNode *parentNode);
+bool NT_Exps_N(ASTNode *parentNode, bool createAssignment);
 
 bool NT_Assign_N(ASTNode *parentNode);
 
 bool NT_If_Else(ASTNode *parentNode);
 
-bool NT_Exp(ASTNode *parentNode, Token overlapTokenIn);
+bool NT_Exp(ASTNode *parentNode, Token overlapTokenIn, bool createAssignment);
 
 bool NT_For_Def(ASTNode *parentNode);
 
 bool NT_For_Def_Var(ASTNode *parentNode);
-
-bool NT_For_Def_Exp_N(ASTNode *parentNode);
 
 bool NT_For_Exp(ASTNode *parentNode);
 

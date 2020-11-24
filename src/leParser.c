@@ -239,7 +239,8 @@ bool NT_Stat(ASTNode *parentNode) {
     Token nextToken = getToken_NL_optional();
 
     if (nextToken.type == TOK_Identifier) {
-        ret = NT_Var(parentNode, nextToken) && NT_Stat(parentNode);
+        TokenBufferPush(tokenBuffer, nextToken);
+        ret = NT_Var(parentNode) && NT_Stat(parentNode);
     }
     else if (nextToken.type == TOK_R_Brace) {
         ret = true;
@@ -255,66 +256,73 @@ bool NT_Stat(ASTNode *parentNode) {
     }
     else if (nextToken.type == TOK_Return_Keyword) {
         ASTNode *node = AST_CreateNode(parentNode, NODE_Return);
-        ret = NT_Exps(node) && NT_Stat(parentNode);
+        ret = NT_Exps(node, false) && NT_Stat(parentNode);
     }
 
     return ret;
 }
 
-bool NT_Var(ASTNode *parentNode, Token identifierToken) {
+bool NT_Var(ASTNode *parentNode) {
     bool ret = false;
 
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Assign) {
         ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
-        ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, identifierToken.str);
-        ret = NT_Exps(assignNode);
+        ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, TokenBufferPopFront(tokenBuffer).str);
+        ret = NT_Exps(assignNode, false);
     }
     else if (nextToken.type == TOK_Define) {
         ASTNode *defineNode = AST_CreateNode(parentNode, NODE_Define);
-        ASTNode *idNode = AST_CreateStringNode(defineNode, NODE_Identifier, identifierToken.str);
-        ret = NT_Exp(defineNode, EMPTY_TOKEN);
+        ASTNode *idNode = AST_CreateStringNode(defineNode, NODE_Identifier, TokenBufferPopFront(tokenBuffer).str);
+        ret = NT_Exp(defineNode, EMPTY_TOKEN, false);
     }
     else if (nextToken.type == TOK_Comma) {
-        Token secondToken = getToken();
-        if (secondToken.type == TOK_Identifier) {
-            ret = NT_Var_N(parentNode, secondToken);
+        Token idToken = getToken();
+        if (idToken.type == TOK_Identifier) {
+            TokenBufferPush(tokenBuffer, idToken);
+            ret = NT_Var_N(parentNode);
         }
     }
     else if (nextToken.type == TOK_L_Paren) {
-        ASTNode *node = AST_CreateStringNode(parentNode, NODE_Func_Call, identifierToken.str);
+        ASTNode *node = AST_CreateStringNode(parentNode, NODE_Func_Call, TokenBufferPopFront(tokenBuffer).str);
         ret = NT_Func_Args(node);
     }
 
     return ret;
 }
 
-bool NT_Var_N(ASTNode *parentNode, Token identifierToken) {
+bool NT_Var_N(ASTNode *parentNode) {
     bool ret = false;
 
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Assign) {
-        ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
-        ASTNode *idNode = AST_CreateStringNode(parentNode, NODE_Identifier, identifierToken.str);
-        ret = NT_Exps(assignNode);
+        ret = NT_Exps(parentNode, true);
     }
     else if (nextToken.type == TOK_Comma) {
-        Token secondToken = getToken();
-        if (secondToken.type == TOK_Identifier) {
-            ret = NT_Var_N(parentNode, secondToken);
+        Token idToken = getToken();
+        if (idToken.type == TOK_Identifier) {
+            TokenBufferPush(tokenBuffer, idToken);
+            ret = NT_Var_N(parentNode);
         }
     }
     else if (nextToken.type == TOK_L_Paren) {
-        ASTNode *node = AST_CreateStringNode(parentNode, NODE_Func_Call, identifierToken.str);
-        ret = NT_Func_Args(node);
+        ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
+        ASTNode *multiNode = AST_CreateNode(assignNode, NODE_Multi_L_Value);
+
+        while (tokenBuffer->count > 1) {
+            ASTNode *value = AST_CreateStringNode(multiNode, NODE_Identifier, TokenBufferPopFront(tokenBuffer).str);
+        }
+
+        ASTNode *funcNode = AST_CreateStringNode(parentNode, NODE_Func_Call, TokenBufferPopFront(tokenBuffer).str);
+        ret = NT_Func_Args(funcNode);
     }
 
     return ret;
 }
 
-bool NT_Exps(ASTNode *parentNode) {
+bool NT_Exps(ASTNode *parentNode, bool createAssignment) {
     bool ret = false;
 
     Token firstToken = getToken_NL_optional();
@@ -323,11 +331,19 @@ bool NT_Exps(ASTNode *parentNode) {
         Token secondToken = getToken();
 
         if (firstToken.type == TOK_Identifier && secondToken.type == TOK_L_Paren) {
-            ret = NT_Func_Args(parentNode);
+            ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
+            ASTNode *multiNode = AST_CreateNode(assignNode, NODE_Multi_L_Value);
+
+            while (!TokenBufferEmpty(tokenBuffer)) {
+                ASTNode *value = AST_CreateStringNode(multiNode, NODE_Identifier, TokenBufferPopFront(tokenBuffer).str);
+            }
+
+            ASTNode *funcNode = AST_CreateStringNode(assignNode, NODE_Func_Call, firstToken.str);
+            ret = NT_Func_Args(funcNode);
         }
         else {
             overlapToken = secondToken;
-            ret = NT_Exp(parentNode, firstToken) && NT_Exps_N(parentNode);
+            ret = NT_Exp(parentNode, firstToken, createAssignment) && NT_Exps_N(parentNode, createAssignment);
         }
     }
 
@@ -365,16 +381,17 @@ bool NT_Func_Args_N(ASTNode *parentNode) {
     return ret;
 }
 
-bool NT_Exps_N(ASTNode *parentNode) {
+bool NT_Exps_N(ASTNode *parentNode, bool createAssignment) {
     bool ret = false;
 
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Comma) {
-        ret = NT_Exp(parentNode, EMPTY_TOKEN) && NT_Exps_N(parentNode);
+        ret = NT_Exp(parentNode, EMPTY_TOKEN, createAssignment) && NT_Exps_N(parentNode, createAssignment);
     }
     else if (nextToken.type == TOK_Newline) {
         if (!TokenBufferEmpty(tokenBuffer)) {
+            printf("Unbalanced expression error\n");
             return false;
         }
 
@@ -394,17 +411,26 @@ bool NT_Assign_N(ASTNode *parentNode) {
     }
     else if (nextToken.type == TOK_Comma) {
         if (getToken().type == TOK_Identifier) {
-            ret = NT_Assign_N(parentNode) && NT_Exp(parentNode, EMPTY_TOKEN) && getToken().type == TOK_Comma;
+            ret = NT_Assign_N(parentNode) && NT_Exp(parentNode, EMPTY_TOKEN, false) && getToken().type == TOK_Comma;
         }
     }
 
     return ret;
 }
 
-bool NT_Exp(ASTNode *parentNode, Token overlapTokenIn) {
+bool NT_Exp(ASTNode *parentNode, Token overlapTokenIn, bool createAssignment) {
     bool ret = false;
 
-    ASTNode *node = AST_CreateNode(parentNode, NODE_Exp);
+    ASTNode *node;
+
+    if (createAssignment) {
+        ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
+        ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, TokenBufferPopFront(tokenBuffer).str);
+        node = AST_CreateNode(assignNode, NODE_Exp);
+    }
+    else {
+        node = AST_CreateNode(parentNode, NODE_Exp);
+    }
 
     // pass it to expression parser
     Token* overlapTokenOut = malloc(sizeof(Token));
@@ -419,7 +445,7 @@ bool NT_Exp(ASTNode *parentNode, Token overlapTokenIn) {
 bool NT_If_Else(ASTNode *parentNode) {
     bool ret = false;
 
-    if (NT_Exp(parentNode, EMPTY_TOKEN)) {
+    if (NT_Exp(parentNode, EMPTY_TOKEN, false)) {
         if (getToken().type == TOK_L_Brace) {
             ASTNode *positiveNode = AST_CreateNode(parentNode, NODE_Block);
             if (NT_Stat(positiveNode)) {
@@ -445,7 +471,9 @@ bool NT_For_Def(ASTNode *parentNode) {
         ret = true;
     }
     else if (nextToken.type == TOK_Identifier) {
-        ret = NT_For_Def_Var(parentNode);
+        ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Define);
+        ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, nextToken.str);
+        ret = NT_For_Def_Var(assignNode);
     }
 
     return ret;
@@ -462,23 +490,7 @@ bool NT_For_Def_Var(ASTNode *parentNode) {
         }
     }
     else if (nextToken.type == TOK_Define) {
-        ret = NT_Exp(parentNode, EMPTY_TOKEN) && NT_For_Def_Exp_N(parentNode);
-    }
-
-    return ret;
-}
-
-
-bool NT_For_Def_Exp_N(ASTNode *parentNode) {
-    bool ret = false;
-
-    Token nextToken = getToken();
-
-    if (nextToken.type == TOK_Semicolon) {
-        ret = true;
-    }
-    else if (nextToken.type == TOK_Comma) {
-        ret = NT_Exp(parentNode, EMPTY_TOKEN) && NT_For_Def_Exp_N(parentNode);
+        ret = NT_Exp(parentNode, EMPTY_TOKEN, false) && getToken().type == TOK_Semicolon;
     }
 
     return ret;
@@ -490,7 +502,7 @@ bool NT_For_Exp(ASTNode *parentNode) {
     Token nextToken = getToken_NL_optional();
 
     if (isExpFirst(nextToken.type)) {
-        ret = NT_Exp(parentNode, nextToken) && getToken().type == TOK_Semicolon;
+        ret = NT_Exp(parentNode, nextToken, false) && getToken().type == TOK_Semicolon;
     }
 
     return ret;
@@ -505,6 +517,7 @@ bool NT_For_Assign(ASTNode *parentNode) {
         ret = true;
     }
     else if (nextToken.type == TOK_Identifier) {
+        TokenBufferPush(tokenBuffer, nextToken);
         ret = NT_For_Assign_Var(parentNode);
     }
 
@@ -517,12 +530,14 @@ bool NT_For_Assign_Var(ASTNode *parentNode) {
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Comma) {
-        if (getToken().type == TOK_Identifier) {
+        Token secondToken = getToken();
+        if (secondToken.type == TOK_Identifier) {
+            TokenBufferPush(tokenBuffer, secondToken);
             ret = NT_For_Assign_Var(parentNode);
         }
     }
     else if (nextToken.type == TOK_Assign) {
-        ret = NT_Exp(parentNode, EMPTY_TOKEN) && NT_For_Assign_Exp_N(parentNode);
+        ret = NT_Exp(parentNode, EMPTY_TOKEN, true) && NT_For_Assign_Exp_N(parentNode);
     }
 
     return ret;
@@ -537,7 +552,7 @@ bool NT_For_Assign_Exp_N(ASTNode *parentNode) {
         ret = true;
     }
     else if (nextToken.type == TOK_Comma) {
-        ret = NT_Exp(parentNode, EMPTY_TOKEN) && NT_For_Assign_Exp_N(parentNode);
+        ret = NT_Exp(parentNode, EMPTY_TOKEN, true) && NT_For_Assign_Exp_N(parentNode);
     }
 
     return ret;

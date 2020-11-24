@@ -76,6 +76,25 @@ Token TokenBufferPop(TokenBuffer *buffer) {
     }
 }
 
+Token TokenBufferPopFront(TokenBuffer *buffer) {
+    if (buffer->count > 0) {
+        Token returnToken = buffer->tokens[0];
+
+        for (int i = 0; i < buffer->count - 1; i++) {
+            buffer->tokens[i] = buffer->tokens[i + 1];
+        }
+
+        buffer->count--;
+        return returnToken;
+    }
+    else {
+        TokenBufferDispose(buffer);
+        printError(SYNTAX_ERROR, "Unbalanced construction error\n");
+        deallocateAll();
+        exit(SYNTAX_ERROR);
+    }
+}
+
 void TokenBufferPrint(TokenBuffer *buffer) {
     for (int i = 0; i < buffer->count; i++) {
         Token currentToken = buffer->tokens[i];
@@ -92,5 +111,6 @@ void TokenBufferDispose(TokenBuffer *buffer) {
     if (buffer != NULL) {
         free(buffer->tokens);
         free(buffer);
+        buffer = NULL;
     }
 }
