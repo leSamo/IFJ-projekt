@@ -181,20 +181,34 @@ ASTNode* verifyOutput(TokenBuffer *outputQueue) {
 
         if (isNodeOperator(currentNode->type) && !currentNode->isOperatorResult) {
             if (!NodeBufferCollapse(nodeBuffer, i)) {
+                free(nodeBuffer->nodes);
+                free(nodeBuffer);
+
                 return NULL;
             }
             i = 0;
         }
 
         if (i > nodeBuffer->count ) {
+            free(nodeBuffer->nodes);
+            free(nodeBuffer);
+
             return NULL;
         }
     }    
 
     if (nodeBuffer->count == 1) {
-        return nodeBuffer->nodes[0];
+        ASTNode *returnNode = nodeBuffer->nodes[0];
+
+        free(nodeBuffer->nodes);
+        free(nodeBuffer);
+
+        return returnNode;
     }
     else {
+        free(nodeBuffer->nodes);
+        free(nodeBuffer);
+
         return NULL;
     }
 }
