@@ -49,10 +49,12 @@ void StringBufferPush(StringBuffer *buffer, char *string) {
 }
 
 void StringBufferDispose(StringBuffer *buffer) {
-    for (int i = 0; i < buffer->count; i++) {
-        free(buffer->content[i]);
-    }
+    if (buffer != NULL) {
+        for (int i = 0; i < buffer->count; i++) {
+            free(buffer->content[i]);
+        }
 
-    free(buffer->content);
-    free(buffer);
+        free(buffer->content);
+        free(buffer);
+    }
 }

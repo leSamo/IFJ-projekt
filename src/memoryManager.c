@@ -11,10 +11,12 @@
 #include "stringBuffer.c"
 #include "charBuffer.h"
 #include "AST.c"
+#include "tokenBuffer.h"
 
 StringBuffer *stringBuffer;
 charBuffer *scannerBuffer;
 ASTNode *ASTRoot;
+TokenBuffer *tokenBuffer;
 
 char* newString(unsigned int length) {
     char* string = malloc(sizeof(char) * (length + 1));
@@ -31,4 +33,6 @@ void deallocateAll() {
 
     // free semantic AST
     AST_Delete(ASTRoot);
+
+    TokenBufferDispose(tokenBuffer);
 }

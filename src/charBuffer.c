@@ -62,7 +62,6 @@ void charBufferPrint(charBuffer* buffer) {
 void charBufferDispose(charBuffer* buffer) {
     if (buffer != NULL) {
         free(buffer->content);
+        free(buffer);
     }
-
-    free(buffer);
 }

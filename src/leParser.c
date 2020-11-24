@@ -22,6 +22,7 @@ int main(int argc, char *argv[]) {
     // setup necessary data structures
     scannerBuffer = charBufferCreate();
     stringBuffer = StringBufferCreate();
+    tokenBuffer = TokenBufferCreate();
 
     // LEXICAL ANALYSIS
     /*
@@ -373,6 +374,10 @@ bool NT_Exps_N(ASTNode *parentNode) {
         ret = NT_Exp(parentNode, EMPTY_TOKEN) && NT_Exps_N(parentNode);
     }
     else if (nextToken.type == TOK_Newline) {
+        if (!TokenBufferEmpty(tokenBuffer)) {
+            return false;
+        }
+
         ret = true;
     }
 

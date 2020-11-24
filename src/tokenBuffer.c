@@ -48,12 +48,19 @@ void TokenBufferPush(TokenBuffer *buffer, Token token) {
     }
 }
 
+bool TokenBufferEmpty(TokenBuffer *buffer) {
+    return buffer->count == 0;
+}
+
 Token TokenBufferTop(TokenBuffer *buffer) {
     if (buffer->count > 0) {
         return buffer->tokens[buffer->count - 1];
     }
     else {
-        // throw error
+        TokenBufferDispose(buffer);
+        printError(SYNTAX_ERROR, "Unbalanced construction error\n");
+        deallocateAll();
+        exit(SYNTAX_ERROR);
     }
 }
 
@@ -62,7 +69,10 @@ Token TokenBufferPop(TokenBuffer *buffer) {
         return buffer->tokens[--buffer->count];
     }
     else {
-        // throw error
+        TokenBufferDispose(buffer);
+        printError(SYNTAX_ERROR, "Unbalanced construction error\n");
+        deallocateAll();
+        exit(SYNTAX_ERROR);
     }
 }
 
@@ -79,6 +89,8 @@ void TokenBufferPrint(TokenBuffer *buffer) {
 }
 
 void TokenBufferDispose(TokenBuffer *buffer) {
-    free(buffer->tokens);
-    free(buffer);
+    if (buffer != NULL) {
+        free(buffer->tokens);
+        free(buffer);
+    }
 }

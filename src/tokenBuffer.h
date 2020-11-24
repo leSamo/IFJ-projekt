@@ -24,6 +24,9 @@ TokenBuffer* TokenBufferCreate();
 /* Pushes one token into supplied buffer */
 void TokenBufferPush(TokenBuffer *buffer, Token token);
 
+/* Returns true is token buffer is empty */
+bool TokenBufferEmpty(TokenBuffer *buffer);
+
 /* Returns token on the top of the buffer */
 Token TokenBufferTop(TokenBuffer *buffer);
 
