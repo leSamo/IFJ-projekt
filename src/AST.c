@@ -93,6 +93,7 @@ void AST_PrettyPrint(ASTNode *nodePtr, int level) {
     }
 }
 
+
 void AST_Print(ASTNode *nodePtr) {
     printf("========================\n");
     printf("%s [%d]\n", AST_GetNodeName(nodePtr->type), nodePtr->id);

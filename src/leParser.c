@@ -15,6 +15,8 @@
 #include "leScanner.c"
 #include "leParser.h"
 #include "expressions.c"
+#include "SymTable.c"
+
 
 int main(int argc, char *argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0); // for debug, remove before submitting
@@ -99,7 +101,17 @@ bool NT_Prog() {
     ret = NT_Prolog() && NT_Func_Def_List(ASTRoot);
 
     AST_PrettyPrint(ASTRoot, 0); // print whole tree
+    printf("\n=========================\n\n");
+    
+    BSTInit(&SymTableTree);
 
+    GetIds(ASTRoot, 0);
+    
+    Print_tree(SymTableTree);
+    printf("\n=========================\n\n");
+    
+    
+    
     return ret;
 }
 
@@ -576,7 +588,7 @@ bool NT_Term(ASTNode *parentNode) {
         ret = true;
     }
     else if (nextToken.type == TOK_String_Literal) {
-        AST_CreateStringNode(parentNode, NODE_Identifier, nextToken.str);
+        AST_CreateStringNode(parentNode, NODE_Literal_String, nextToken.str);
         ret = true;
     }
 
