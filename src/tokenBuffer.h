@@ -34,12 +34,12 @@ Token TokenBufferTop(TokenBuffer *buffer);
 Token TokenBufferPop(TokenBuffer *buffer);
 
 /* Returns first inserted token of the buffer and removes it from the buffer */
-Token TokenBufferPopFront(TokenBuffer *buffer);
+Token TokenBufferPopFront(TokenBuffer **buffer);
 
 /* Debug function to print out all the items from the buffer */
 void TokenBufferPrint(TokenBuffer *buffer);
 
 /* Deallocated token buffer */
-void TokenBufferDispose(TokenBuffer *buffer);
+void TokenBufferDispose(TokenBuffer **buffer);
 
 #endif

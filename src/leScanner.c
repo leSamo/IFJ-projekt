@@ -258,7 +258,10 @@ Token getToken() {
             break;
 
         case AS_BlockComm:
-            if (currentChar == '*') {
+            if (currentChar == '\n') {
+                currentLine++;
+            }
+            else if (currentChar == '*') {
                 currentState = AS_BlockComm_End;
             }
             else if (currentChar == EOF) {
@@ -401,7 +404,7 @@ Token getToken() {
 }
 
 void printError(int errorCode, char* msg) {
-    fprintf(stderr, "[%d] Around line %d: %s", errorCode, currentLine ,msg);
+    fprintf(stderr, "[%d] Around line %d: %s", errorCode, currentLine, msg);
 }
 
 void ungetChar(char c) {

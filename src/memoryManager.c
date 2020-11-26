@@ -35,5 +35,5 @@ void deallocateAll() {
     AST_Delete(ASTRoot);
 
     // free token buffer used for recursive descent
-    TokenBufferDispose(tokenBuffer);
+    TokenBufferDispose(&tokenBuffer);
 }

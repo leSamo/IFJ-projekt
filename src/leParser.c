@@ -281,12 +281,12 @@ bool NT_Var(ASTNode *parentNode) {
 
     if (nextToken.type == TOK_Assign) {
         ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
-        ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, TokenBufferPopFront(tokenBuffer).str);
+        ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
         ret = NT_Exps(assignNode, false);
     }
     else if (nextToken.type == TOK_Define) {
         ASTNode *defineNode = AST_CreateNode(parentNode, NODE_Define);
-        ASTNode *idNode = AST_CreateStringNode(defineNode, NODE_Identifier, TokenBufferPopFront(tokenBuffer).str);
+        ASTNode *idNode = AST_CreateStringNode(defineNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
         ret = NT_Exp(defineNode, EMPTY_TOKEN, false);
     }
     else if (nextToken.type == TOK_Comma) {
@@ -297,7 +297,7 @@ bool NT_Var(ASTNode *parentNode) {
         }
     }
     else if (nextToken.type == TOK_L_Paren) {
-        ASTNode *node = AST_CreateStringNode(parentNode, NODE_Func_Call, TokenBufferPopFront(tokenBuffer).str);
+        ASTNode *node = AST_CreateStringNode(parentNode, NODE_Func_Call, TokenBufferPopFront(&tokenBuffer).str);
         ret = NT_Func_Args(node);
     }
 
@@ -324,10 +324,10 @@ bool NT_Var_N(ASTNode *parentNode) {
         ASTNode *multiNode = AST_CreateNode(assignNode, NODE_Multi_L_Value);
 
         while (tokenBuffer->count > 1) {
-            ASTNode *value = AST_CreateStringNode(multiNode, NODE_Identifier, TokenBufferPopFront(tokenBuffer).str);
+            ASTNode *value = AST_CreateStringNode(multiNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
         }
 
-        ASTNode *funcNode = AST_CreateStringNode(parentNode, NODE_Func_Call, TokenBufferPopFront(tokenBuffer).str);
+        ASTNode *funcNode = AST_CreateStringNode(parentNode, NODE_Func_Call, TokenBufferPopFront(&tokenBuffer).str);
         ret = NT_Func_Args(funcNode);
     }
 
@@ -347,7 +347,7 @@ bool NT_Exps(ASTNode *parentNode, bool createAssignment) {
             ASTNode *multiNode = AST_CreateNode(assignNode, NODE_Multi_L_Value);
 
             while (!TokenBufferEmpty(tokenBuffer)) {
-                ASTNode *value = AST_CreateStringNode(multiNode, NODE_Identifier, TokenBufferPopFront(tokenBuffer).str);
+                ASTNode *value = AST_CreateStringNode(multiNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
             }
 
             ASTNode *funcNode = AST_CreateStringNode(assignNode, NODE_Func_Call, firstToken.str);
@@ -437,7 +437,7 @@ bool NT_Exp(ASTNode *parentNode, Token overlapTokenIn, bool createAssignment) {
 
     if (createAssignment) {
         ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
-        ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, TokenBufferPopFront(tokenBuffer).str);
+        ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
         node = AST_CreateNode(assignNode, NODE_Exp);
     }
     else {

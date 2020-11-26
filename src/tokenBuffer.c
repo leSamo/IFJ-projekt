@@ -14,7 +14,7 @@ TokenBuffer* TokenBufferCreate() {
     TokenBuffer *buffer = malloc(sizeof(TokenBuffer));
     buffer->tokens = malloc(sizeof(Token) * INITIAL_TOKEN_BUFFER_SIZE);
 
-    if (buffer == NULL) {
+    if (buffer == NULL || buffer->tokens == NULL ) {
         printError(INTERNAL_ERROR, "Memory allocation error\n");
         deallocateAll();
         exit(INTERNAL_ERROR);
@@ -32,7 +32,7 @@ void TokenBufferPush(TokenBuffer *buffer, Token token) {
         Token* newArray = realloc(buffer->tokens, sizeof(Token) * buffer->capacity);
 
         if (newArray == NULL) {
-            TokenBufferDispose(buffer);
+            TokenBufferDispose(&buffer);
             printError(INTERNAL_ERROR, "Memory allocation error\n");
             deallocateAll();
             exit(INTERNAL_ERROR);
@@ -57,7 +57,7 @@ Token TokenBufferTop(TokenBuffer *buffer) {
         return buffer->tokens[buffer->count - 1];
     }
     else {
-        TokenBufferDispose(buffer);
+        TokenBufferDispose(&buffer);
         printError(SYNTAX_ERROR, "Unbalanced construction error\n");
         deallocateAll();
         exit(SYNTAX_ERROR);
@@ -69,22 +69,22 @@ Token TokenBufferPop(TokenBuffer *buffer) {
         return buffer->tokens[--buffer->count];
     }
     else {
-        TokenBufferDispose(buffer);
+        TokenBufferDispose(&buffer);
         printError(SYNTAX_ERROR, "Unbalanced construction error\n");
         deallocateAll();
         exit(SYNTAX_ERROR);
     }
 }
 
-Token TokenBufferPopFront(TokenBuffer *buffer) {
-    if (buffer->count > 0) {
-        Token returnToken = buffer->tokens[0];
+Token TokenBufferPopFront(TokenBuffer **buffer) {
+    if ((*buffer)->count > 0) {
+        Token returnToken = (*buffer)->tokens[0];
 
-        for (int i = 0; i < buffer->count - 1; i++) {
-            buffer->tokens[i] = buffer->tokens[i + 1];
+        for (int i = 0; i < (*buffer)->count - 1; i++) {
+            (*buffer)->tokens[i] = (*buffer)->tokens[i + 1];
         }
 
-        buffer->count--;
+        (*buffer)->count--;
         return returnToken;
     }
     else {
@@ -107,10 +107,10 @@ void TokenBufferPrint(TokenBuffer *buffer) {
     }
 }
 
-void TokenBufferDispose(TokenBuffer *buffer) {
-    if (buffer != NULL) {
-        free(buffer->tokens);
-        free(buffer);
-        buffer = NULL;
+void TokenBufferDispose(TokenBuffer **buffer) {
+    if (*buffer != NULL) {
+        free((*buffer)->tokens);
+        free(*buffer);
+        *buffer = NULL;
     }
 }

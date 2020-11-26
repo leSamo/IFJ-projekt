@@ -69,8 +69,8 @@ bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapToke
             if (operatorStack->count == 0) {
                 printError(SYNTAX_ERROR, "Unpaired parentheses error.\n");
 
-                TokenBufferDispose(operatorStack);
-                TokenBufferDispose(outputQueue);
+                TokenBufferDispose(&operatorStack);
+                TokenBufferDispose(&outputQueue);
 
                 return false;
             }
@@ -82,8 +82,8 @@ bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapToke
                 if (operatorStack->count == 0) {
                     printError(SYNTAX_ERROR, "Unpaired parentheses error.\n");
 
-                    TokenBufferDispose(operatorStack);
-                    TokenBufferDispose(outputQueue);
+                    TokenBufferDispose(&operatorStack);
+                    TokenBufferDispose(&outputQueue);
 
                     return false;
                 }
@@ -100,8 +100,8 @@ bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapToke
         if (token.type == TOK_L_Paren) {
             printError(SYNTAX_ERROR, "Unpaired parentheses error.\n");
 
-            TokenBufferDispose(operatorStack);
-            TokenBufferDispose(outputQueue);
+            TokenBufferDispose(&operatorStack);
+            TokenBufferDispose(&outputQueue);
 
             return false;
         }
@@ -118,8 +118,8 @@ bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapToke
         AST_AttachNode(expRoot, expHead);
     }
 
-    TokenBufferDispose(operatorStack);
-    TokenBufferDispose(outputQueue);
+    TokenBufferDispose(&operatorStack);
+    TokenBufferDispose(&outputQueue);
 
     return ret;
 }
@@ -179,6 +179,13 @@ ASTNode* verifyOutput(TokenBuffer *outputQueue) {
     for (int i = 0; nodeBuffer->count > 1; i++) {
         ASTNode *currentNode = nodeBuffer->nodes[i];
 
+        if (i >= nodeBuffer->count ) {
+            free(nodeBuffer->nodes);
+            free(nodeBuffer);
+
+            return NULL;
+        }
+
         if (isNodeOperator(currentNode->type) && !currentNode->isOperatorResult) {
             if (!NodeBufferCollapse(nodeBuffer, i)) {
                 free(nodeBuffer->nodes);
@@ -187,13 +194,6 @@ ASTNode* verifyOutput(TokenBuffer *outputQueue) {
                 return NULL;
             }
             i = 0;
-        }
-
-        if (i > nodeBuffer->count ) {
-            free(nodeBuffer->nodes);
-            free(nodeBuffer);
-
-            return NULL;
         }
     }    
 
