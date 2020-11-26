@@ -104,13 +104,14 @@ bool NT_Prog() {
     printf("=========================\n");
     
     /* Semantic analysis */
-    BSTInit(&SymTableTree);
+    ST_Init(&SymTableTree);
 
     AST_FirstPass(ASTRoot, &SymTableTree);
+    AST_SecondPass(ASTRoot, &SymTableTree);
 
-    BSTPrettyPrint(SymTableTree, 0);
+    ST_PrettyPrint(SymTableTree, 0);
 
-    BSTDispose(&SymTableTree);
+    ST_Dispose(&SymTableTree);
 
     /*
     FillTable_FirstPass(ASTRoot);

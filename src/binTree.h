@@ -12,12 +12,12 @@
 
 #include "binTree.c"
 
-void BSTInit(tBSTNodePtr *);
+void ST_Init(ST_Node **);
 
-tBSTNodePtr BSTSearch(tBSTNodePtr RootPtr, char *searchedId);
+ST_Node* ST_Search(ST_Node *RootPtr, char *searchedId);
 
-void BSTInsert(tBSTNodePtr *RootPtr, char *id, symType type);
+void ST_Insert(ST_Node **RootPtr, char *id, symType type);
 
-void BSTDispose(tBSTNodePtr *);
+void ST_Dispose(ST_Node **);
 
-void BSTPrettyPrint(tBSTNodePtr nodePtr, int level);
+void ST_PrettyPrint(ST_Node *nodePtr, int level);

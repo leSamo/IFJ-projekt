@@ -1,21 +1,10 @@
 package main
 
-func b() {
-	a := 5
-}
-
-func a() {
-	a := 5
-}
-
-func c() {
-	a := 5
-}
-
-func d() {
-	a := 5
-}
-
 func main() {
-
+	b := 4
+	a := b + 5
+	c := a + b + b
+	d := 5.5
+	e := 5.8
+	f := d + e
 }

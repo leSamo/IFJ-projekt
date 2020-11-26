@@ -42,6 +42,7 @@ typedef enum ASTNodeType {
 
 typedef enum typeTag {
     TAG_None,
+    TAG_Unknown,
     TAG_Int,
     TAG_Float,
     TAG_String
@@ -64,7 +65,7 @@ typedef struct ASTNode {
     int childrenCount;
 
     bool isOperatorResult;
-    typeTag operatorType;
+    typeTag valueType;
 
     typeTag contentType;
     typeUnion content;

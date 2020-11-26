@@ -18,7 +18,7 @@ StringBuffer *stringBuffer;
 charBuffer *scannerBuffer;
 ASTNode *ASTRoot;
 TokenBuffer *tokenBuffer;
-tBSTNodePtr SymTableTree;
+ST_Node *SymTableTree;
 
 char* newString(unsigned int length) {
     char* string = malloc(sizeof(char) * (length + 1));

@@ -155,15 +155,19 @@ ASTNode* verifyOutput(TokenBuffer *outputQueue) {
         switch (outputQueue->tokens[i].type) {
             case TOK_Int_Literal:
                 nodeBuffer->nodes[i] = AST_CreateIntNode(NULL, NODE_Literal_Int, outputQueue->tokens[i].i);
+                nodeBuffer->nodes[i]->valueType = TAG_Int;
                 break;
             case TOK_Float_Literal:
                 nodeBuffer->nodes[i] = AST_CreateFloatNode(NULL, NODE_Literal_Float, outputQueue->tokens[i].f);
+                nodeBuffer->nodes[i]->valueType = TAG_Float;
                 break;
             case TOK_String_Literal:
                 nodeBuffer->nodes[i] = AST_CreateStringNode(NULL, NODE_Literal_String, outputQueue->tokens[i].str);
+                nodeBuffer->nodes[i]->valueType = TAG_String;
                 break;
             case TOK_Identifier:
                 nodeBuffer->nodes[i] = AST_CreateStringNode(NULL, NODE_Identifier, outputQueue->tokens[i].str);
+                nodeBuffer->nodes[i]->valueType = TAG_Unknown;
                 break;
             case TOK_Add:
                 nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Add);

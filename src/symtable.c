@@ -18,7 +18,7 @@
 #include "leParser.h"
 #include "binTree.h"
 /*
-struct tBSTNode SymTable[20];
+struct ST_Node SymTable[20];
 char *blocks[20][20];
 int BlockCnt = 0;
 int ST_Cnt_firstPass = 0;
@@ -26,7 +26,7 @@ int ST_Cnt_secondPass = 0;
 int ST_Block = 0;
 bool block_start = false;
 int SemanticError = 0;
-//struct tBSTNode Decalred[30];
+//struct ST_Node Decalred[30];
 
 // return false if id in block is already in tree
 bool FindByNameInBlock(int block, char *name) {
@@ -106,7 +106,7 @@ typeTag GetDeclaredType(ASTNode *nodePtr) {
 }
 
 // set prefixes of all parental blocks, and amount of them
-void SetPrefixes(tBSTNodePtr node, ASTNode *n) {
+void SetPrefixes(ST_Node *node, ASTNode *n) {
     ASTNode tmp = *n;
     int i = 0;
     while (tmp.parent->type != NODE_Prog) {
@@ -121,12 +121,12 @@ void SetPrefixes(tBSTNodePtr node, ASTNode *n) {
 }
 
 // find in binary tree with every prefix and check if at least one is declared
-bool IsDeclared(tBSTNodePtr node, char *name) {
+bool IsDeclared(ST_Node *node, char *name) {
     for (int i = 0; i < node->PrefixCount; i++) {
         char buf[20];
         snprintf(buf, 20, "%s@%d", name, node->prefix[i]);
         //printf("%s\n", buf);
-        if (BSTSearch(SymTableTree, buf)) {
+        if (ST_Search(SymTableTree, buf)) {
             //printf("%s, declared", node->id);
             return true;
         }
@@ -145,7 +145,7 @@ int ClosestBlock(ASTNode *n) {
     }
 }
 
-void PrintPrefix(tBSTNodePtr node) {
+void PrintPrefix(ST_Node *node) {
     for (int i = 0; i < 5; i++) {
         if (node->prefix[i] != 0)
             printf("%d, ", node->prefix[i]);
@@ -189,7 +189,7 @@ void FillTable_FirstPass(ASTNode *nodePtr) {
             char tmp[100];
             snprintf(tmp, 20, "%s@%d", nodePtr->content.str, ClosestBlock(nodePtr));
             strcpy(SymTable[ST_Cnt_firstPass].id, tmp);
-            BSTInsert(&SymTableTree, tmp, SymTable[ST_Cnt_firstPass].Type);
+            ST_Insert(&SymTableTree, tmp, SymTable[ST_Cnt_firstPass].Type);
 
             ST_Cnt_firstPass++;
         }

@@ -18,35 +18,22 @@ typedef enum {
     SYM_VAR
 } symType;
 
-typedef struct tBSTNode {
+typedef struct ST_Node {
     char *id;
     symType type;
     ASTNode *node;
 
-    struct tBSTNode *LPtr;
-    struct tBSTNode *RPtr;
-} *tBSTNodePtr;
+    struct ST_Node *LPtr;
+    struct ST_Node *RPtr;
+} ST_Node;
 
-/*
-typedef struct tBSTNode {
-    char id[50];
-    int depth;
-    typeTag Type;
-    typeUnion content;
-    int prefix[5];
-    int PrefixCount;
-    struct tBSTNode *LPtr;
-    struct tBSTNode *RPtr;
-} * tBSTNodePtr;
-*/
-
-void BSTInit(tBSTNodePtr *RootPtr) {
+void ST_Init(ST_Node **RootPtr) {
     *RootPtr = NULL;
 }
 
-tBSTNodePtr BSTSearch(tBSTNodePtr RootPtr, char *searchedId) {
+ST_Node* ST_Search(ST_Node *RootPtr, char *searchedId) {
     if (RootPtr == NULL) {
-        return false;
+        return NULL;
     }
 
     if (strcmp(searchedId, RootPtr->id) == 0) {
@@ -54,16 +41,16 @@ tBSTNodePtr BSTSearch(tBSTNodePtr RootPtr, char *searchedId) {
     }
 
     if (strcmp(searchedId, RootPtr->id) < 0) {
-        return BSTSearch(RootPtr->RPtr, searchedId);
+        return ST_Search(RootPtr->RPtr, searchedId);
     }
     else {
-        return BSTSearch(RootPtr->LPtr, searchedId);
+        return ST_Search(RootPtr->LPtr, searchedId);
     }
 }
 
-void BSTInsert(tBSTNodePtr *RootPtr, char *id, symType type) {
+void ST_Insert(ST_Node **RootPtr, char *id, symType type) {
     if (*RootPtr == NULL) {        
-        tBSTNodePtr new_leaf = malloc(sizeof(struct tBSTNode));
+        ST_Node *new_leaf = malloc(sizeof(ST_Node));
         new_leaf->id = newString(strlen(id));
         
         // TODO: Check if malloc was successful
@@ -79,24 +66,24 @@ void BSTInsert(tBSTNodePtr *RootPtr, char *id, symType type) {
         (*RootPtr)->type = type;
     }
     else if (strcmp(id, (*RootPtr)->id) < 0) {
-        BSTInsert(&(*RootPtr)->RPtr, id, type);
+        ST_Insert(&(*RootPtr)->RPtr, id, type);
     }
     else if (strcmp(id, (*RootPtr)->id) > 0) {
-        BSTInsert(&(*RootPtr)->LPtr, id, type);
+        ST_Insert(&(*RootPtr)->LPtr, id, type);
     }
 }
 
-void BSTDispose(tBSTNodePtr *RootPtr) {
+void ST_Dispose(ST_Node **RootPtr) {
     if (*RootPtr != NULL) {
-        BSTDispose(&(*RootPtr)->RPtr);
-        BSTDispose(&(*RootPtr)->LPtr);
+        ST_Dispose(&(*RootPtr)->RPtr);
+        ST_Dispose(&(*RootPtr)->LPtr);
         free(*RootPtr);
     }
     
     *RootPtr = NULL;
 }
 
-void BSTPrettyPrint(tBSTNodePtr nodePtr, int level) {
+void ST_PrettyPrint(ST_Node *nodePtr, int level) {
     if (nodePtr != NULL) {
         for (int i = 0; i < level; i++) {
             printf("  ");
@@ -104,8 +91,8 @@ void BSTPrettyPrint(tBSTNodePtr nodePtr, int level) {
 
         printf("%s\n", nodePtr->id);
 
-        BSTPrettyPrint(nodePtr->LPtr, level + 1);
-        BSTPrettyPrint(nodePtr->RPtr, level + 1);
+        ST_PrettyPrint(nodePtr->LPtr, level + 1);
+        ST_PrettyPrint(nodePtr->RPtr, level + 1);
     }
 }
 
