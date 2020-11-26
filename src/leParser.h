@@ -44,6 +44,8 @@ bool NT_Var_N(ASTNode *parentNode);
 
 bool NT_Exps(ASTNode *parentNode, bool createAssignment);
 
+bool NT_Exp_Or_Fn(ASTNode *parentNode);
+
 bool NT_Func_Args(ASTNode *parentNode);
 
 bool NT_Func_Args_N(ASTNode *parentNode);

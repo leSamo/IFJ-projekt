@@ -49,6 +49,17 @@ bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapToke
             TokenBufferPush(outputQueue, currentToken);
         }
         else if (currentToken.type == TOK_L_Paren) {
+            if (previousToken.type != TOK_Empty) {
+                if (previousToken.type == TOK_Int_Literal || previousToken.type == TOK_Float_Literal || previousToken.type == TOK_String_Literal || previousToken.type == TOK_Identifier ) {
+                    printError(SYNTAX_ERROR, "Invalid expression.\n");
+
+                    TokenBufferDispose(&operatorStack);
+                    TokenBufferDispose(&outputQueue);
+
+                    return false;
+                }
+            }
+
             TokenBufferPush(operatorStack, currentToken);
         }
         else if (isOperator(currentToken.type)) {
@@ -66,6 +77,17 @@ bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapToke
             TokenBufferPush(operatorStack, currentToken);
         }
         else if (currentToken.type == TOK_R_Paren) {
+            if (previousToken.type != TOK_Empty) {
+                if (isOperator(previousToken.type)) {
+                    printError(SYNTAX_ERROR, "Invalid expression.\n");
+
+                    TokenBufferDispose(&operatorStack);
+                    TokenBufferDispose(&outputQueue);
+
+                    return false;
+                }
+            }
+
             if (operatorStack->count == 0) {
                 printError(SYNTAX_ERROR, "Unpaired parentheses error.\n");
 

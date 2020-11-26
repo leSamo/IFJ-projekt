@@ -96,6 +96,10 @@ Token TokenBufferPopFront(TokenBuffer **buffer) {
 }
 
 void TokenBufferPrint(TokenBuffer *buffer) {
+    if (buffer->count == 0) {
+        printf("Buffer is empty\n");
+    }
+
     for (int i = 0; i < buffer->count; i++) {
         Token currentToken = buffer->tokens[i];
         if (currentToken.type == TOK_Int_Literal) {

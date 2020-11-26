@@ -81,6 +81,8 @@ func main() {
     f = (45)
     g = "ahojky"
     h = "ahoj" + " " + "kamarat"
+    i = ((5))
+    j = (6 + (5 * 9) * 5) + 1
 }
 
 /* Program 7, expression testing, each line should produce lexical/syntactic error  */
@@ -88,13 +90,17 @@ func main() {
 package main
 
 func main() {
-    a = 
-    b = 5 + +
-    c = -6
-    d = c ++5
-    e = (-5)
-    f = 5 * 9 ( 5 + 4)
-    g = 5 0.6
+    //a = 
+    //b = 5 + +
+    //c = -6
+    //d = c ++5
+    //e = (-5)
+    //f = 5 * 9 ( 5 + 4)
+    //g = 5 0.6
+    //h = 5 / 5 ( + 6)
+    //i = (5 + ) 8
+    //j := fn()
+    //k := 9 + ahoj()
 }
 */
 

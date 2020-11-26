@@ -110,8 +110,6 @@ bool NT_Prog() {
     Print_tree(SymTableTree);
     printf("\n=========================\n\n");
     
-    
-    
     return ret;
 }
 
@@ -250,6 +248,11 @@ bool NT_Stat(ASTNode *parentNode) {
     bool ret = false;
     Token nextToken = getToken_NL_optional();
 
+    if (!TokenBufferEmpty(tokenBuffer)) {
+        printf("Unbalanced construction error\n");
+        return false;
+    }
+
     if (nextToken.type == TOK_Identifier) {
         TokenBufferPush(tokenBuffer, nextToken);
         ret = NT_Var(parentNode) && NT_Stat(parentNode);
@@ -282,7 +285,7 @@ bool NT_Var(ASTNode *parentNode) {
     if (nextToken.type == TOK_Assign) {
         ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
         ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
-        ret = NT_Exps(assignNode, false);
+        ret = NT_Exp_Or_Fn(assignNode);
     }
     else if (nextToken.type == TOK_Define) {
         ASTNode *defineNode = AST_CreateNode(parentNode, NODE_Define);
@@ -319,6 +322,7 @@ bool NT_Var_N(ASTNode *parentNode) {
             ret = NT_Var_N(parentNode);
         }
     }
+    /*
     else if (nextToken.type == TOK_L_Paren) {
         ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
         ASTNode *multiNode = AST_CreateNode(assignNode, NODE_Multi_L_Value);
@@ -330,6 +334,7 @@ bool NT_Var_N(ASTNode *parentNode) {
         ASTNode *funcNode = AST_CreateStringNode(parentNode, NODE_Func_Call, TokenBufferPopFront(&tokenBuffer).str);
         ret = NT_Func_Args(funcNode);
     }
+    */
 
     return ret;
 }
@@ -343,11 +348,18 @@ bool NT_Exps(ASTNode *parentNode, bool createAssignment) {
         Token secondToken = getToken();
 
         if (firstToken.type == TOK_Identifier && secondToken.type == TOK_L_Paren) {
-            ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
-            ASTNode *multiNode = AST_CreateNode(assignNode, NODE_Multi_L_Value);
+            ASTNode *assignNode;
+            
+            if (createAssignment) {
+                assignNode = AST_CreateNode(parentNode, NODE_Assign);
+                ASTNode *multiNode = AST_CreateNode(assignNode, NODE_Multi_L_Value);
 
-            while (!TokenBufferEmpty(tokenBuffer)) {
-                ASTNode *value = AST_CreateStringNode(multiNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
+                while (!TokenBufferEmpty(tokenBuffer)) {
+                    ASTNode *value = AST_CreateStringNode(multiNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
+                }
+            }
+            else {
+               assignNode = parentNode;
             }
 
             ASTNode *funcNode = AST_CreateStringNode(assignNode, NODE_Func_Call, firstToken.str);
@@ -356,6 +368,27 @@ bool NT_Exps(ASTNode *parentNode, bool createAssignment) {
         else {
             overlapToken = secondToken;
             ret = NT_Exp(parentNode, firstToken, createAssignment) && NT_Exps_N(parentNode, createAssignment);
+        }
+    }
+
+    return ret;
+}
+
+bool NT_Exp_Or_Fn(ASTNode *parentNode) {
+    bool ret = false;
+
+    Token firstToken = getToken_NL_optional();
+
+    if (isExpFirst(firstToken.type)) {
+        Token secondToken = getToken();
+
+        if (firstToken.type == TOK_Identifier && secondToken.type == TOK_L_Paren) {
+            ASTNode *funcNode = AST_CreateStringNode(parentNode, NODE_Func_Call, firstToken.str);
+            ret = NT_Func_Args(funcNode);
+        }
+        else {
+            overlapToken = secondToken;
+            ret = NT_Exp(parentNode, firstToken, false);
         }
     }
 
@@ -403,7 +436,7 @@ bool NT_Exps_N(ASTNode *parentNode, bool createAssignment) {
     }
     else if (nextToken.type == TOK_Newline) {
         if (!TokenBufferEmpty(tokenBuffer)) {
-            printf("Unbalanced expression error\n");
+            printf("Unbalanced construction error\n");
             return false;
         }
 

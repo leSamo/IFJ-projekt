@@ -5,6 +5,11 @@ func main() {
 	a,b = 6,5
 	c = 5 * 8 + 5 * 8 * (5 + 9595)
 	a = a * c
+	a = 2
+	a = fn(a)
+	a,b = fn(1, 2)
+	fn(a)
+	fn()
 
     if n < 2 {
 		a = 4
