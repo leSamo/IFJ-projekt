@@ -67,6 +67,16 @@ void AST_AttachNode(ASTNode *parent, ASTNode* child) {
     child->parent = parent;
 }
 
+ASTNode* AST_GetChildOfType(ASTNode *parent, ASTNodeType type) {
+    for (int i = 0; i < parent->childrenCount; i++) {
+        if (parent->children[i]->type == type) {
+            return parent->children[i];
+        }
+    }
+
+    return NULL; // not found
+}
+
 void AST_PrettyPrint(ASTNode *nodePtr, int level) {
     for (int i = 0; i < level; i++) {
         printf("  ");
@@ -123,6 +133,19 @@ void AST_Delete(ASTNode *nodePtr) {
         }
 
         free(nodePtr);
+    }
+}
+
+char *AST_GetTagName(typeTag type) {
+    switch (type) {
+    case TAG_Float:
+        return "Float";
+    case TAG_Int:
+        return "Int";
+    case TAG_String:
+        return "String";
+    default:
+        return "none yet";
     }
 }
 
@@ -192,7 +215,7 @@ char* AST_GetNodeName(ASTNodeType type) {
             return "Multi L-Value";
         default:
             return "Unknown AST node type";
-    }
+        }
 }
 
 #endif

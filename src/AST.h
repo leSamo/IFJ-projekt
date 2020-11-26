@@ -74,6 +74,8 @@ ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag conten
 
 void AST_AttachNode(ASTNode *parent, ASTNode* child);
 
+ASTNode* AST_GetChildOfType(ASTNode *parent, ASTNodeType type);
+
 void AST_PrettyPrint(ASTNode *nodePtr, int level);
 
 void AST_Print(ASTNode *nodePtr);

@@ -12,11 +12,13 @@
 #include "charBuffer.h"
 #include "AST.c"
 #include "tokenBuffer.h"
+#include "symtable.c"
 
 StringBuffer *stringBuffer;
 charBuffer *scannerBuffer;
 ASTNode *ASTRoot;
 TokenBuffer *tokenBuffer;
+tBSTNodePtr SymTableTree;
 
 char* newString(unsigned int length) {
     char* string = malloc(sizeof(char) * (length + 1));

@@ -15,8 +15,8 @@
 #include "leScanner.c"
 #include "leParser.h"
 #include "expressions.c"
-#include "SymTable.c"
-
+#include "symtable.c"
+#include "semanticAnalysis.c"
 
 int main(int argc, char *argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0); // for debug, remove before submitting
@@ -100,16 +100,31 @@ bool NT_Prog() {
 
     ret = NT_Prolog() && NT_Func_Def_List(ASTRoot);
 
-    AST_PrettyPrint(ASTRoot, 0); // print whole tree
-    printf("\n=========================\n\n");
+    AST_PrettyPrint(ASTRoot, 0); // print whole AST
+    printf("=========================\n");
     
+    /* Semantic analysis */
     BSTInit(&SymTableTree);
 
-    GetIds(ASTRoot, 0);
+    AST_FirstPass(ASTRoot, &SymTableTree);
+
+    BSTPrettyPrint(SymTableTree, 0);
+
+    BSTDispose(&SymTableTree);
+
+    /*
+    FillTable_FirstPass(ASTRoot);
     
     Print_tree(SymTableTree);
-    printf("\n=========================\n\n");
     
+    FillTable_SecondPass(ASTRoot, 0);
+    //CheckSemant(ASTRoot, 0);
+
+    if (SemanticError == 0){
+        printf("\n~~~~~~~~~~~~~~~~~~~~ \nSemantic analysis: All OK\n~~~~~~~~~~~~~~~~~~~~\n\n");
+    }
+    */
+
     return ret;
 }
 
