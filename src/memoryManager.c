@@ -17,6 +17,7 @@
 StringBuffer *stringBuffer;
 charBuffer *scannerBuffer;
 ASTNode *ASTRoot;
+ASTNode *ASTBuiltIn;
 TokenBuffer *tokenBuffer;
 ST_Node *SymTableTree;
 
@@ -35,6 +36,9 @@ void deallocateAll() {
 
     // free semantic AST
     AST_Delete(ASTRoot);
+
+    // free semantic AST with built-in symbols
+    AST_Delete(ASTBuiltIn);
 
     // free token buffer used for recursive descent
     TokenBufferDispose(&tokenBuffer);

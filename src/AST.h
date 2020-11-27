@@ -7,6 +7,7 @@
  * ================================= */
 
 typedef enum ASTNodeType {
+    NODE_Empty,
     NODE_Prog,
     NODE_Block,
     NODE_Func_Def,

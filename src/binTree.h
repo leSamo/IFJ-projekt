@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "intBuffer.h"
+
 typedef enum {
     SYM_None,
     SYM_Readonly,
@@ -24,6 +26,7 @@ typedef enum {
 
 typedef struct ST_Node {
     char *id;
+    IntBuffer *scopes;
     symType type;
     ASTNode *node;
 
@@ -37,7 +40,7 @@ void ST_SetupBuiltIn(ST_Node **RootPtr);
 
 ST_Node* ST_Search(ST_Node *RootPtr, char *searchedId);
 
-void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node);
+void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node, IntBuffer scopes);
 
 void ST_Dispose(ST_Node **);
 

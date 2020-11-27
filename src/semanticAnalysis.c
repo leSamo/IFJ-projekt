@@ -58,17 +58,25 @@ void ST_AddFunction(ASTNode *astNode, ST_Node **symTableRoot) {
     }
 
     // check if parent is prog, else error
-    ST_Insert(symTableRoot, astNode->content.str, SYM_Func, astNode);
+    ST_Insert(symTableRoot, astNode->content.str, SYM_Func, astNode, GLOBAL_SCOPE);
 }
 
 void AST_SecondPass(ASTNode *astNode, ST_Node **symTableRoot) {
-    AST_SecondPassTraversal(astNode, symTableRoot);
+    IntBuffer *scopes = IntBufferCreate();
+
+    AST_SecondPassTraversal(astNode, symTableRoot, *scopes);
+
+    IntBufferDispose(&scopes);
 }
 
-void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot) {
+void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer scopes) {
     if (astNode != NULL) {
-        if (astNode->type == NODE_Define) {
-            ST_VariableDefinition(astNode, symTableRoot);
+        if (astNode->type == NODE_Block) {
+            IntBufferPush(&scopes, astNode->id);
+            //IntBufferPrint(&scopes);
+        }
+        else if (astNode->type == NODE_Define) {
+            ST_VariableDefinition(astNode, symTableRoot, scopes);
         }
         else if (astNode->type == NODE_Assign) {
             ST_VariableAssignment(astNode, symTableRoot);
@@ -83,18 +91,21 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot) {
         }
 
         for (int i = 0; i < astNode->childrenCount; i++) {
-            AST_SecondPassTraversal(astNode->children[i], symTableRoot);
+            AST_SecondPassTraversal(astNode->children[i], symTableRoot, scopes);
         }
     }
 }
 
-void ST_VariableDefinition(ASTNode *astNode, ST_Node **symTableRoot) {
+void ST_VariableDefinition(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer scopes) {
     ASTNode *variableNode = astNode->children[0];
     ASTNode *expressionNode = astNode->children[1];
 
     typeTag type = ST_DeriveExpressionType(expressionNode, symTableRoot);
 
-    ST_Insert(symTableRoot, variableNode->content.str, type, variableNode);
+    printf("defin\n");
+    IntBufferPrint(&scopes);
+
+    ST_Insert(symTableRoot, variableNode->content.str, type, variableNode, scopes);
 }
 
 void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot) {

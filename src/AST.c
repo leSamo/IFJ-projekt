@@ -100,7 +100,7 @@ void AST_PrettyPrint(ASTNode *nodePtr, int level) {
         printf("  ");
     }
 
-    printf("%s", AST_GetNodeName(nodePtr->type));
+    printf("[%d] %s", nodePtr->id, AST_GetNodeName(nodePtr->type));
 
     switch (nodePtr->contentType) {
         case TAG_Int:
