@@ -100,8 +100,6 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer
                 ASTNode *idNode = AST_GetChildOfType(paramNode, NODE_Identifier);
                 ASTNode *typeNode = paramNode->children[1];
 
-                printf("type %d\n", typeNode->contentType);
-
                 ST_Insert(symTableRoot, idNode->content.str, typeNode->contentType, idNode, blockScope);
             }
         }

@@ -12,7 +12,7 @@
 #include "charBuffer.h"
 #include "AST.c"
 #include "tokenBuffer.h"
-#include "symtable.c"
+#include "binTree.h"
 
 StringBuffer *stringBuffer;
 charBuffer *scannerBuffer;

@@ -15,7 +15,6 @@
 #include "leScanner.c"
 #include "leParser.h"
 #include "expressions.c"
-#include "symtable.c"
 #include "semanticAnalysis.c"
 
 int main(int argc, char *argv[]) {
@@ -36,7 +35,7 @@ int main(int argc, char *argv[]) {
 
     // recursive descent start
     if (NT_Prog()) {
-        printf("\n~~~~~~~~~~~~~~~~~~~~ \nSyntactic analysis: All OK\n~~~~~~~~~~~~~~~~~~~~\n\n");
+        //printf("\n~~~~~~~~~~~~~~~~~~~~ \nSyntactic analysis: All OK\n~~~~~~~~~~~~~~~~~~~~\n\n");
     }
     else {
         printError(SYNTAX_ERROR, "Syntactic error\n");
@@ -100,8 +99,8 @@ bool NT_Prog() {
 
     ret = NT_Prolog() && NT_Func_Def_List(ASTRoot);
 
-    AST_PrettyPrint(ASTRoot, 0); // print whole AST
-    printf("=========================\n");
+    //AST_PrettyPrint(ASTRoot, 0); // print whole AST
+    //printf("=========================\n");
     
     /* Semantic analysis */
     ST_Init(&SymTableTree);
@@ -109,7 +108,7 @@ bool NT_Prog() {
     AST_FirstPass(ASTRoot, &SymTableTree);
     AST_SecondPass(ASTRoot, &SymTableTree);
 
-    ST_PrettyPrint(SymTableTree, 0);
+    //ST_PrettyPrint(SymTableTree, 0);
 
     ST_Dispose(&SymTableTree);
 
@@ -272,7 +271,7 @@ bool NT_Stat(ASTNode *parentNode) {
     Token nextToken = getToken_NL_optional();
 
     if (!TokenBufferEmpty(tokenBuffer)) {
-        printf("Unbalanced construction error\n");
+        fprintf(stderr, "Unbalanced construction error\n");
         return false;
     }
 
@@ -459,7 +458,7 @@ bool NT_Exps_N(ASTNode *parentNode, bool createAssignment) {
     }
     else if (nextToken.type == TOK_Newline) {
         if (!TokenBufferEmpty(tokenBuffer)) {
-            printf("Unbalanced construction error\n");
+            fprintf(stderr,"Unbalanced construction error\n");
             return false;
         }
 
