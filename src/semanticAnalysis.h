@@ -32,11 +32,17 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot);
 /* Check if return statement is returning correct types according to function definition */
 void ST_Return(ASTNode *astNode, ST_Node **symTableRoot);
 
+/* Check if function call arguments are correct according to function definition */
+void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTableRoot);
+
 /* Work out what is the type of expression pointed to by first argument */
 typeTag ST_DeriveExpressionType(ASTNode *astNode, ST_Node **symTableRoot);
 
 /* Recursively check if all terms inside expression are of the supplied type */
 bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **SymTableTree, typeTag type);
+
+/* Check if term is of the supplied type */
+bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag type);
 
 /* Fetch variable by id from symbol table and return its type */
 typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot);

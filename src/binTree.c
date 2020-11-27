@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "binTree.h"
 #include "leParser.h"
 
 void ST_Init(ST_Node **RootPtr) {

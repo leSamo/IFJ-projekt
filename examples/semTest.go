@@ -1,7 +1,7 @@
 package main
 
 func main() {
-	/*
+
 	b := 4
 	a := b + 5
 	c := a + b + b
@@ -10,18 +10,29 @@ func main() {
 	f := d + e
 	a = 5
 	b = a + 4
-	c = ahoj()
-	ahoj()
+
 	a,b = 5,6
-	a,b = cau()
 	s := "ahoj"
 	s,a = inputs()
 	a,b = inputi()
 	d,a = inputf()
-	*/
+
+	a = ahoj(5, 6)
+	a,b = multi(a)
+
+	noRet(5)
+}
+
+func noRet(a int) {
+
+}
+
+func multi(a int) (int, int) {
+
 }
 
 func ahoj(a int, b int) (int) {
+	/*
 	i := 0
 	f := 0.0
 	s := "ahoj"
@@ -32,6 +43,7 @@ func ahoj(a int, b int) (int) {
 	i, i = ord("ahoj", 1)
 	s, i = chr("sss", 0)
 	print(i,f,s)
+	*/
 }
 
 /*

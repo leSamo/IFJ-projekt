@@ -6,6 +6,9 @@
  * Note: Part of this file was copied from xfindr00's IAL 2 project
  * ================================= */
 
+#ifndef BINTREEH
+#define BINTREEH
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,3 +42,5 @@ void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node);
 void ST_Dispose(ST_Node **);
 
 void ST_PrettyPrint(ST_Node *nodePtr, int level);
+
+#endif

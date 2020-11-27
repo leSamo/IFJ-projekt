@@ -75,7 +75,8 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot) {
         }
         else if (astNode->type == NODE_Func_Call && astNode->parent->type != NODE_Assign) {
             // func call without return types
-            ST_GetFuncNode(astNode->content.str, symTableRoot);
+            ASTNode *funcNode = ST_GetFuncNode(astNode->content.str, symTableRoot);
+            ST_CheckFuncCallArgs(astNode, funcNode->content.str, symTableRoot);
         }
         else if (astNode->type == NODE_Return) {
             ST_Return(astNode, symTableRoot);
@@ -117,6 +118,8 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot) {
                     printError(ARGUMENT_ERROR, "Incompatible type in func call assignment error\n");
                 }
             }
+
+            ST_CheckFuncCallArgs(rightSideNode, rightSideNode->content.str, symTableRoot);
         }
     }
     else {
@@ -136,6 +139,8 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot) {
             else {
                 rightSideType = returnTypesNode->children[0]->contentType;
             }
+
+            ST_CheckFuncCallArgs(rightSideNode, rightSideNode->content.str, symTableRoot);
         }
 
         if (variableType != rightSideType) {
@@ -161,6 +166,26 @@ void ST_Return(ASTNode *returnNode, ST_Node **symTableRoot) {
     }
 }
 
+void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTableRoot) {
+    ASTNode *funcDefinition = ST_GetFuncNode(funcName, symTableRoot);
+    ASTNode *funcDefParams = AST_GetChildOfType(funcDefinition, NODE_Func_Def_Params);
+
+    if (funcDefParams != NULL) { // fixed param count
+        if (funcDefParams->childrenCount != funcCallNode->childrenCount) {
+            printError(ARGUMENT_ERROR, "Incorrect argument count in function call\n");
+        }
+        else { // check type compatibility one-by-one
+            for (int i = 0; i < funcDefParams->childrenCount; i++) {
+                if (!ST_CheckTermType(funcCallNode->children[i], symTableRoot, funcDefParams->children[i]->contentType)) {
+                    printError(ARGUMENT_ERROR, "Return statement incompatible with func definition error\n");
+                }
+            }
+        }
+    }
+    // else variable param count, don't need to check
+}
+
+
 typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot) {
     // go left until you hit a leaf node
     ASTNode *seedNode = expNode;
@@ -177,7 +202,6 @@ typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot) {
     }
     
     if (ST_CheckExpressionType(expNode, symTableRoot, expType)) {
-        printf("Compatible, adding to symbol table\n");
         return expType;
     }
     else {
@@ -203,6 +227,25 @@ bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **symTableRoot, typ
         return ST_CheckExpressionType(partialExpNode->children[0], symTableRoot, type) &&
                ST_CheckExpressionType(partialExpNode->children[1], symTableRoot, type);
     }
+}
+
+bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag type) {
+    typeTag termType;
+
+    if (termNode->type == NODE_Identifier) {
+        termType = ST_GetVariableType(termNode->content.str, symTableRoot);
+    }
+    else if (termNode->type == NODE_Literal_Int)  {
+        termType = TAG_Int;
+    }
+    else if (termNode->type == NODE_Literal_Float)  {
+        termType = TAG_Float;
+    }
+    else if (termNode->type == NODE_Literal_String)  {
+        termType = TAG_String;
+    }
+
+    return termType == type;
 }
 
 typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot) {
