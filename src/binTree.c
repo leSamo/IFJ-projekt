@@ -11,28 +11,57 @@
 
 #include <stdbool.h>
 #include <string.h>
+
 #include "leParser.h"
-
-typedef enum {
-    SYM_None,
-    SYM_Unknown,
-    SYM_Int,
-    SYM_Float,
-    SYM_String,
-    SYM_Func
-} symType;
-
-typedef struct ST_Node {
-    char *id;
-    symType type;
-    ASTNode *node;
-
-    struct ST_Node *LPtr;
-    struct ST_Node *RPtr;
-} ST_Node;
 
 void ST_Init(ST_Node **RootPtr) {
     *RootPtr = NULL;
+    ST_SetupBuiltIn(RootPtr);
+}
+
+void ST_SetupBuiltIn(ST_Node **RootPtr) {
+    // readonly _ variable
+    ST_Insert(RootPtr, "_", SYM_Readonly, NULL);
+
+    // func inputs() (string,int)
+    ASTNode *inputs = AST_CreateStringNode(NULL, NODE_Func_Def, "inputs");
+    AST_CreateNode(inputs, NODE_Func_Def_Params);
+    ASTNode *inputsReturn = AST_CreateNode(inputs, NODE_Func_Def_Return);
+    AST_CreateTaggedNode(inputsReturn, NODE_Type_String, TAG_String);
+    AST_CreateTaggedNode(inputsReturn, NODE_Type_Int, TAG_Int);
+    ST_Insert(RootPtr, "inputs", SYM_Func, inputs);
+
+    // func inputi() (int,int)
+    ASTNode *inputi = AST_CreateStringNode(NULL, NODE_Func_Def, "inputi");
+    AST_CreateNode(inputi, NODE_Func_Def_Params);
+    ASTNode *inputiReturn = AST_CreateNode(inputi, NODE_Func_Def_Return);
+    AST_CreateTaggedNode(inputiReturn, NODE_Type_Int, TAG_Int);
+    AST_CreateTaggedNode(inputiReturn, NODE_Type_Int, TAG_Int);
+    ST_Insert(RootPtr, "inputi", SYM_Func, inputi);
+
+    // func inputf() (float64,int)
+    ASTNode *inputf = AST_CreateStringNode(NULL, NODE_Func_Def, "inputf");
+    AST_CreateNode(inputf, NODE_Func_Def_Params);
+    ASTNode *inputfReturn = AST_CreateNode(inputf, NODE_Func_Def_Return);
+    AST_CreateTaggedNode(inputfReturn, NODE_Type_Float, TAG_Float);
+    AST_CreateTaggedNode(inputfReturn, NODE_Type_Int, TAG_Int);
+    ST_Insert(RootPtr, "inputf", SYM_Func, inputf);
+
+    // func int2float(i int) (float64)
+    ASTNode *int2float = AST_CreateStringNode(NULL, NODE_Func_Def, "int2float");
+    ASTNode *int2floatParams = AST_CreateNode(int2float, NODE_Func_Def_Params);
+    AST_CreateTaggedNode(int2floatParams, NODE_Type_Int, TAG_Int);
+    ASTNode *int2floatReturn = AST_CreateNode(int2float, NODE_Func_Def_Return);
+    AST_CreateTaggedNode(int2floatReturn, NODE_Type_Float, TAG_Float);
+    ST_Insert(RootPtr, "int2float", SYM_Func, int2float);
+
+    // func float2int(f float64) (int)
+    ASTNode *float2int = AST_CreateStringNode(NULL, NODE_Func_Def, "float2int");
+    ASTNode *float2intParams = AST_CreateNode(float2int, NODE_Func_Def_Params);
+    AST_CreateTaggedNode(float2intParams, NODE_Type_Float, TAG_Float);
+    ASTNode *float2intReturn = AST_CreateNode(float2int, NODE_Func_Def_Return);
+    AST_CreateTaggedNode(float2intReturn, NODE_Type_Int, TAG_Int);
+    ST_Insert(RootPtr, "float2int", SYM_Func, float2int);
 }
 
 ST_Node* ST_Search(ST_Node *RootPtr, char *searchedId) {
@@ -101,6 +130,5 @@ void ST_PrettyPrint(ST_Node *nodePtr, int level) {
         ST_PrettyPrint(nodePtr->RPtr, level + 1);
     }
 }
-
 
 #endif

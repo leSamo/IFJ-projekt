@@ -29,6 +29,9 @@ void ST_VariableDefinition(ASTNode *astNode, ST_Node **symTableRoot);
 /* Check if assignment is valid */
 void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot);
 
+/* Check if return statement is returning correct types according to function definition */
+void ST_Return(ASTNode *astNode, ST_Node **symTableRoot);
+
 /* Work out what is the type of expression pointed to by first argument */
 typeTag ST_DeriveExpressionType(ASTNode *astNode, ST_Node **symTableRoot);
 

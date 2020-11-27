@@ -73,6 +73,13 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot) {
         else if (astNode->type == NODE_Assign) {
             ST_VariableAssignment(astNode, symTableRoot);
         }
+        else if (astNode->type == NODE_Func_Call && astNode->parent->type != NODE_Assign) {
+            // func call without return types
+            ST_GetFuncNode(astNode->content.str, symTableRoot);
+        }
+        else if (astNode->type == NODE_Return) {
+            ST_Return(astNode, symTableRoot);
+        }
 
         for (int i = 0; i < astNode->childrenCount; i++) {
             AST_SecondPassTraversal(astNode->children[i], symTableRoot);
@@ -93,8 +100,24 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot) {
     ASTNode *variableNode = astNode->children[0];
     ASTNode *rightSideNode = astNode->children[1];
 
+    // TODO: Check func call parameters count and type
+
     if (variableNode->type == NODE_Multi_L_Value) {
-        // TODO: Multi L-Value for func call
+        ASTNode *funcNode = ST_GetFuncNode(rightSideNode->content.str, symTableRoot);
+        ASTNode *returnTypesNode = AST_GetChildOfType(funcNode, NODE_Func_Def_Return);
+
+        if (returnTypesNode->childrenCount != variableNode->childrenCount) {
+            printError(ARGUMENT_ERROR, "Invalid return value count in func call assignment\n");
+        }
+        else {
+            // for each multi L-value type find matching return type for fn
+            for (int i = 0; i < returnTypesNode->childrenCount; i++) {
+                typeTag variableType = ST_GetVariableType(variableNode->children[i]->content.str, symTableRoot);
+                if (returnTypesNode->children[i]->contentType != variableType) {
+                    printError(ARGUMENT_ERROR, "Incompatible type in func call assignment error\n");
+                }
+            }
+        }
     }
     else {
         typeTag variableType = ST_GetVariableType(variableNode->content.str, symTableRoot);
@@ -117,6 +140,23 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot) {
 
         if (variableType != rightSideType) {
             printError(INCOMPATIBLE_TYPE_ERROR, "Incompatible type in assignment error\n");
+        }
+    }
+}
+
+void ST_Return(ASTNode *returnNode, ST_Node **symTableRoot) {
+    ASTNode *funcDefinition = AST_GetParentOfType(returnNode, NODE_Func_Def);
+    ASTNode *funcDefReturnTypes = AST_GetChildOfType(funcDefinition, NODE_Func_Def_Return);
+
+    if (funcDefReturnTypes->childrenCount != returnNode->childrenCount) {
+        printError(ARGUMENT_ERROR, "Return statement incompatible with func definition error\n");
+    }
+    else {
+        // for each func def return type find matching return statement type
+        for (int i = 0; i < funcDefReturnTypes->childrenCount; i++) {
+            if (!ST_CheckExpressionType(returnNode->children[i], symTableRoot, funcDefReturnTypes->children[i]->contentType)) {
+                printError(ARGUMENT_ERROR, "Return statement incompatible with func definition error\n");
+            }
         }
     }
 }

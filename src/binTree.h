@@ -10,9 +10,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "binTree.c"
+typedef enum {
+    SYM_None,
+    SYM_Readonly,
+    SYM_Int,
+    SYM_Float,
+    SYM_String,
+    SYM_Func
+} symType;
+
+typedef struct ST_Node {
+    char *id;
+    symType type;
+    ASTNode *node;
+
+    struct ST_Node *LPtr;
+    struct ST_Node *RPtr;
+} ST_Node;
 
 void ST_Init(ST_Node **);
+
+void ST_SetupBuiltIn(ST_Node **RootPtr);
 
 ST_Node* ST_Search(ST_Node *RootPtr, char *searchedId);
 

@@ -83,6 +83,18 @@ ASTNode* AST_GetChildOfType(ASTNode *parent, ASTNodeType type) {
     return NULL; // not found
 }
 
+ASTNode* AST_GetParentOfType(ASTNode *child, ASTNodeType type) {
+    while (child->parent != NULL) {
+        if (child->parent->type == type) {
+            return child->parent;
+        }
+
+        child = child->parent;
+    }
+
+    return NULL; // not found
+}
+
 void AST_PrettyPrint(ASTNode *nodePtr, int level) {
     for (int i = 0; i < level; i++) {
         printf("  ");
