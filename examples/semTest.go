@@ -24,8 +24,14 @@ func main() {
 func ahoj(a int, b int) (int) {
 	i := 0
 	f := 0.0
+	s := "ahoj"
 	f = int2float(i)
 	i = float2int(f)
+	i = len(s)
+	s, i = substr(s, 1, 1)
+	i, i = ord("ahoj", 1)
+	s, i = chr("sss", 0)
+	print(i,f,s)
 }
 
 /*

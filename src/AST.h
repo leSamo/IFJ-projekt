@@ -11,6 +11,7 @@ typedef enum ASTNodeType {
     NODE_Block,
     NODE_Func_Def,
     NODE_Func_Def_Params,
+    NODE_Func_Def_Params_Variable,
     NODE_Func_Def_Return,
     NODE_Stat,
     NODE_If_Else,
