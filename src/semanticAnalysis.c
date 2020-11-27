@@ -45,7 +45,7 @@ void AST_FirstPassTraversal(ASTNode *astNode, ST_Node **symTableRoot) {
 }
 
 void ST_AddFunction(ASTNode *astNode, ST_Node **symTableRoot) {
-    if (ST_Search(*symTableRoot, astNode->content.str) != NULL) {
+    if (ST_Search(*symTableRoot, *symTableRoot, astNode->content.str, GLOBAL_SCOPE) != NULL) {
         printError(DEFINITION_ERROR, "Function identifier redefinition error\n");
     }
 
@@ -79,15 +79,15 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer
             ST_VariableDefinition(astNode, symTableRoot, scopes);
         }
         else if (astNode->type == NODE_Assign) {
-            ST_VariableAssignment(astNode, symTableRoot);
+            ST_VariableAssignment(astNode, symTableRoot, scopes);
         }
         else if (astNode->type == NODE_Func_Call && astNode->parent->type != NODE_Assign) {
             // func call without return types
             ASTNode *funcNode = ST_GetFuncNode(astNode->content.str, symTableRoot);
-            ST_CheckFuncCallArgs(astNode, funcNode->content.str, symTableRoot);
+            ST_CheckFuncCallArgs(astNode, funcNode->content.str, symTableRoot, scopes);
         }
         else if (astNode->type == NODE_Return) {
-            ST_Return(astNode, symTableRoot);
+            ST_Return(astNode, symTableRoot, scopes);
         }
 
         for (int i = 0; i < astNode->childrenCount; i++) {
@@ -100,15 +100,12 @@ void ST_VariableDefinition(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer s
     ASTNode *variableNode = astNode->children[0];
     ASTNode *expressionNode = astNode->children[1];
 
-    typeTag type = ST_DeriveExpressionType(expressionNode, symTableRoot);
-
-    printf("defin\n");
-    IntBufferPrint(&scopes);
+    typeTag type = ST_DeriveExpressionType(expressionNode, symTableRoot, scopes);
 
     ST_Insert(symTableRoot, variableNode->content.str, type, variableNode, scopes);
 }
 
-void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot) {
+void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer scopes) {
     ASTNode *variableNode = astNode->children[0];
     ASTNode *rightSideNode = astNode->children[1];
 
@@ -124,21 +121,21 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot) {
         else {
             // for each multi L-value type find matching return type for fn
             for (int i = 0; i < returnTypesNode->childrenCount; i++) {
-                typeTag variableType = ST_GetVariableType(variableNode->children[i]->content.str, symTableRoot);
+                typeTag variableType = ST_GetVariableType(variableNode->children[i]->content.str, symTableRoot, scopes);
                 if (variableType != TAG_Any && returnTypesNode->children[i]->contentType != variableType) {
                     printError(ARGUMENT_ERROR, "Incompatible type in func call assignment error\n");
                 }
             }
 
-            ST_CheckFuncCallArgs(rightSideNode, rightSideNode->content.str, symTableRoot);
+            ST_CheckFuncCallArgs(rightSideNode, rightSideNode->content.str, symTableRoot, scopes);
         }
     }
     else {
-        typeTag variableType = ST_GetVariableType(variableNode->content.str, symTableRoot);
+        typeTag variableType = ST_GetVariableType(variableNode->content.str, symTableRoot, scopes);
         typeTag rightSideType;
 
         if (rightSideNode->type == NODE_Exp) {
-            rightSideType = ST_DeriveExpressionType(rightSideNode, symTableRoot);
+            rightSideType = ST_DeriveExpressionType(rightSideNode, symTableRoot, scopes);
         }
         else if (rightSideNode->type == NODE_Func_Call) {
             ASTNode *funcNode = ST_GetFuncNode(rightSideNode->content.str, symTableRoot);
@@ -151,7 +148,7 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot) {
                 rightSideType = returnTypesNode->children[0]->contentType;
             }
 
-            ST_CheckFuncCallArgs(rightSideNode, rightSideNode->content.str, symTableRoot);
+            ST_CheckFuncCallArgs(rightSideNode, rightSideNode->content.str, symTableRoot, scopes);
         }
 
         if (variableType != TAG_Any && variableType != rightSideType) {
@@ -160,7 +157,7 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot) {
     }
 }
 
-void ST_Return(ASTNode *returnNode, ST_Node **symTableRoot) {
+void ST_Return(ASTNode *returnNode, ST_Node **symTableRoot, IntBuffer scopes) {
     ASTNode *funcDefinition = AST_GetParentOfType(returnNode, NODE_Func_Def);
     ASTNode *funcDefReturnTypes = AST_GetChildOfType(funcDefinition, NODE_Func_Def_Return);
 
@@ -170,14 +167,14 @@ void ST_Return(ASTNode *returnNode, ST_Node **symTableRoot) {
     else {
         // for each func def return type find matching return statement type
         for (int i = 0; i < funcDefReturnTypes->childrenCount; i++) {
-            if (!ST_CheckExpressionType(returnNode->children[i], symTableRoot, funcDefReturnTypes->children[i]->contentType)) {
+            if (!ST_CheckExpressionType(returnNode->children[i], symTableRoot, funcDefReturnTypes->children[i]->contentType, scopes)) {
                 printError(ARGUMENT_ERROR, "Return statement incompatible with func definition error\n");
             }
         }
     }
 }
 
-void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTableRoot) {
+void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTableRoot, IntBuffer scopes) {
     ASTNode *funcDefinition = ST_GetFuncNode(funcName, symTableRoot);
     ASTNode *funcDefParams = AST_GetChildOfType(funcDefinition, NODE_Func_Def_Param_List);
 
@@ -187,7 +184,7 @@ void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTa
         }
         else { // check type compatibility one-by-one
             for (int i = 0; i < funcDefParams->childrenCount; i++) {
-                if (!ST_CheckTermType(funcCallNode->children[i], symTableRoot, funcDefParams->children[i]->contentType)) {
+                if (!ST_CheckTermType(funcCallNode->children[i], symTableRoot, funcDefParams->children[i]->contentType, scopes)) {
                     printError(ARGUMENT_ERROR, "Return statement incompatible with func definition error\n");
                 }
             }
@@ -197,7 +194,7 @@ void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTa
 }
 
 
-typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot) {
+typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot, IntBuffer scopes) {
     // go left until you hit a leaf node
     ASTNode *seedNode = expNode;
 
@@ -209,10 +206,10 @@ typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot) {
 
     // we don't know type - it's an identifier - look into symbol table
     if (expType == TAG_Unknown) {
-        expType = ST_GetVariableType(seedNode->content.str, symTableRoot);
+        expType = ST_GetVariableType(seedNode->content.str, symTableRoot, scopes);
     }
     
-    if (ST_CheckExpressionType(expNode, symTableRoot, expType)) {
+    if (ST_CheckExpressionType(expNode, symTableRoot, expType, scopes)) {
         return expType;
     }
     else {
@@ -220,31 +217,31 @@ typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot) {
     }
 }
 
-bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **symTableRoot, typeTag type) {
+bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **symTableRoot, typeTag type, IntBuffer scopes) {
     // TODO: Check if string literals are using only NODE_Add
     if (partialExpNode->childrenCount == 0) { // this node is leaf
         typeTag expType = partialExpNode->valueType;
 
         // we don't know type - it's an identifier - look into symbol table
         if (expType == TAG_Unknown) {
-            expType = ST_GetVariableType(partialExpNode->content.str, symTableRoot);
+            expType = ST_GetVariableType(partialExpNode->content.str, symTableRoot, scopes);
         }
         return expType == type;
     }
     else if (partialExpNode->childrenCount == 1) {
-        return ST_CheckExpressionType(partialExpNode->children[0], symTableRoot, type);
+        return ST_CheckExpressionType(partialExpNode->children[0], symTableRoot, type, scopes);
     }
     else {
-        return ST_CheckExpressionType(partialExpNode->children[0], symTableRoot, type) &&
-               ST_CheckExpressionType(partialExpNode->children[1], symTableRoot, type);
+        return ST_CheckExpressionType(partialExpNode->children[0], symTableRoot, type, scopes) &&
+               ST_CheckExpressionType(partialExpNode->children[1], symTableRoot, type, scopes);
     }
 }
 
-bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag type) {
+bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag type, IntBuffer scopes) {
     typeTag termType;
 
     if (termNode->type == NODE_Identifier) {
-        termType = ST_GetVariableType(termNode->content.str, symTableRoot);
+        termType = ST_GetVariableType(termNode->content.str, symTableRoot, scopes);
     }
     else if (termNode->type == NODE_Literal_Int)  {
         termType = TAG_Int;
@@ -259,8 +256,8 @@ bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag type) {
     return termType == type;
 }
 
-typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot) {
-    ST_Node *symbol = ST_Search(*symTableRoot, id);
+typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot, IntBuffer scopes) {
+    ST_Node *symbol = ST_Search(*symTableRoot, *symTableRoot, id, scopes);
 
     if (symbol != NULL) {
         return symbol->type;
@@ -271,12 +268,12 @@ typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot) {
 }
 
 ASTNode *ST_GetFuncNode(char *id, ST_Node **symTableRoot) {
-    ST_Node *symbol = ST_Search(*symTableRoot, id);
+    ST_Node *symbol = ST_Search(*symTableRoot, *symTableRoot, id, GLOBAL_SCOPE);
 
     if (symbol != NULL) {
         return symbol->node;
     }
     else {
-        printError(DEFINITION_ERROR, "Undefined variable\n");
+        printError(DEFINITION_ERROR, "Undefined func variable\n");
     }
 }

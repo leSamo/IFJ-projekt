@@ -38,7 +38,7 @@ void ST_Init(ST_Node **);
 
 void ST_SetupBuiltIn(ST_Node **RootPtr);
 
-ST_Node* ST_Search(ST_Node *RootPtr, char *searchedId);
+ST_Node* ST_Search(ST_Node *RootPtr, ST_Node *CurrentPtr, char *searchedId, IntBuffer scopes);
 
 void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node, IntBuffer scopes);
 

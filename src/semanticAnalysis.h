@@ -27,25 +27,25 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer
 void ST_VariableDefinition(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer scopes);
 
 /* Check if assignment is valid */
-void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot);
+void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer scopes);
 
 /* Check if return statement is returning correct types according to function definition */
-void ST_Return(ASTNode *astNode, ST_Node **symTableRoot);
+void ST_Return(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer scopes);
 
 /* Check if function call arguments are correct according to function definition */
-void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTableRoot);
+void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTableRoot, IntBuffer scopes);
 
 /* Work out what is the type of expression pointed to by first argument */
-typeTag ST_DeriveExpressionType(ASTNode *astNode, ST_Node **symTableRoot);
+typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot, IntBuffer scopes);
 
 /* Recursively check if all terms inside expression are of the supplied type */
-bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **SymTableTree, typeTag type);
+bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **symTableRoot, typeTag type, IntBuffer scopes);
 
 /* Check if term is of the supplied type */
-bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag type);
+bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag type, IntBuffer scopes);
 
 /* Fetch variable by id from symbol table and return its type */
-typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot);
+typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot, IntBuffer scopes);
 
 /* Fetch functino by id from symbol table and return its node */
 ASTNode *ST_GetFuncNode(char *id, ST_Node **symTableRoot);

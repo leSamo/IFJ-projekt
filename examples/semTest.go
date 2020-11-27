@@ -1,6 +1,19 @@
 package main
 
 func main() {
+	a := 5
+	a = 6
+
+	if a > 5 {
+		a := 6.6
+		a = 5.3
+	} else {
+		a := "ahoj"
+		a = "cau"
+	}
+}
+/*
+func main() {
 
 	b := 4
 	a := b + 5
@@ -32,7 +45,6 @@ func multi(a int) (int, int) {
 }
 
 func ahoj(a int, b int) (int) {
-	/*
 	i := 0
 	f := 0.0
 	s := "ahoj"
@@ -43,10 +55,9 @@ func ahoj(a int, b int) (int) {
 	i, i = ord("ahoj", 1)
 	s, i = chr("sss", 0)
 	print(i,f,s)
-	*/
 }
 
-/*
+
 func cau() (int, int) {
 	return a, 45
 }

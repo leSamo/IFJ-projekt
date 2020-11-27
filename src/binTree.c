@@ -118,20 +118,36 @@ void ST_SetupBuiltIn(ST_Node **RootPtr) {
     ST_Insert(RootPtr, "chr", SYM_Func, chr, GLOBAL_SCOPE);
 }
 
-ST_Node* ST_Search(ST_Node *RootPtr, char *searchedId) {
-    if (RootPtr == NULL) {
-        return NULL;
+ST_Node* ST_Search(ST_Node *RootPtr, ST_Node *CurrentPtr, char *searchedId, IntBuffer scopes) {
+    if (CurrentPtr == NULL) {
+        if (scopes.count > 0) {
+            scopes.count--;
+            return ST_Search(RootPtr, RootPtr, searchedId, scopes);
+        }
+        else {
+            return NULL;
+        }
     }
 
-    if (strcmp(searchedId, RootPtr->id) == 0) {
-        return RootPtr;
+    if (strcmp(searchedId, CurrentPtr->id) == 0) {
+        int scopeComparison = IntBufferCompare(*CurrentPtr->scopes, scopes);
+
+        if (scopeComparison < 0) {
+            return ST_Search(RootPtr, CurrentPtr->RPtr, searchedId, scopes);
+        }
+        else if (scopeComparison > 0) {
+            return ST_Search(RootPtr, CurrentPtr->LPtr, searchedId, scopes);
+        }
+        else {
+            return CurrentPtr;
+        }
     }
 
-    if (strcmp(searchedId, RootPtr->id) < 0) {
-        return ST_Search(RootPtr->RPtr, searchedId);
+    if (strcmp(searchedId, CurrentPtr->id) < 0) {
+        return ST_Search(RootPtr, CurrentPtr->RPtr, searchedId, scopes);
     }
     else {
-        return ST_Search(RootPtr->LPtr, searchedId);
+        return ST_Search(RootPtr, CurrentPtr->LPtr, searchedId, scopes);
     }
 }
 
@@ -159,14 +175,10 @@ void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node, IntBuff
 
         *RootPtr = new_leaf;
 
-        printf("Inserted %s\n", id);
+        printf("Inserting %s\n", id);
     }
     else if (strcmp(id, (*RootPtr)->id) == 0) { // tree already has node with this id
-        IntBufferPrint((*RootPtr)->scopes);
-        IntBufferPrint(&scopes);
-        printf("%s --- %s\n", id, (*RootPtr)->id);
         int scopeComparison = IntBufferCompare(*(*RootPtr)->scopes, scopes);
-        printf("scope: %d\n", scopeComparison);
 
         if (scopeComparison < 0) {
             ST_Insert(&(*RootPtr)->RPtr, id, type, node, scopes);
@@ -177,7 +189,6 @@ void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node, IntBuff
         else {
             printError(DEFINITION_TYPE_ERROR, "Variable redefinition in the same scope error\n");
         }
-        
     }
     else if (strcmp(id, (*RootPtr)->id) < 0) {
         ST_Insert(&(*RootPtr)->RPtr, id, type, node, scopes);
