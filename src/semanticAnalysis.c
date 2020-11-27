@@ -45,10 +45,6 @@ void AST_FirstPassTraversal(ASTNode *astNode, ST_Node **symTableRoot) {
 }
 
 void ST_AddFunction(ASTNode *astNode, ST_Node **symTableRoot) {
-    if (ST_Search(*symTableRoot, *symTableRoot, astNode->content.str, GLOBAL_SCOPE) != NULL) {
-        printError(DEFINITION_ERROR, "Function identifier redefinition error\n");
-    }
-
     if (astNode->parent != ASTRoot) { // syntactic analyzer should cover this
         printError(OTHER_SEMANTIC_ERROR, "Nested function definition error\n");
     }
@@ -73,7 +69,6 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer
     if (astNode != NULL) {
         if (astNode->type == NODE_Block) {
             IntBufferPush(&scopes, astNode->id);
-            //IntBufferPrint(&scopes);
         }
         else if (astNode->type == NODE_Define) {
             ST_VariableDefinition(astNode, symTableRoot, scopes);
@@ -88,6 +83,27 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer
         }
         else if (astNode->type == NODE_Return) {
             ST_Return(astNode, symTableRoot, scopes);
+        }
+        else if (astNode->type == NODE_Func_Def) {
+            ASTNode *paramListNode = AST_GetChildOfType(astNode, NODE_Func_Def_Param_List);
+            ASTNode *blockNode = AST_GetChildOfType(astNode, NODE_Block);
+            IntBuffer blockScope;
+            blockScope.count = scopes.count;
+            blockScope.capacity = scopes.capacity;
+            
+            for (int i = 0; i < scopes.count; i++) {
+                blockScope.content[i] = scopes.content[i];
+            }
+
+            for (int i = 0; i < paramListNode->childrenCount; i++) {
+                ASTNode *paramNode = paramListNode->children[i];
+                ASTNode *idNode = AST_GetChildOfType(paramNode, NODE_Identifier);
+                ASTNode *typeNode = paramNode->children[1];
+
+                printf("type %d\n", typeNode->contentType);
+
+                ST_Insert(symTableRoot, idNode->content.str, typeNode->contentType, idNode, blockScope);
+            }
         }
 
         for (int i = 0; i < astNode->childrenCount; i++) {
@@ -176,16 +192,18 @@ void ST_Return(ASTNode *returnNode, ST_Node **symTableRoot, IntBuffer scopes) {
 
 void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTableRoot, IntBuffer scopes) {
     ASTNode *funcDefinition = ST_GetFuncNode(funcName, symTableRoot);
-    ASTNode *funcDefParams = AST_GetChildOfType(funcDefinition, NODE_Func_Def_Param_List);
+    ASTNode *funcDefParamList = AST_GetChildOfType(funcDefinition, NODE_Func_Def_Param_List);
 
-    if (funcDefParams != NULL) { // fixed param count
-        if (funcDefParams->childrenCount != funcCallNode->childrenCount) {
+    if (funcDefParamList != NULL) { // fixed param count
+        if (funcDefParamList->childrenCount != funcCallNode->childrenCount) {
             printError(ARGUMENT_ERROR, "Incorrect argument count in function call\n");
         }
         else { // check type compatibility one-by-one
-            for (int i = 0; i < funcDefParams->childrenCount; i++) {
-                if (!ST_CheckTermType(funcCallNode->children[i], symTableRoot, funcDefParams->children[i]->contentType, scopes)) {
-                    printError(ARGUMENT_ERROR, "Return statement incompatible with func definition error\n");
+            for (int i = 0; i < funcDefParamList->childrenCount; i++) {
+                if (funcDefParamList->children[i]->childrenCount > 1) {
+                    if (!ST_CheckTermType(funcCallNode->children[i], symTableRoot, funcDefParamList->children[i]->children[1]->contentType, scopes)) {
+                        printError(ARGUMENT_ERROR, "Incorrect argument types in function call\n");
+                    }
                 }
             }
         }

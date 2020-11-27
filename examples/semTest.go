@@ -12,6 +12,12 @@ func main() {
 		a = "cau"
 	}
 }
+
+func a (i int) {
+	b := 4
+	b = i
+}
+
 /*
 func main() {
 

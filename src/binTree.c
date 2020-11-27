@@ -174,8 +174,6 @@ void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node, IntBuff
         new_leaf->RPtr = NULL;
 
         *RootPtr = new_leaf;
-
-        printf("Inserting %s\n", id);
     }
     else if (strcmp(id, (*RootPtr)->id) == 0) { // tree already has node with this id
         int scopeComparison = IntBufferCompare(*(*RootPtr)->scopes, scopes);
