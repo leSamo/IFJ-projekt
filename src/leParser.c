@@ -200,15 +200,15 @@ bool NT_Type(ASTNode *parentNode) {
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Int_Keyword) {
-        AST_CreateNode(parentNode, NODE_Type_Int);
+        AST_CreateTaggedNode(parentNode, NODE_Type_Int, TAG_Int);
         ret = true;
     }
     else if (nextToken.type == TOK_Float_Keyword) {
-        AST_CreateNode(parentNode, NODE_Type_Float);
+        AST_CreateTaggedNode(parentNode, NODE_Type_Float, TAG_Float);
         ret = true;
     }
     else if (nextToken.type == TOK_String_Keyword) {
-        AST_CreateNode(parentNode, NODE_Type_String);
+        AST_CreateTaggedNode(parentNode, NODE_Type_String, TAG_String);
         ret = true;
     }
 

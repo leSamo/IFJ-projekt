@@ -11,6 +11,7 @@
 #include "AST.c"
 #include "binTree.c"
 #include "semanticAnalysis.h"
+#include "constants.h"
 
 ASTNode *mainFuncDef = NULL;
 
@@ -57,7 +58,7 @@ void ST_AddFunction(ASTNode *astNode, ST_Node **symTableRoot) {
     }
 
     // check if parent is prog, else error
-    ST_Insert(symTableRoot, astNode->content.str, SYM_FUNC);
+    ST_Insert(symTableRoot, astNode->content.str, SYM_Func, astNode);
 }
 
 void AST_SecondPass(ASTNode *astNode, ST_Node **symTableRoot) {
@@ -67,7 +68,10 @@ void AST_SecondPass(ASTNode *astNode, ST_Node **symTableRoot) {
 void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot) {
     if (astNode != NULL) {
         if (astNode->type == NODE_Define) {
-            ST_AddVariable(astNode, symTableRoot);
+            ST_VariableDefinition(astNode, symTableRoot);
+        }
+        else if (astNode->type == NODE_Assign) {
+            ST_VariableAssignment(astNode, symTableRoot);
         }
 
         for (int i = 0; i < astNode->childrenCount; i++) {
@@ -76,13 +80,45 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot) {
     }
 }
 
-void ST_AddVariable(ASTNode *astNode, ST_Node **symTableRoot) {
+void ST_VariableDefinition(ASTNode *astNode, ST_Node **symTableRoot) {
     ASTNode *variableNode = astNode->children[0];
     ASTNode *expressionNode = astNode->children[1];
 
     typeTag type = ST_DeriveExpressionType(expressionNode, symTableRoot);
 
-    ST_Insert(symTableRoot, variableNode->content.str, type);
+    ST_Insert(symTableRoot, variableNode->content.str, type, variableNode);
+}
+
+void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot) {
+    ASTNode *variableNode = astNode->children[0];
+    ASTNode *rightSideNode = astNode->children[1];
+
+    if (variableNode->type == NODE_Multi_L_Value) {
+        // TODO: Multi L-Value for func call
+    }
+    else {
+        typeTag variableType = ST_GetVariableType(variableNode->content.str, symTableRoot);
+        typeTag rightSideType;
+
+        if (rightSideNode->type == NODE_Exp) {
+            rightSideType = ST_DeriveExpressionType(rightSideNode, symTableRoot);
+        }
+        else if (rightSideNode->type == NODE_Func_Call) {
+            ASTNode *funcNode = ST_GetFuncNode(rightSideNode->content.str, symTableRoot);
+            ASTNode *returnTypesNode = AST_GetChildOfType(funcNode, NODE_Func_Def_Return);
+    
+            if (returnTypesNode->childrenCount != 1) {
+                printError(ARGUMENT_ERROR, "Invalid return value count in func call assignment\n");
+            }
+            else {
+                rightSideType = returnTypesNode->children[0]->contentType;
+            }
+        }
+
+        if (variableType != rightSideType) {
+            printError(INCOMPATIBLE_TYPE_ERROR, "Incompatible type in assignment error\n");
+        }
+    }
 }
 
 typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot) {
@@ -97,14 +133,7 @@ typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot) {
 
     // we don't know type - it's an identifier - look into symbol table
     if (expType == TAG_Unknown) {
-        ST_Node *symbol = ST_Search(*symTableRoot, seedNode->content.str);
-
-        if (symbol != NULL) {
-            expType = symbol->type;
-        }
-        else {
-            printError(DEFINITION_ERROR, "Undefined variable\n");
-        }
+        expType = ST_GetVariableType(seedNode->content.str, symTableRoot);
     }
     
     if (ST_CheckExpressionType(expNode, symTableRoot, expType)) {
@@ -123,14 +152,7 @@ bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **symTableRoot, typ
 
         // we don't know type - it's an identifier - look into symbol table
         if (expType == TAG_Unknown) {
-            ST_Node *symbol = ST_Search(*symTableRoot, partialExpNode->content.str);
-
-            if (symbol != NULL) {
-                expType = symbol->type;
-            }
-            else {
-                printError(DEFINITION_ERROR, "Undefined variable\n");
-            }
+            expType = ST_GetVariableType(partialExpNode->content.str, symTableRoot);
         }
         return expType == type;
     }
@@ -140,5 +162,27 @@ bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **symTableRoot, typ
     else {
         return ST_CheckExpressionType(partialExpNode->children[0], symTableRoot, type) &&
                ST_CheckExpressionType(partialExpNode->children[1], symTableRoot, type);
+    }
+}
+
+typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot) {
+    ST_Node *symbol = ST_Search(*symTableRoot, id);
+
+    if (symbol != NULL) {
+        return symbol->type;
+    }
+    else {
+        printError(DEFINITION_ERROR, "Undefined variable\n");
+    }
+}
+
+ASTNode *ST_GetFuncNode(char *id, ST_Node **symTableRoot) {
+    ST_Node *symbol = ST_Search(*symTableRoot, id);
+
+    if (symbol != NULL) {
+        return symbol->node;
+    }
+    else {
+        printError(DEFINITION_ERROR, "Undefined variable\n");
     }
 }

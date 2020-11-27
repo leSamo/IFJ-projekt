@@ -39,6 +39,12 @@ ASTNode* AST_CreateNode(ASTNode *parent, ASTNodeType type) {
     return AST_CreateNodeGeneral(parent, type, TAG_None, tu);
 }
 
+ASTNode* AST_CreateTaggedNode(ASTNode *parent, ASTNodeType type, typeTag tag) {
+    typeUnion tu;
+
+    return AST_CreateNodeGeneral(parent, type, tag, tu);
+}
+
 ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag contentType, typeUnion content) {
     ASTNode *node = malloc(sizeof(ASTNode));
 

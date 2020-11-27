@@ -24,10 +24,19 @@ void AST_SecondPass(ASTNode *astNode, ST_Node **symTableRoot);
 void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot);
 
 /* Add variable to symbol table with its type and scope */
-void ST_AddVariable(ASTNode *astNode, ST_Node **symTableRoot);
+void ST_VariableDefinition(ASTNode *astNode, ST_Node **symTableRoot);
+
+/* Check if assignment is valid */
+void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot);
 
 /* Work out what is the type of expression pointed to by first argument */
 typeTag ST_DeriveExpressionType(ASTNode *astNode, ST_Node **symTableRoot);
 
 /* Recursively check if all terms inside expression are of the supplied type */
 bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **SymTableTree, typeTag type);
+
+/* Fetch variable by id from symbol table and return its type */
+typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot);
+
+/* Fetch functino by id from symbol table and return its node */
+ASTNode *ST_GetFuncNode(char *id, ST_Node **symTableRoot);

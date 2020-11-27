@@ -14,8 +14,12 @@
 #include "leParser.h"
 
 typedef enum {
-    SYM_FUNC,
-    SYM_VAR
+    SYM_None,
+    SYM_Unknown,
+    SYM_Int,
+    SYM_Float,
+    SYM_String,
+    SYM_Func
 } symType;
 
 typedef struct ST_Node {
@@ -48,7 +52,7 @@ ST_Node* ST_Search(ST_Node *RootPtr, char *searchedId) {
     }
 }
 
-void ST_Insert(ST_Node **RootPtr, char *id, symType type) {
+void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node) {
     if (*RootPtr == NULL) {        
         ST_Node *new_leaf = malloc(sizeof(ST_Node));
         new_leaf->id = newString(strlen(id));
@@ -57,19 +61,21 @@ void ST_Insert(ST_Node **RootPtr, char *id, symType type) {
 
         strcpy(new_leaf->id, id);
         new_leaf->type = type;
+        new_leaf->node = node;
+
         new_leaf->LPtr = NULL;
         new_leaf->RPtr = NULL;
 
         *RootPtr = new_leaf;
     }
     else if (strcmp(id, (*RootPtr)->id) == 0) { // tree already has node with key K
-        (*RootPtr)->type = type;
+        printError(DEFINITION_TYPE_ERROR, "Variable redefinition error\n");
     }
     else if (strcmp(id, (*RootPtr)->id) < 0) {
-        ST_Insert(&(*RootPtr)->RPtr, id, type);
+        ST_Insert(&(*RootPtr)->RPtr, id, type, node);
     }
     else if (strcmp(id, (*RootPtr)->id) > 0) {
-        ST_Insert(&(*RootPtr)->LPtr, id, type);
+        ST_Insert(&(*RootPtr)->LPtr, id, type, node);
     }
 }
 

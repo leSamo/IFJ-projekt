@@ -16,7 +16,7 @@ void ST_Init(ST_Node **);
 
 ST_Node* ST_Search(ST_Node *RootPtr, char *searchedId);
 
-void ST_Insert(ST_Node **RootPtr, char *id, symType type);
+void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node);
 
 void ST_Dispose(ST_Node **);
 

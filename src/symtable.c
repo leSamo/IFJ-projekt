@@ -189,6 +189,8 @@ void FillTable_FirstPass(ASTNode *nodePtr) {
             char tmp[100];
             snprintf(tmp, 20, "%s@%d", nodePtr->content.str, ClosestBlock(nodePtr));
             strcpy(SymTable[ST_Cnt_firstPass].id, tmp);
+
+            // wont work vvv
             ST_Insert(&SymTableTree, tmp, SymTable[ST_Cnt_firstPass].Type);
 
             ST_Cnt_firstPass++;

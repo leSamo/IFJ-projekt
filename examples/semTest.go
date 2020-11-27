@@ -7,4 +7,11 @@ func main() {
 	d := 5.5
 	e := 5.8
 	f := d + e
+	a = 5
+	b = a + 4
+	c = ahoj()
+}
+
+func ahoj() (int) {
+
 }
