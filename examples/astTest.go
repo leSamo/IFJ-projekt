@@ -1,6 +1,7 @@
 package main
 
 func main() {
+	/*
 	b := 6
 	a,b = 6,5
 	c = 5 * 8 + 5 * 8 * (5 + 9595)
@@ -16,6 +17,7 @@ func main() {
 	} else {
 		b := 6
 	}
+	*/
 }
 
 func ahoj(a string, b float64) (int) {

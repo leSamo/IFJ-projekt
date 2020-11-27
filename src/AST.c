@@ -175,8 +175,12 @@ char* AST_GetNodeName(ASTNodeType type) {
             return "Block";
         case NODE_Func_Def:
             return "Func def";
-        case NODE_Func_Def_Params:
-            return "Func def params";
+        case NODE_Func_Def_Param_List:
+            return "Func def param list";
+        case NODE_Func_Def_Param:
+            return "Func def param";
+        case NODE_Func_Def_Params_Variable:
+            return "Func def variable params";
         case NODE_Func_Def_Return:
             return "Func def return types";
         case NODE_Stat:

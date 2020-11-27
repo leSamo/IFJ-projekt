@@ -20,7 +20,7 @@ void AST_FirstPass(ASTNode *astNode, ST_Node **symTableRoot) {
 
     // check if main func is present and has no params and no return type
     if (mainFuncDef != NULL) {
-        ASTNode *funcParams = AST_GetChildOfType(mainFuncDef, NODE_Func_Def_Params);
+        ASTNode *funcParams = AST_GetChildOfType(mainFuncDef, NODE_Func_Def_Param_List);
         ASTNode *funcReturnTypes = AST_GetChildOfType(mainFuncDef, NODE_Func_Def_Return);
 
         if (funcParams->childrenCount > 0 || funcReturnTypes->childrenCount > 0) {
@@ -114,7 +114,7 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot) {
             // for each multi L-value type find matching return type for fn
             for (int i = 0; i < returnTypesNode->childrenCount; i++) {
                 typeTag variableType = ST_GetVariableType(variableNode->children[i]->content.str, symTableRoot);
-                if (returnTypesNode->children[i]->contentType != variableType) {
+                if (variableType != TAG_Any && returnTypesNode->children[i]->contentType != variableType) {
                     printError(ARGUMENT_ERROR, "Incompatible type in func call assignment error\n");
                 }
             }
@@ -143,7 +143,7 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot) {
             ST_CheckFuncCallArgs(rightSideNode, rightSideNode->content.str, symTableRoot);
         }
 
-        if (variableType != rightSideType) {
+        if (variableType != TAG_Any && variableType != rightSideType) {
             printError(INCOMPATIBLE_TYPE_ERROR, "Incompatible type in assignment error\n");
         }
     }
@@ -168,7 +168,7 @@ void ST_Return(ASTNode *returnNode, ST_Node **symTableRoot) {
 
 void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTableRoot) {
     ASTNode *funcDefinition = ST_GetFuncNode(funcName, symTableRoot);
-    ASTNode *funcDefParams = AST_GetChildOfType(funcDefinition, NODE_Func_Def_Params);
+    ASTNode *funcDefParams = AST_GetChildOfType(funcDefinition, NODE_Func_Def_Param_List);
 
     if (funcDefParams != NULL) { // fixed param count
         if (funcDefParams->childrenCount != funcCallNode->childrenCount) {

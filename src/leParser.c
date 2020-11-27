@@ -165,13 +165,16 @@ bool NT_Param_List(ASTNode *parentNode) {
 
     Token nextToken = getToken();
 
-    ASTNode *node = AST_CreateNode(parentNode, NODE_Func_Def_Params);
+    ASTNode *node = AST_CreateNode(parentNode, NODE_Func_Def_Param_List);
 
     if (nextToken.type == TOK_R_Paren) {
         ret = true;
     }
     else if (nextToken.type == TOK_Identifier) {
-        ret = NT_Type(node) && NT_Param_List_N(node);
+        ASTNode *paramNode = AST_CreateNode(node, NODE_Func_Def_Param);
+        ASTNode *idNode = AST_CreateStringNode(paramNode, NODE_Identifier, nextToken.str);
+
+        ret = NT_Type(paramNode) && NT_Param_List_N(node);
     }
 
     return ret;
@@ -186,8 +189,12 @@ bool NT_Param_List_N(ASTNode *parentNode) {
         ret = true;
     }
     else if (nextToken.type == TOK_Comma) {
-        if (getToken_NL_optional().type == TOK_Identifier)  {
-            ret = NT_Type(parentNode) && NT_Param_List_N(parentNode);
+        Token idToken = getToken_NL_optional();
+        if (idToken.type == TOK_Identifier)  {
+            ASTNode *paramNode = AST_CreateNode(parentNode, NODE_Func_Def_Param);
+            ASTNode *idNode = AST_CreateStringNode(paramNode, NODE_Identifier, idToken.str);
+            
+            ret = NT_Type(paramNode) && NT_Param_List_N(parentNode);
         }
     }
 

@@ -10,7 +10,8 @@ typedef enum ASTNodeType {
     NODE_Prog,
     NODE_Block,
     NODE_Func_Def,
-    NODE_Func_Def_Params,
+    NODE_Func_Def_Param_List,
+    NODE_Func_Def_Param,
     NODE_Func_Def_Params_Variable,
     NODE_Func_Def_Return,
     NODE_Stat,
@@ -46,7 +47,9 @@ typedef enum typeTag {
     TAG_Unknown,
     TAG_Int,
     TAG_Float,
-    TAG_String
+    TAG_String,
+    TAG_Unused,
+    TAG_Any
 } typeTag;
 
 typedef union typeUnion {
