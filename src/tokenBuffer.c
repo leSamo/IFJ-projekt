@@ -15,7 +15,7 @@ TokenBuffer* TokenBufferCreate() {
     buffer->tokens = malloc(sizeof(Token) * INITIAL_TOKEN_BUFFER_SIZE);
 
     if (buffer == NULL || buffer->tokens == NULL ) {
-        printError(INTERNAL_ERROR, "Memory allocation error\n");
+        throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
         deallocateAll();
         exit(INTERNAL_ERROR);
     }
@@ -33,7 +33,7 @@ void TokenBufferPush(TokenBuffer *buffer, Token token) {
 
         if (newArray == NULL) {
             TokenBufferDispose(&buffer);
-            printError(INTERNAL_ERROR, "Memory allocation error\n");
+            throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
             deallocateAll();
             exit(INTERNAL_ERROR);
         }
@@ -58,7 +58,7 @@ Token TokenBufferTop(TokenBuffer *buffer) {
     }
     else {
         TokenBufferDispose(&buffer);
-        printError(SYNTAX_ERROR, "Unbalanced construction error\n");
+        throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
         deallocateAll();
         exit(SYNTAX_ERROR);
     }
@@ -70,7 +70,7 @@ Token TokenBufferPop(TokenBuffer *buffer) {
     }
     else {
         TokenBufferDispose(&buffer);
-        printError(SYNTAX_ERROR, "Unbalanced construction error\n");
+        throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
         deallocateAll();
         exit(SYNTAX_ERROR);
     }
@@ -89,7 +89,7 @@ Token TokenBufferPopFront(TokenBuffer **buffer) {
     }
     else {
         TokenBufferDispose(buffer);
-        printError(SYNTAX_ERROR, "Unbalanced construction error\n");
+        throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
         deallocateAll();
         exit(SYNTAX_ERROR);
     }
@@ -103,7 +103,7 @@ void TokenBufferPrint(TokenBuffer *buffer) {
     for (int i = 0; i < buffer->count; i++) {
         Token currentToken = buffer->tokens[i];
         if (currentToken.type == TOK_Int_Literal) {
-            printf("%s: %d\n", getTokenName(currentToken.type), currentToken.i);
+            printf("%s: %ld\n", getTokenName(currentToken.type), currentToken.i);
         }
         else {
             printf("%s\n", getTokenName(currentToken.type));

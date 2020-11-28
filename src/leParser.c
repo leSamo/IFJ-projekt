@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
         //printf("\n~~~~~~~~~~~~~~~~~~~~ \nSyntactic analysis: All OK\n~~~~~~~~~~~~~~~~~~~~\n\n");
     }
     else {
-        printError(SYNTAX_ERROR, "Syntactic error\n");
+        throwError(SYNTAX_ERROR, "Syntactic error\n", true);
         deallocateAll();
         return SYNTAX_ERROR;
     }
@@ -51,7 +51,7 @@ Token getToken_NL_required() {
     Token nextToken = getToken();
 
     if (nextToken.type != TOK_Newline) {
-        printError(SYNTAX_ERROR, "Expected newline, found none");
+        throwError(SYNTAX_ERROR, "Expected newline, found none", true);
         deallocateAll();
         exit(SYNTAX_ERROR);
     }
@@ -492,7 +492,7 @@ bool NT_Exp(ASTNode *parentNode, Token overlapTokenIn, bool createAssignment) {
 
     if (createAssignment) {
         ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
-        ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
+        AST_CreateStringNode(assignNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
         node = AST_CreateNode(assignNode, NODE_Exp);
     }
     else {

@@ -110,8 +110,7 @@ Token getToken() {
                 break;
             }
             else {
-                printError(LEXICAL_ERROR, "Encountered unknown symbol\n");
-                throwLexicalError();
+                throwError(LEXICAL_ERROR, "Encountered unknown symbol\n", true);
             }
 
             break;
@@ -121,8 +120,7 @@ Token getToken() {
                 charBufferPush(scannerBuffer, currentChar);
             }
             else if (isDigit(currentChar)) {
-                printError(LEXICAL_ERROR, "Leading zero error\n");
-                throwLexicalError();
+                throwError(LEXICAL_ERROR, "Leading zero error\n", true);
             }
             else if (currentChar == '.') {
                 charBufferPush(scannerBuffer, currentChar);
@@ -166,8 +164,7 @@ Token getToken() {
                 currentState = AS_Float;
             }
             else {
-                printError(LEXICAL_ERROR, "Incorrect float literal\n");
-                throwLexicalError();
+                throwError(LEXICAL_ERROR, "Incorrect float literal\n", true);
             }
             break;
 
@@ -196,8 +193,7 @@ Token getToken() {
                 currentState = AS_Float_Scientific_Start_2;
             }
             else {
-                printError(LEXICAL_ERROR, "Incorrect float literal\n");
-                throwLexicalError();
+                throwError(LEXICAL_ERROR, "Incorrect float literal\n", true);
             }
             break;
         
@@ -207,8 +203,7 @@ Token getToken() {
                 currentState = AS_Float_Scientific;
             }
             else {
-                printError(LEXICAL_ERROR, "Incorrect float literal\n");
-                throwLexicalError();
+                throwError(LEXICAL_ERROR, "Incorrect float literal\n", true);
             }
             break;
 
@@ -265,8 +260,7 @@ Token getToken() {
                 currentState = AS_BlockComm_End;
             }
             else if (currentChar == EOF) {
-                printError(LEXICAL_ERROR, "Unexpected EOF inside block comment\n");
-                throwLexicalError();
+                throwError(LEXICAL_ERROR, "Unexpected EOF inside block comment\n", true);
             }
             break;
         
@@ -288,8 +282,7 @@ Token getToken() {
                 currentState = AS_String_Escape;
             }
             else if (currentChar == EOF) {
-                printError(LEXICAL_ERROR, "Unexpected EOF inside string\n");
-                throwLexicalError();
+                throwError(LEXICAL_ERROR, "Unexpected EOF inside string\n", true);
             }
             else {
                 charBufferPush(scannerBuffer, currentChar);
@@ -318,8 +311,7 @@ Token getToken() {
                 currentState = AS_String_Escape_Hex_1;
             }
             else {
-                printError(LEXICAL_ERROR, "Invalid escape sequence\n");
-                throwLexicalError();
+                throwError(LEXICAL_ERROR, "Invalid escape sequence\n", true);
             }
             break;
         
@@ -328,8 +320,7 @@ Token getToken() {
                 return newHalfToken(TOK_Define);
             }
             else {
-                printError(LEXICAL_ERROR, "Invalid : symbol\n");
-                throwLexicalError();
+                throwError(LEXICAL_ERROR, "Invalid : symbol\n", true);
             }
             break;
 
@@ -367,8 +358,7 @@ Token getToken() {
                 return newHalfToken(TOK_Not_Equal);
             }
             else {
-                printError(LEXICAL_ERROR, "Invalid ! symbol\n");
-                throwLexicalError();
+                throwError(LEXICAL_ERROR, "Invalid ! symbol\n", true);
             }
             break;
         
@@ -378,8 +368,7 @@ Token getToken() {
                 currentState = AS_String_Escape_Hex_2;
             }  
             else {
-                printError(LEXICAL_ERROR, "Invalid hex escape sequence\n");
-                throwLexicalError();
+                throwError(LEXICAL_ERROR, "Invalid hex escape sequence\n", true);
             }
             break;
 
@@ -390,21 +379,28 @@ Token getToken() {
                 currentState = AS_String;
             }  
             else {
-                printError(LEXICAL_ERROR, "Invalid hex escape sequence\n");
-                throwLexicalError();
+                throwError(LEXICAL_ERROR, "Invalid hex escape sequence\n", true);
             }
             break;
         
         default:
-            printError(LEXICAL_ERROR, "Lexical error: reached invalid state.\n");
+            throwError(LEXICAL_ERROR, "Lexical error: reached invalid state.\n", true);
             deallocateAll();
             exit(LEXICAL_ERROR);
         }
     }
 }
 
-void printError(int errorCode, char* msg) {
-    fprintf(stderr, "[%d] Around line %d: %s", errorCode, currentLine, msg);
+void throwError(int errorCode, char* msg, bool printLine) {
+    fprintf(stderr, "[%d] ", errorCode);
+
+    if (printLine) {
+        fprintf(stderr, "Around line %d: ", currentLine);
+    }
+
+    fprintf(stderr, "%s", msg);
+
+    deallocateAll();
     exit(errorCode);
 }
 
@@ -485,15 +481,10 @@ Token newHalfToken(tokenType type) {
     return newToken;
 }
 
-void throwLexicalError() {
-    deallocateAll();
-    exit(LEXICAL_ERROR);
-}
-
 void printToken(Token token) {
     switch (token.type) {
         case TOK_Int_Literal:
-            printf("%s: \"%d\"\n", getTokenName(token.type), token.i);
+            printf("%s: \"%ld\"\n", getTokenName(token.type), token.i);
             break;
         case TOK_Float_Literal:
             printf("%s: \"%f\"\n", getTokenName(token.type), token.f);

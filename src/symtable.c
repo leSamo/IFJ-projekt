@@ -1,4 +1,4 @@
-/* ========= binTree.c ==========
+/* ========== symtable.c ===========
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00), Michal Findra (xfindr00)
@@ -6,14 +6,14 @@
  * Note: Part of this file was copied from xfindr00's IAL 2 project
  * ================================= */
 
-#ifndef BINTREE
-#define BINTREE
+#ifndef SYMTABLE
+#define SYMTABLE
 
 #include <stdbool.h>
 #include <string.h>
 
 #include "constants.h"
-#include "binTree.h"
+#include "symtable.h"
 #include "leParser.h"
 #include "intBuffer.c"
 
@@ -185,7 +185,7 @@ void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node, IntBuff
             ST_Insert(&(*RootPtr)->LPtr, id, type, node, scopes);
         }
         else {
-            printError(DEFINITION_TYPE_ERROR, "Variable redefinition in the same scope error\n");
+            throwError(DEFINITION_TYPE_ERROR, "Variable redefinition in the same scope error\n", false);
         }
     }
     else if (strcmp(id, (*RootPtr)->id) < 0) {

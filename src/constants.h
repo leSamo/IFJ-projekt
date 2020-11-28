@@ -1,13 +1,15 @@
 /* ========== constants.h ==========
-/* Project: IFJ 2020/21 project
-/* Team: 067, variant I
-/* Author: Samuel Olekšák (xoleks00)
-/* Date: November 2020
-/* Description: Various structures, declarations and constants shared by multiple components
-/* ================================= */
+ * Project: IFJ 2020/21 project
+ * Team: 067, variant I
+ * Author: Samuel Olekšák (xoleks00)
+ * Date: November 2020
+ * Description: Various structures, declarations and constants shared by multiple components
+ * ================================= */
 
 #ifndef CONSTANTS
 #define CONSTANTS
+
+#include <stdint.h>
 
 // return codes for various error scenarios
 typedef enum {

@@ -104,7 +104,7 @@ void AST_PrettyPrint(ASTNode *nodePtr, int level) {
 
     switch (nodePtr->contentType) {
         case TAG_Int:
-            printf(" - %d\n", nodePtr->content.i);
+            printf(" - %ld\n", nodePtr->content.i);
             break;
         case TAG_Float:
             printf(" - %f\n", nodePtr->content.f);
@@ -118,29 +118,6 @@ void AST_PrettyPrint(ASTNode *nodePtr, int level) {
 
     for (int i = 0; i < nodePtr->childrenCount; i++) {
         AST_PrettyPrint(nodePtr->children[i], level + 1);
-    }
-}
-
-
-void AST_Print(ASTNode *nodePtr) {
-    printf("========================\n");
-    printf("%s [%d]\n", AST_GetNodeName(nodePtr->type), nodePtr->id);
-
-    if (nodePtr->parent != NULL) {
-        printf("Parent: [%d]\n", nodePtr->parent->id);
-    }
-
-    // print children count
-    printf("%d children ", nodePtr->childrenCount);
-
-    for (int i = 0; i < nodePtr->childrenCount; i++) {
-        printf("[%d] ", nodePtr->children[i]->id);
-    }
-    printf("\n");
-
-    // recursivelly check children
-    for (int i = 0; i < nodePtr->childrenCount; i++) {
-        AST_Print(nodePtr->children[i]);
     }
 }
 

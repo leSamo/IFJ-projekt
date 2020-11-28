@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 #include "AST.c"
-#include "binTree.c"
+#include "symtable.c"
 #include "semanticAnalysis.h"
 #include "constants.h"
 
@@ -24,11 +24,11 @@ void AST_FirstPass(ASTNode *astNode, ST_Node **symTableRoot) {
         ASTNode *funcReturnTypes = AST_GetChildOfType(mainFuncDef, NODE_Func_Def_Return);
 
         if (funcParams->childrenCount > 0 || funcReturnTypes->childrenCount > 0) {
-            printError(ARGUMENT_ERROR, "Invalid main function\n");
+            throwError(ARGUMENT_ERROR, "Invalid main function\n", false);
         }
     }
     else {
-        printError(DEFINITION_ERROR, "Missing main function\n");
+        throwError(DEFINITION_ERROR, "Missing main function\n", false);
     }
 }
 
@@ -46,7 +46,7 @@ void AST_FirstPassTraversal(ASTNode *astNode, ST_Node **symTableRoot) {
 
 void ST_AddFunction(ASTNode *astNode, ST_Node **symTableRoot) {
     if (astNode->parent != ASTRoot) { // syntactic analyzer should cover this
-        printError(OTHER_SEMANTIC_ERROR, "Nested function definition error\n");
+        throwError(OTHER_SEMANTIC_ERROR, "Nested function definition error\n", false);
     }
 
     if (strcmp(astNode->content.str, "main") == 0) {
@@ -130,14 +130,14 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer s
         ASTNode *returnTypesNode = AST_GetChildOfType(funcNode, NODE_Func_Def_Return);
 
         if (returnTypesNode->childrenCount != variableNode->childrenCount) {
-            printError(ARGUMENT_ERROR, "Invalid return value count in func call assignment\n");
+            throwError(ARGUMENT_ERROR, "Invalid return value count in func call assignment\n", false);
         }
         else {
             // for each multi L-value type find matching return type for fn
             for (int i = 0; i < returnTypesNode->childrenCount; i++) {
                 typeTag variableType = ST_GetVariableType(variableNode->children[i]->content.str, symTableRoot, scopes);
                 if (variableType != TAG_Any && returnTypesNode->children[i]->contentType != variableType) {
-                    printError(ARGUMENT_ERROR, "Incompatible type in func call assignment error\n");
+                    throwError(ARGUMENT_ERROR, "Incompatible type in func call assignment error\n", false);
                 }
             }
 
@@ -156,7 +156,7 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer s
             ASTNode *returnTypesNode = AST_GetChildOfType(funcNode, NODE_Func_Def_Return);
     
             if (returnTypesNode->childrenCount != 1) {
-                printError(ARGUMENT_ERROR, "Invalid return value count in func call assignment\n");
+                throwError(ARGUMENT_ERROR, "Invalid return value count in func call assignment\n", false);
             }
             else {
                 rightSideType = returnTypesNode->children[0]->contentType;
@@ -166,7 +166,7 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer s
         }
 
         if (variableType != TAG_Any && variableType != rightSideType) {
-            printError(INCOMPATIBLE_TYPE_ERROR, "Incompatible type in assignment error\n");
+            throwError(INCOMPATIBLE_TYPE_ERROR, "Incompatible type in assignment error\n", false);
         }
     }
 }
@@ -176,13 +176,13 @@ void ST_Return(ASTNode *returnNode, ST_Node **symTableRoot, IntBuffer scopes) {
     ASTNode *funcDefReturnTypes = AST_GetChildOfType(funcDefinition, NODE_Func_Def_Return);
 
     if (funcDefReturnTypes->childrenCount != returnNode->childrenCount) {
-        printError(ARGUMENT_ERROR, "Return statement incompatible with func definition error\n");
+        throwError(ARGUMENT_ERROR, "Return statement incompatible with func definition error\n", false);
     }
     else {
         // for each func def return type find matching return statement type
         for (int i = 0; i < funcDefReturnTypes->childrenCount; i++) {
             if (!ST_CheckExpressionType(returnNode->children[i], symTableRoot, funcDefReturnTypes->children[i]->contentType, scopes)) {
-                printError(ARGUMENT_ERROR, "Return statement incompatible with func definition error\n");
+                throwError(ARGUMENT_ERROR, "Return statement incompatible with func definition error\n", false);
             }
         }
     }
@@ -194,13 +194,13 @@ void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTa
 
     if (funcDefParamList != NULL) { // fixed param count
         if (funcDefParamList->childrenCount != funcCallNode->childrenCount) {
-            printError(ARGUMENT_ERROR, "Incorrect argument count in function call\n");
+            throwError(ARGUMENT_ERROR, "Incorrect argument count in function call\n", false);
         }
         else { // check type compatibility one-by-one
             for (int i = 0; i < funcDefParamList->childrenCount; i++) {
                 if (funcDefParamList->children[i]->childrenCount > 1) {
                     if (!ST_CheckTermType(funcCallNode->children[i], symTableRoot, funcDefParamList->children[i]->children[1]->contentType, scopes)) {
-                        printError(ARGUMENT_ERROR, "Incorrect argument types in function call\n");
+                        throwError(ARGUMENT_ERROR, "Incorrect argument types in function call\n", false);
                     }
                 }
             }
@@ -229,7 +229,7 @@ typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot, IntBuf
         return expType;
     }
     else {
-        printError(INCOMPATIBLE_TYPE_ERROR, "Incompatible types inside expression error\n");
+        throwError(INCOMPATIBLE_TYPE_ERROR, "Incompatible types inside expression error\n", false);
     }
 }
 
@@ -279,7 +279,7 @@ typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot, IntBuffer scopes) {
         return symbol->type;
     }
     else {
-        printError(DEFINITION_ERROR, "Undefined variable\n");
+        throwError(DEFINITION_ERROR, "Undefined variable\n", false);
     }
 }
 
@@ -290,6 +290,6 @@ ASTNode *ST_GetFuncNode(char *id, ST_Node **symTableRoot) {
         return symbol->node;
     }
     else {
-        printError(DEFINITION_ERROR, "Undefined func variable\n");
+        throwError(DEFINITION_ERROR, "Undefined func variable\n", false);
     }
 }

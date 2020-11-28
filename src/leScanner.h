@@ -38,7 +38,7 @@ typedef enum {
 Token getToken();
 
 /* print out an error message to stderr */
-void printError(int errorCode, char* msg);
+void throwError(int errorCode, char* msg, bool printLine);
 
 /* returns its argument char back to the input stream, reverts getChar() function */
 void ungetChar(char c);
@@ -72,9 +72,6 @@ Token newStringToken(char* content);
 
 /* creates a new attributeless token with passed type and inserts it into tokens array */
 Token newHalfToken(tokenType type);
-
-/* Exits the program with error code correspoding to lexical error */
-void throwLexicalError();
 
 /* prints all tokens from tokens array */
 void printToken(Token token);

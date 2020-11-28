@@ -6,7 +6,7 @@
  * ================================= */
 
 #include "AST.c"
-#include "binTree.c"
+#include "symtable.c"
 
 /* In the first pass fill symbol table with function identifiers */
 void AST_FirstPass(ASTNode *astNode, ST_Node **symTableRoot);

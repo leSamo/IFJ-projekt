@@ -6,6 +6,7 @@
  * ================================= */
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "constants.h"
 #include "charBuffer.h"
@@ -16,7 +17,7 @@ charBuffer* charBufferCreate() {
     charBuffer *buffer = malloc(sizeof(charBuffer));
 
     if (buffer == NULL) {
-        printError(INTERNAL_ERROR, "Memory allocation error\n");
+        throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
         deallocateAll();
         exit(INTERNAL_ERROR);
     }
@@ -35,7 +36,7 @@ void charBufferPush(charBuffer* buffer, char character) {
 
         if (newArray == NULL) {
             free(buffer);
-            printError(INTERNAL_ERROR, "Memory allocation error\n");
+            throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
             deallocateAll();
             exit(INTERNAL_ERROR);
         }

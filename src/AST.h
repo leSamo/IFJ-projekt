@@ -6,6 +6,7 @@
  * Description: N-ary abstract syntax tree for semantic analysis
  * ================================= */
 
+/* type of structure AST node represents */
 typedef enum ASTNodeType {
     NODE_Empty,
     NODE_Prog,
@@ -22,7 +23,7 @@ typedef enum ASTNodeType {
     NODE_Return,
     NODE_Assign,
     NODE_Define,
-    NODE_Exp, // do not go further, thats the job of expressions.c
+    NODE_Exp, // do not handle with recursive descent, pass it the expression parser
     NODE_Type_Int,
     NODE_Type_Float,
     NODE_Type_String,
@@ -43,6 +44,7 @@ typedef enum ASTNodeType {
     NODE_Multi_L_Value
 } ASTNodeType;
 
+/* primitive type of node - int, float64, string, unknown (for identifiers), any (for special _ variable) */
 typedef enum typeTag {
     TAG_None,
     TAG_Unknown,
@@ -53,41 +55,48 @@ typedef enum typeTag {
     TAG_Any
 } typeTag;
 
+/* union to hold attribute data of node */
 typedef union typeUnion {
     int64_t i;
     double f;
     char *str;
 } typeUnion;
 
+/* TODO: Rework to inflatable buffer */
 #define AST_NODE_CHILDREN 50
 
 typedef struct ASTNode {
-    int id;
+    int id; // used only in block nodes to identify scope
     ASTNodeType type;
 
     struct ASTNode *parent;
     struct ASTNode *children[AST_NODE_CHILDREN];
     int childrenCount;
 
-    bool isOperatorResult;
+    bool isOperatorResult; // true if node was created 
     typeTag valueType;
 
     typeTag contentType;
     typeUnion content;
 } ASTNode;
 
+/* Create a new AST node and attach it to supplied parent node */
 ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag contentType, typeUnion content);
 
+/* Attaches child into first free child slot of the parent node */
 void AST_AttachNode(ASTNode *parent, ASTNode* child);
 
+/* Finds first direct child node of desired type */
 ASTNode* AST_GetChildOfType(ASTNode *parent, ASTNodeType type);
 
-ASTNode* AST_GetParentOfType(ASTNode *parent, ASTNodeType type);
+/* Finds closest (direct or indirect) parent node of desired type */
+ASTNode* AST_GetParentOfType(ASTNode *child, ASTNodeType type);
 
+/* [DEBUG] Recursively prints out AST tree, level should be 0 in initial call */
 void AST_PrettyPrint(ASTNode *nodePtr, int level);
 
-void AST_Print(ASTNode *nodePtr);
-
+/* [DEBUG] Converts ASTNodeType to string for printing */
 char* AST_GetNodeName(ASTNodeType type);
 
+/* Recursively delete tree and dispose of its memory */
 void AST_Delete(ASTNode *nodePtr);
