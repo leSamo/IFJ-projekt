@@ -73,10 +73,10 @@ Token newStringToken(char* content);
 /* creates a new attributeless token with passed type and inserts it into tokens array */
 Token newHalfToken(tokenType type);
 
-/* prints all tokens from tokens array */
+/* [DEBUG] prints a token in readable form */
 void printToken(Token token);
 
-/* debug function to convert token type enum int to string for printing */
+/* [DEBUG] convert token type enum int to string for printing */
 char* getTokenName(tokenType type);
 
 #endif

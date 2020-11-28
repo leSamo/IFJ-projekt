@@ -3,6 +3,7 @@
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00)
  * Date: November 2020
+ * Description: Char variable length stack with create, push, get + clear and dispose functions
  * ================================= */
 
 #include <stdlib.h>

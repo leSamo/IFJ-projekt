@@ -15,6 +15,7 @@
 
 #include "intBuffer.h"
 
+/* Of what type node is */
 typedef enum {
     SYM_None,
     SYM_Readonly,
@@ -30,20 +31,26 @@ typedef struct ST_Node {
     symType type;
     ASTNode *node;
 
-    struct ST_Node *LPtr;
-    struct ST_Node *RPtr;
+    struct ST_Node *LPtr; // left child
+    struct ST_Node *RPtr; // right child
 } ST_Node;
 
+/* Initializes symtable and fills it with built-in variables and functions */
 void ST_Init(ST_Node **);
 
+/* Fills symtable it with built-in variables and functions */
 void ST_SetupBuiltIn(ST_Node **RootPtr);
 
+/* Searches identifier with supplied scopes (or their parents) in the symtable */
 ST_Node* ST_Search(ST_Node *RootPtr, ST_Node *CurrentPtr, char *searchedId, IntBuffer scopes);
 
+/* Creates a new symbol and inserts it into the symtable */
 void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node, IntBuffer scopes);
 
+/* Recursively deallocates all nodes of the symtable */
 void ST_Dispose(ST_Node **);
 
+/* [DEBUG] Prints symtable, initially level should be 0 */
 void ST_PrettyPrint(ST_Node *nodePtr, int level);
 
 #endif

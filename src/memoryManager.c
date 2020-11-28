@@ -14,32 +14,25 @@
 #include "tokenBuffer.h"
 #include "symtable.h"
 
-StringBuffer *stringBuffer;
-charBuffer *scannerBuffer;
-ASTNode *ASTRoot;
-ASTNode *ASTBuiltIn;
-TokenBuffer *tokenBuffer;
-ST_Node *SymTableTree;
+StringBuffer *stringBuffer; // register of all allocated char* using newString() for to be disposed
+charBuffer *scannerBuffer;  // char buffer for saving partial token attribute between scanner states (not between tokens)
+TokenBuffer *tokenBuffer;   // token buffer for syntactic analysis of balanced contructions (like multi-assignments)
+ASTNode *ASTRoot;           // AST with program structure for semantic analysis
+ASTNode *ASTBuiltIn;        // AST with built-in variables and functions for semantic analysis
+ST_Node *SymTableTree;      // symbol table for semantic analysis
 
 char* newString(unsigned int length) {
     char* string = malloc(sizeof(char) * (length + 1));
+
     StringBufferPush(stringBuffer, string);
+
     return string;
 }
 
 void deallocateAll() {
-    // free scanner buffer
-    charBufferDispose(scannerBuffer);
-
-    // free all strings
-    StringBufferDispose(stringBuffer);
-
-    // free semantic AST
-    AST_Delete(ASTRoot);
-
-    // free semantic AST with built-in symbols
-    AST_Delete(ASTBuiltIn);
-
-    // free token buffer used for recursive descent
-    TokenBufferDispose(&tokenBuffer);
+    charBufferDispose(scannerBuffer);   // free scanner buffer
+    StringBufferDispose(stringBuffer);  // free all strings
+    AST_Delete(ASTRoot);                // free semantic AST
+    AST_Delete(ASTBuiltIn);             // free semantic AST with built-in symbols
+    TokenBufferDispose(&tokenBuffer);   // free token buffer used for recursive descent
 }

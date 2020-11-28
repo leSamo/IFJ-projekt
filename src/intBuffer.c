@@ -3,6 +3,7 @@
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00)
  * Date: November 2020
+ * Description: Int variable length array with create, push, compare and dispose functions
  * ================================= */
 
 #ifndef INT_BUFFER

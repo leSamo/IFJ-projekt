@@ -16,6 +16,7 @@
 #include "charBuffer.c"
 #include "memoryManager.c"
 
+/* Increments when newline char is read, used in error messages */
 int currentLine = 1;
 
 Token overlapToken = {TOK_Empty};

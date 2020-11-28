@@ -3,6 +3,7 @@
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00)
  * Date: November 2020
+ * Descriptions: Char* buffer to register all allocated string to be disposed of at the end of the compiler run
  * ================================= */
 
 #ifndef STRING_BUFFER

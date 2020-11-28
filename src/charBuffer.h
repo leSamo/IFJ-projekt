@@ -3,6 +3,7 @@
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00)
  * Date: November 2020
+ * Description: Char variable length stack with create, push, get + clear and dispose functions
  * ================================= */
 
 #ifndef CHAR_BUFFER
@@ -26,7 +27,7 @@ void charBufferPush(charBuffer* buffer, char character);
 /* clears buffer and its position and returns its content */
 char* charBufferGet(charBuffer* buffer);
 
-/* debug function to print content of buffer */
+/* [DEBUG] Print content of buffer */
 void charBufferPrint(charBuffer* buffer);
 
 /* deallocates char buffer */

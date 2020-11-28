@@ -3,7 +3,7 @@
  * Team: 067, variant I
  * Author: Emma Krompaščíková (xkromp00), Samuel Olekšák (xoleks00)
  * Date: November 2020
- * Description: Precedence syntactic analysis for expressions using shunting-yard algorithm
+ * Description: Expression syntactic analysis with postfix conversion using shunting-yard algorithm
  * ================================= */
 
 #include <stdio.h>

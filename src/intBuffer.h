@@ -3,6 +3,7 @@
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00)
  * Date: November 2020
+ * Description: Int variable length array with create, push, compare and dispose functions
  * ================================= */
 
 #ifndef INT_BUFFERH
@@ -25,7 +26,7 @@ void IntBufferPush(IntBuffer *buffer, int newItem);
 /* Compares two buffers, resulting returned int is simalar to strcmp result */
 int IntBufferCompare(IntBuffer buffer1, IntBuffer buffer2);
 
-/* Prints out the contents of the print buffer */
+/* [DEBUG] Prints out the contents of the print buffer */
 void IntBufferPrint(IntBuffer *buffer);
 
 /* Deallocated token buffer */

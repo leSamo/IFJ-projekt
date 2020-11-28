@@ -3,6 +3,7 @@
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00), Michal Findra (xfindr00)
  * Date: November 2020
+ * Description: Two-pass semantic analysis
  * ================================= */
 
 #include "AST.c"
@@ -47,5 +48,5 @@ bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag type, I
 /* Fetch variable by id from symbol table and return its type */
 typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot, IntBuffer scopes);
 
-/* Fetch functino by id from symbol table and return its node */
+/* Fetch function by id from symbol table and return its node */
 ASTNode *ST_GetFuncNode(char *id, ST_Node **symTableRoot);
