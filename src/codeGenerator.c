@@ -141,7 +141,12 @@ void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBu
     
     switch (parentNode->type) {
         case NODE_Add:
-            printf("ADD TF@%s ", resultId);
+            if (ST_CheckTermType(parentNode->children[0], &symtable, TAG_String, scope)) {
+                printf("CONCAT TF@%s ", resultId);
+            }
+            else {
+                printf("ADD TF@%s ", resultId);
+            }
             printOperands(parentNode, leftChild, rightChild);
             break;
         case NODE_Sub:
@@ -153,7 +158,7 @@ void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBu
             printOperands(parentNode, leftChild, rightChild);
             break;
         case NODE_Div:
-            if (parentNode->children[0]->valueType == TAG_Int) {
+            if (ST_CheckTermType(parentNode->children[0], &symtable, TAG_Int, scope)) {
                 printf("IDIV TF@%s ", resultId);
             }
             else {
@@ -236,30 +241,3 @@ void printTerm(typeTag type, typeUnion content, char *frame) {
             break;
     }
 }
-
-/*
-char* escapeString(char* string) {
-    int invalidCharCount = 0;
-
-    char c;
-    int i;
-    do {
-        c = string[i++];
-        if (c == 35 || c == 92) {
-            invalidCharCount++;
-        }
-    } while (c != 0);
-
-    char *escapedString = newString(strlen(string) + 3 * invalidCharCount);
-
-    strcpy(escapedString, string);
-
-    for (int i = 0; i < strlen(escapedString); i++) {
-        c = string[i];
-        if (c == 35 || c == 92) {
-            memmove(escapedString[i], escapedString[i + 3], strlen(escapedString) - i);
-
-        }
-    }
-}
-*/

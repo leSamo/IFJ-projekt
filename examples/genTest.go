@@ -10,4 +10,11 @@ func main() {
 	} else {
 		print("neg")
 	}
+
+	b := "ahoj"
+	b = b + "kamarat"
+	
+	print(b)
+
+	print(4223372036854775807)
 }

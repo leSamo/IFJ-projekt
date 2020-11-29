@@ -15,7 +15,7 @@
 
 int AST_consecutiveId = 0;
 
-ASTNode* AST_CreateIntNode(ASTNode *parent, ASTNodeType type, int i) {
+ASTNode* AST_CreateIntNode(ASTNode *parent, ASTNodeType type, int64_t i) {
     typeUnion tu = { .i = i };
 
     return AST_CreateNodeGeneral(parent, type, TAG_Int, tu);

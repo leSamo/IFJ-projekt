@@ -34,3 +34,14 @@ JUMP !end_0
 LABEL !neg_0
 WRITE string@neg
 LABEL !end_0
+DEFVAR GF@b
+MOVE GF@b string@ahoj
+
+CREATEFRAME
+DEFVAR TF@$t
+CONCAT TF@$t GF@b string@kamarat
+MOVE GF@b TF@$t
+CLEARS
+
+WRITE GF@b
+WRITE int@4223372036854775807

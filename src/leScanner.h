@@ -59,7 +59,7 @@ bool isWhiteSpace(char c);
 char hexToChar(char a, char b);
 
 /* creates a new int token and inserts it into tokens array */
-Token newIntToken(int content);
+Token newIntToken(int64_t content);
 
 /* creates a new float token and inserts it into tokens array */
 Token newFloatToken(float content);

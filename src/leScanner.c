@@ -134,8 +134,9 @@ Token getToken() {
             else {
                 ungetChar(currentChar);
                 char *content = charBufferGet(scannerBuffer);
-                // TODO: Use 64-bit equivalent to atoi
-                return newIntToken(atoi(content));
+                int64_t i = strtoull(content, NULL, 10);
+
+                return newIntToken(i);
             }
             break;
         
@@ -154,8 +155,9 @@ Token getToken() {
             else {
                 ungetChar(currentChar);
                 char *content = charBufferGet(scannerBuffer);
-                // TODO: Use 64-bit equivalent to atoi
-                return newIntToken(atoi(content));
+                int64_t i = strtoull(content, NULL, 10);
+
+                return newIntToken(i);
             }
             break;
         
@@ -434,7 +436,7 @@ char hexToChar(char a, char b) {
 }
 
 /* New token functions */
-Token newIntToken(int content) {
+Token newIntToken(int64_t content) {
     Token newToken;
     newToken.type = TOK_Int_Literal;
     newToken.i = content;
@@ -492,7 +494,6 @@ void printToken(Token token) {
             break;
         case TOK_Identifier:
         case TOK_String_Literal:
-            // TODO: Escape newlines when printing to make output prettier
             printf("%s: \"%s\"\n", getTokenName(token.type), token.str);
             break;
         default:
