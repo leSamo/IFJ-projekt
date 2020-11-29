@@ -117,10 +117,7 @@ Token getToken() {
             break;
 
         case AS_Leading_Zero:
-            if (currentChar == '0') {
-                charBufferPush(scannerBuffer, currentChar);
-            }
-            else if (isDigit(currentChar)) {
+            if (isDigit(currentChar)) {
                 throwError(LEXICAL_ERROR, "Leading zero error\n", true);
             }
             else if (currentChar == '.') {

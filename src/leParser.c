@@ -222,7 +222,15 @@ bool NT_Return_Types(ASTNode *parentNode) {
         ret = true;
     }
     else if (nextToken.type == TOK_L_Paren) {
-        ret = NT_Type(node) && NT_Return_Types_N(node) && getToken().type == TOK_L_Brace;
+        Token secondToken = getToken();
+
+        if (secondToken.type == TOK_R_Paren) {
+            ret = getToken().type == TOK_L_Brace;
+        }
+        else {
+            overlapToken = secondToken;
+            ret = NT_Type(node) && NT_Return_Types_N(node) && getToken().type == TOK_L_Brace;
+        }
     }
 
     return ret;
