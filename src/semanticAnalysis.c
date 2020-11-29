@@ -124,8 +124,6 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer s
     ASTNode *variableNode = astNode->children[0];
     ASTNode *rightSideNode = astNode->children[1];
 
-    // TODO: Check func call parameters count and type
-
     if (variableNode->type == NODE_Multi_L_Value) {
         ASTNode *funcNode = ST_GetFuncNode(rightSideNode->content.str, symTableRoot);
         ASTNode *returnTypesNode = AST_GetChildOfType(funcNode, NODE_Func_Def_Return);

@@ -16,6 +16,7 @@
 #include "leParser.h"
 #include "expressions.c"
 #include "semanticAnalysis.c"
+#include "codeGenerator.c"
 
 int main(int argc, char *argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0); // for debug, remove before submitting
@@ -52,6 +53,9 @@ int main(int argc, char *argv[]) {
     AST_SecondPass(ASTRoot, &SymTableTree);
 
     //ST_PrettyPrint(SymTableTree, 0);
+
+    /* Intermediate code generation */
+    generateCode(ASTRoot, mainFuncDef, SymTableTree);
 
     ST_Dispose(&SymTableTree);
 

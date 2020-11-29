@@ -1,0 +1,18 @@
+.IFJcode20
+
+DEFVAR GF@a
+
+CREATEFRAME
+DEFVAR TF@__t0
+DEFVAR TF@__t01
+DEFVAR TF@__t02
+EQ TF@__t01 int@5 int@0
+GT TF@__t02 int@5 int@0
+OR TF@__t0 TF@__t01 TF@__t02
+MOVE GF@a TF@__t0
+CLEARS
+
+WRITE int@5
+WRITE float@0x1.6p+2
+WRITE string@ahoj
+WRITE GF@a
