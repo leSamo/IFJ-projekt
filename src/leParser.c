@@ -34,14 +34,26 @@ int main(int argc, char *argv[]) {
     */
 
     // recursive descent start
-    if (NT_Prog()) {
-        //printf("\n~~~~~~~~~~~~~~~~~~~~ \nSyntactic analysis: All OK\n~~~~~~~~~~~~~~~~~~~~\n\n");
-    }
-    else {
+    bool semanticAnalysisSucess = NT_Prog();
+
+    if (!semanticAnalysisSucess) {
         throwError(SYNTAX_ERROR, "Syntactic error\n", true);
         deallocateAll();
         return SYNTAX_ERROR;
     }
+
+    //AST_PrettyPrint(ASTRoot, 0); // print whole AST
+    //printf("=========================\n");
+    
+    /* Semantic analysis */
+    ST_Init(&SymTableTree);
+
+    AST_FirstPass(ASTRoot, &SymTableTree);
+    AST_SecondPass(ASTRoot, &SymTableTree);
+
+    //ST_PrettyPrint(SymTableTree, 0);
+
+    ST_Dispose(&SymTableTree);
 
     deallocateAll();
     return 0;
@@ -98,32 +110,6 @@ bool NT_Prog() {
     ASTRoot = AST_CreateNode(NULL, NODE_Prog); // is root, has no parent
 
     ret = NT_Prolog() && NT_Func_Def_List(ASTRoot);
-
-    //AST_PrettyPrint(ASTRoot, 0); // print whole AST
-    //printf("=========================\n");
-    
-    /* Semantic analysis */
-    ST_Init(&SymTableTree);
-
-    AST_FirstPass(ASTRoot, &SymTableTree);
-    AST_SecondPass(ASTRoot, &SymTableTree);
-
-    //ST_PrettyPrint(SymTableTree, 0);
-
-    ST_Dispose(&SymTableTree);
-
-    /*
-    FillTable_FirstPass(ASTRoot);
-    
-    Print_tree(SymTableTree);
-    
-    FillTable_SecondPass(ASTRoot, 0);
-    //CheckSemant(ASTRoot, 0);
-
-    if (SemanticError == 0){
-        printf("\n~~~~~~~~~~~~~~~~~~~~ \nSemantic analysis: All OK\n~~~~~~~~~~~~~~~~~~~~\n\n");
-    }
-    */
 
     return ret;
 }
