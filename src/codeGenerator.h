@@ -12,6 +12,8 @@ void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable);
 
 void generateStructure(ASTNode *node, ST_Node *symtable, IntBuffer scope);
 
+void generateIfElse(ASTNode *node, ST_Node *symtable, IntBuffer scope);
+
 void generateDefinition(ASTNode *defineNode, ST_Node *symtable, IntBuffer scope);
 
 void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope);

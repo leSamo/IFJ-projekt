@@ -3,16 +3,34 @@
 DEFVAR GF@a
 
 CREATEFRAME
-DEFVAR TF@__t0
-DEFVAR TF@__t01
-DEFVAR TF@__t02
-EQ TF@__t01 int@5 int@0
-GT TF@__t02 int@5 int@0
-OR TF@__t0 TF@__t01 TF@__t02
-MOVE GF@a TF@__t0
+DEFVAR TF@$t
+DEFVAR TF@$t1
+DEFVAR TF@$t2
+EQ TF@$t1 int@5 int@0
+GT TF@$t2 int@5 int@0
+OR TF@$t TF@$t1 TF@$t2
+MOVE GF@a TF@$t
 CLEARS
 
+MOVE GF@a int@8
 WRITE int@5
 WRITE float@0x1.6p+2
 WRITE string@ahoj
 WRITE GF@a
+DEFVAR GF@!exp_0
+
+CREATEFRAME
+DEFVAR TF@$t
+DEFVAR TF@$t1
+EQ TF@$t1 GF@a int@8
+NOT TF@$t TF@$t1
+MOVE GF@!exp_0 TF@$t
+CLEARS
+
+JUMPIFNEQ !neg_0 GF@!exp_0 bool@true
+LABEL !pos_0
+WRITE string@pos
+JUMP !end_0
+LABEL !neg_0
+WRITE string@neg
+LABEL !end_0
