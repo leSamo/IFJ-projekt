@@ -29,3 +29,6 @@ void printOperands(ASTNode *parentNode, char *leftChild, char *rightChild);
 void printTerm(typeTag type, typeUnion content, char *frame);
 
 char* escapeString(char* string);
+
+//print to standard output formated string in IFJcode20 "string@<content>"
+void printFormatedString(char *string);

@@ -241,3 +241,26 @@ void printTerm(typeTag type, typeUnion content, char *frame) {
             break;
     }
 }
+
+void printFormatedString(char *string) {
+    int size = strlen(string) * 7 + 8; // max length
+    char result[size];
+    memcpy(result, "string@", 8);
+    char tmp[7];
+    for (int i = 0; i < (int)strlen(string); i++) {
+
+        if (0 <= string[i] && 9 >= string[i]) {
+            sprintf(tmp, "\\00%d", string[i]);
+        }
+        else if ((10 <= string[i] && 32 >= string[i]) || (string[i] == 35) || (string[i] == 92)) {
+            snprintf(tmp, 7, "\\0%d", string[i]);
+        }
+        else {
+            snprintf(tmp, 2, "%s", (char[2]){string[i], '\0'});
+        }
+        strcat(result, tmp);
+    }
+
+    printf("%s", result);
+    return;
+}
