@@ -67,7 +67,7 @@ func main() {
 }
 */
 /* Program 6, expression testing, should compile OK */
-
+/*
 package main
 
 func main() {
@@ -84,7 +84,7 @@ func main() {
     i := ((5))
     j := (6 + (5 * 9) * 5) + 1
 }
-
+*/
 /* Program 7, expression testing, each line should produce lexical/syntactic error  */
 /*
 package main
@@ -101,6 +101,8 @@ func main() {
     //i = (5 + ) 8
     //j := fn()
     //k := 9 + ahoj()
+    //l := -40
+    //m := 36478 ** 2
 }
 */
 
@@ -110,7 +112,6 @@ package main
 
 func main() {
     a = 0.0
-    b = 000000
     c = 5.4e12
     d = 5e+4
     e = 5.8074e-0

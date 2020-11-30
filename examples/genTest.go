@@ -11,10 +11,12 @@ func main() {
 		print("neg")
 	}
 
-	b := "ahoj"
-	b = b + "kamarat"
+	b := "ahoj ###"
+	b = b + " " + "kamarat"
 	
 	print(b)
 
 	print(4223372036854775807)
+
+	print("\n")
 }

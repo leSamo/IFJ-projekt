@@ -234,7 +234,7 @@ void printTerm(typeTag type, typeUnion content, char *frame) {
             printf("float@%a", content.f);
             break;
         case NODE_Literal_String:
-            printf("string@%s", content.str);
+            printFormatedString(content.str);
             break;
         case NODE_Identifier:
             printf("%s@%s", frame, content.str);

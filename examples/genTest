@@ -35,13 +35,16 @@ LABEL !neg_0
 WRITE string@neg
 LABEL !end_0
 DEFVAR GF@b
-MOVE GF@b string@ahoj
+MOVE GF@b string@ahoj\032\035\035\035
 
 CREATEFRAME
 DEFVAR TF@$t
-CONCAT TF@$t GF@b string@kamarat
+DEFVAR TF@$tl
+CONCAT TF@$tl GF@b string@\032
+ADD TF@$t TF@$tl string@kamarat
 MOVE GF@b TF@$t
 CLEARS
 
 WRITE GF@b
 WRITE int@4223372036854775807
+WRITE string@\010
