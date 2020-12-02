@@ -18,6 +18,9 @@ int consecutiveLabelId = 0;
 
 void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable) {
     printf(".IFJcode20\n\n");
+    printf("LABEL *main\n");
+    printf("CREATEFRAME\n");
+    printf("PUSHFRAME\n");
 
     ASTNode *mainBlockNode = AST_GetChildOfType(mainNode, NODE_Block);
 
@@ -28,7 +31,8 @@ void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable) {
         generateStructure(mainBlockNode->children[i], symtable, *mainScope);
     }
 
-    //printf("EXIT 0\n");
+    printf("POPFRAME\n");
+    printf("EXIT int@0\n");
 }
 
 void generateStructure(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
@@ -61,10 +65,10 @@ void generateIfElse(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
     char expId[14];
     sprintf(expId, "!exp_%d", consecutiveLabelId);
 
-    printf("DEFVAR GF@%s\n", expId);
+    printf("DEFVAR LF@%s\n", expId);
 
     generateExpression(expNode, symtable, scope, expId);
-    printf("JUMPIFNEQ !neg_%d GF@!exp_%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
+    printf("JUMPIFNEQ !neg_%d LF@!exp_%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
 
     printf("LABEL !pos_%d\n", consecutiveLabelId);
     generateStructure(ifBlock, symtable, scope);
@@ -80,7 +84,7 @@ void generateDefinition(ASTNode *defineNode, ST_Node *symtable, IntBuffer scope)
     ASTNode *idNode = AST_GetChildOfType(defineNode, NODE_Identifier);
     ASTNode *expNode = defineNode->children[1];
     
-    printf("DEFVAR GF@%s\n", idNode->content.str);
+    printf("DEFVAR LF@%s\n", idNode->content.str);
     generateExpression(expNode, symtable, scope, idNode->content.str);
 }
 
@@ -98,7 +102,7 @@ void generateFuncCall(ASTNode *funcCallNode, ST_Node *symtable, IntBuffer scope)
     if (strcmp(funcCallNode->content.str, "print") == 0) {
         for (int i = 0; i < funcCallNode->childrenCount; i++) {
             printf("WRITE ");
-            printTerm(funcCallNode->children[i]->type, funcCallNode->children[i]->content, "GF");
+            printTerm(funcCallNode->children[i]->type, funcCallNode->children[i]->content, "LF");
             printf("\n");
         }
     }
@@ -106,15 +110,15 @@ void generateFuncCall(ASTNode *funcCallNode, ST_Node *symtable, IntBuffer scope)
 
 void generateExpression(ASTNode *expNode, ST_Node *symtable, IntBuffer scope, char *resultId) {
     if (!isNodeOperator(expNode->children[0]->type)) {
-        printf("MOVE GF@%s ", resultId);
-        printTerm(expNode->children[0]->type, expNode->children[0]->content, "GF");
+        printf("MOVE LF@%s ", resultId);
+        printTerm(expNode->children[0]->type, expNode->children[0]->content, "LF");
         printf("\n");
     }
     else {
         printf("\nCREATEFRAME\n"); // init TF
         
         generateExpressionRecursively(expNode->children[0], symtable, scope, "$t");
-        printf("MOVE GF@%s TF@$t\n", resultId);
+        printf("MOVE LF@%s TF@$t\n", resultId);
 
         printf("CLEARS\n\n"); // clear TF
     }
@@ -207,7 +211,7 @@ void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBu
 
 void printOperands(ASTNode *parentNode, char *leftChild, char *rightChild) {
     if (!isNodeOperator(parentNode->children[0]->type)) {
-        printTerm(parentNode->children[0]->type, parentNode->children[0]->content, "GF");
+        printTerm(parentNode->children[0]->type, parentNode->children[0]->content, "LF");
     }
     else {
         printf("TF@%s", leftChild);
@@ -216,7 +220,7 @@ void printOperands(ASTNode *parentNode, char *leftChild, char *rightChild) {
     printf(" ");
 
     if (!isNodeOperator(parentNode->children[1]->type)) {
-        printTerm(parentNode->children[1]->type, parentNode->children[1]->content, "GF");
+        printTerm(parentNode->children[1]->type, parentNode->children[1]->content, "LF");
     }
     else {
         printf("TF@%s", rightChild);
