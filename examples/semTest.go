@@ -13,9 +13,11 @@ func main() {
 	}
 }
 
-func a (i int) {
+func a (i int) (int) {
 	b := 4
 	b = i
+
+	return b
 }
 
 /*

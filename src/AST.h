@@ -89,6 +89,9 @@ void AST_AttachNode(ASTNode *parent, ASTNode* child);
 /* Finds first direct child node of desired type */
 ASTNode* AST_GetChildOfType(ASTNode *parent, ASTNodeType type);
 
+/* Finds first (direct or indirect) child node of desired type */
+ASTNode* AST_GetDescendantOfType(ASTNode *parent, ASTNodeType type);
+
 /* Finds closest (direct or indirect) parent node of desired type */
 ASTNode* AST_GetParentOfType(ASTNode *child, ASTNodeType type);
 

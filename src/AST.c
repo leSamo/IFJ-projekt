@@ -83,6 +83,23 @@ ASTNode* AST_GetChildOfType(ASTNode *parent, ASTNodeType type) {
     return NULL; // not found
 }
 
+ASTNode* AST_GetDescendantOfType(ASTNode *parent, ASTNodeType type) {
+    for (int i = 0; i < parent->childrenCount; i++) {
+        if (parent->children[i]->type == type) {
+            return parent->children[i];
+        }
+        else {
+            ASTNode *childNode = AST_GetDescendantOfType(parent->children[i], type);
+
+            if (childNode != NULL) {
+                return childNode;
+            }
+        }
+    }
+
+    return NULL; // not found
+}
+
 ASTNode* AST_GetParentOfType(ASTNode *child, ASTNodeType type) {
     while (child->parent != NULL) {
         if (child->parent->type == type) {

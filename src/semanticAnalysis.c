@@ -103,6 +103,13 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer
 
                 ST_Insert(symTableRoot, idNode->content.str, typeNode->contentType, idNode, blockScope);
             }
+
+            ASTNode *returnListNode = AST_GetChildOfType(astNode, NODE_Func_Def_Return);
+            if (returnListNode->childrenCount > 0) {
+                if (AST_GetDescendantOfType(blockNode, NODE_Return) == NULL) {
+                    throwError(ARGUMENT_ERROR, "Missing return statement in function definition\n", false);
+                }
+            }
         }
 
         for (int i = 0; i < astNode->childrenCount; i++) {

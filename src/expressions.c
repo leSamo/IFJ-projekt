@@ -255,11 +255,13 @@ bool NodeBufferCollapse(NodeBuffer *buffer, int pos) {
         ASTNode *operator     = buffer->nodes[  pos  ];
 
         // check division by zero
-        if (rightOperand->type == NODE_Literal_Int && rightOperand->content.i == 0) {
-            throwError(ZERO_DIVISION_ERROR, "Division by zero error\n", true);
-        }
-        else if (rightOperand->type == NODE_Literal_Float && rightOperand->content.f == 0.0) {
-            throwError(ZERO_DIVISION_ERROR, "Division by zero error\n", true);
+        if (operator->type == NODE_Div) {
+            if (rightOperand->type == NODE_Literal_Int && rightOperand->content.i == 0) {
+                throwError(ZERO_DIVISION_ERROR, "Division by zero error\n", true);
+            }
+            else if (rightOperand->type == NODE_Literal_Float && rightOperand->content.f == 0.0) {
+                throwError(ZERO_DIVISION_ERROR, "Division by zero error\n", true);
+            }
         }
 
         AST_AttachNode(operator, leftOperand);
