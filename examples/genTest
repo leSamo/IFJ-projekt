@@ -41,10 +41,38 @@ CREATEFRAME
 DEFVAR TF@$t
 DEFVAR TF@$tl
 CONCAT TF@$tl GF@b string@\032
-ADD TF@$t TF@$tl string@kamarat
+CONCAT TF@$t TF@$tl string@kamarat
 MOVE GF@b TF@$t
 CLEARS
 
 WRITE GF@b
 WRITE int@4223372036854775807
+DEFVAR GF@s
+
+CREATEFRAME
+DEFVAR TF@$t
+DEFVAR TF@$tl
+CONCAT TF@$tl string@a string@a
+CONCAT TF@$t TF@$tl string@a
+MOVE GF@s TF@$t
+CLEARS
+
+DEFVAR GF@i
+
+CREATEFRAME
+DEFVAR TF@$t
+DEFVAR TF@$tl
+MUL TF@$tl int@5 int@5
+ADD TF@$t TF@$tl GF@a
+MOVE GF@i TF@$t
+CLEARS
+
+DEFVAR GF@f
+
+CREATEFRAME
+DEFVAR TF@$t
+ADD TF@$t float@0x1p+3 float@0x1.4p+2
+MOVE GF@f TF@$t
+CLEARS
+
 WRITE string@\010

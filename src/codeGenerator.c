@@ -141,7 +141,7 @@ void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBu
     
     switch (parentNode->type) {
         case NODE_Add:
-            if (ST_CheckTermType(parentNode->children[0], &symtable, TAG_String, scope)) {
+            if (ST_CheckExpressionType(parentNode->children[0], &symtable, TAG_String, scope)) {
                 printf("CONCAT TF@%s ", resultId);
             }
             else {
@@ -158,7 +158,7 @@ void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBu
             printOperands(parentNode, leftChild, rightChild);
             break;
         case NODE_Div:
-            if (ST_CheckTermType(parentNode->children[0], &symtable, TAG_Int, scope)) {
+            if (ST_CheckExpressionType(parentNode->children[0], &symtable, TAG_Int, scope)) {
                 printf("IDIV TF@%s ", resultId);
             }
             else {
