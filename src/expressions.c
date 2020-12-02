@@ -248,11 +248,19 @@ bool NodeBufferCollapse(NodeBuffer *buffer, int pos) {
         if ((isNodeOperator(buffer->nodes[pos - 2]->type) && !buffer->nodes[pos - 2]->isOperatorResult)
          || (isNodeOperator(buffer->nodes[pos - 1]->type) && !buffer->nodes[pos - 1]->isOperatorResult)) {
             return false;
-        }
+        } 
 
         ASTNode *leftOperand  = buffer->nodes[pos - 2];
         ASTNode *rightOperand = buffer->nodes[pos - 1];
         ASTNode *operator     = buffer->nodes[  pos  ];
+
+        // check division by zero
+        if (rightOperand->type == NODE_Literal_Int && rightOperand->content.i == 0) {
+            throwError(ZERO_DIVISION_ERROR, "Division by zero error\n", true);
+        }
+        else if (rightOperand->type == NODE_Literal_Float && rightOperand->content.f == 0.0) {
+            throwError(ZERO_DIVISION_ERROR, "Division by zero error\n", true);
+        }
 
         AST_AttachNode(operator, leftOperand);
         AST_AttachNode(operator, rightOperand);

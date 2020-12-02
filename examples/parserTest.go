@@ -163,3 +163,12 @@ func main() {
     print("ok", "bro")
 }
 */
+
+/* Division by 0 and empty return, should compile OK */
+
+package main
+
+func main() {
+    a := 5.4 / 0.0
+    return
+}
