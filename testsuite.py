@@ -12,6 +12,7 @@ import subprocess
 import signal
 import shutil
 import re
+from time import sleep
 
 # Default argument values
 DEFAULT_COMPILER_PATH = './leParser.o'
@@ -80,6 +81,8 @@ def ParseArgs ():
     parser.add_argument('--go-include-file', default=DEFAULT_GO_INCLUDE, help='path to the file that is required to be included in go programs to execute ifj language. default: ' + DEFAULT_GO_INCLUDE)
     parser.add_argument('--tmp-dir', default=DEFAULT_TMP_DIR, help='path to a temp directory that will be created to store temp files for tests. default: ' + DEFAULT_TMP_DIR)
 
+    parser.add_argument('--delay', '-d', action='store_true', help='Delay tests execution for merlin testing');
+
     # Parse arguments from command line
     args = parser.parse_args()
 
@@ -136,7 +139,16 @@ def ParseArgs ():
         shutil.rmtree(args.output_folder)
     print('creating output folder \'' + args.output_folder + '\'')
     os.mkdir(args.output_folder)
-    
+
+    print('checking go interpreter')
+    try:
+        output = subprocess.check_output([args.go_interpreter, 'version'])
+    except Exception as ex:
+        raise Exception('Go interpreter is not valid. Command: \'' + args.go_interpreter + ' version\' couldn\'t be executed. Reason: ' + str(ex))
+    if output[:11] != 'go version ':
+        raise Exception('Go interpreter is not valid. Command: \'' + args.go_interpreter + ' version\' didn\'t produce correct output')
+    print('go interpreter found in version \'' + output[11:-1] + '\'')
+
     print('checking ifjcode interpreter')
     try:
         output = subprocess.check_output([args.ifjcode_interpreter, '--help'])
@@ -401,12 +413,18 @@ def CheckExtensions(required, forbiden, extensions):
 
 # Save intermetiate code
 def SaveIfjcode(name, directory, data):
-        outputFileName = os.path.basename(name)[:-3] + '.ifjcode'
+        parts = name.split(':')
+        fileName = os.path.basename(parts[0])
+        if len(parts) > 1:
+            fileName += ':' + os.path.basename(parts[1])
+        outputFileName = fileName + '.ifjcode'
         f = open(os.path.join(directory, outputFileName), 'w')
         f.write(data)
         f.close()
 
 def RunTest(test, args):
+    if args.delay:
+        sleep(0.3)
     # Global variables must be accessed here
     global test_index
     global test_id
