@@ -290,8 +290,18 @@ bool NT_Stat(ASTNode *parentNode) {
         ret = NT_For_Def(node) && NT_For_Exp(node) && NT_For_Assign(node) && NT_Stat(blockNode) && NT_Stat(parentNode);
     }
     else if (nextToken.type == TOK_Return_Keyword) {
-        ASTNode *node = AST_CreateNode(parentNode, NODE_Return);
-        ret = NT_Exps(node, false) && NT_Stat(parentNode);
+        Token secondToken = getToken();
+
+        if (isExpFirst(secondToken.type)) {
+            overlapToken = secondToken;
+            ASTNode *node = AST_CreateNode(parentNode, NODE_Return);
+            ret = NT_Exps(node, false) && NT_Stat(parentNode);
+        }
+        else if (secondToken.type == TOK_Newline) {
+            ASTNode *node = AST_CreateNode(parentNode, NODE_Return);
+            ret = NT_Stat(parentNode);
+        }
+
     }
 
     return ret;
