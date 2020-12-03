@@ -132,10 +132,49 @@ void generateDefinition(ASTNode *defineNode, ST_Node *symtable, IntBuffer scope)
 
 void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope) {
     ASTNode *idNode = AST_GetChildOfType(assignNode, NODE_Identifier);
+    ASTNode *leftSideNode = assignNode->children[0];
     ASTNode *rightSideNode = assignNode->children[1];
     
     if (rightSideNode->type == NODE_Exp) {
         generateExpression(rightSideNode, symtable, scope, idNode->content.str);
+    }
+    else if (rightSideNode->type == NODE_Func_Call) {
+        if (strcmp(rightSideNode->content.str, "inputs") == 0) {
+            ASTNode *outputStringNode = leftSideNode->children[0];
+            ASTNode *outputIntNode = leftSideNode->children[1];
+
+            printf("READ LF@%s string\n", outputStringNode->content.str);
+        }
+        else if (strcmp(rightSideNode->content.str, "inputi") == 0) {
+            ASTNode *outputStringNode = leftSideNode->children[0];
+            ASTNode *outputIntNode = leftSideNode->children[1];
+
+            printf("READ LF@%s int\n", outputStringNode->content.str);
+        }
+        else if (strcmp(rightSideNode->content.str, "inputf") == 0) {
+            ASTNode *outputStringNode = leftSideNode->children[0];
+            ASTNode *outputIntNode = leftSideNode->children[1];
+
+            printf("READ LF@%s float\n", outputStringNode->content.str);
+        }
+        else if (strcmp(rightSideNode->content.str, "len") == 0) {
+            ASTNode *outputIntNode = leftSideNode;
+            ASTNode *inputStringNode = rightSideNode->children[0];
+
+            printf("STRLEN LF@%s LF@%s\n", outputIntNode->content.str, inputStringNode->content.str);
+        }
+        else if (strcmp(rightSideNode->content.str, "int2float") == 0) {
+            ASTNode *outputFloatNode = leftSideNode;
+            ASTNode *inputIntNode = rightSideNode->children[0];
+
+            printf("INT2FLOAT LF@%s LF@%s\n", outputFloatNode->content.str, inputIntNode->content.str);
+        }
+        else if (strcmp(rightSideNode->content.str, "float2int") == 0) {
+            ASTNode *outputIntNode = leftSideNode;
+            ASTNode *inputFloatNode = rightSideNode->children[0];
+
+            printf("FLOAT2INT LF@%s LF@%s\n", outputIntNode->content.str, inputFloatNode->content.str);
+        }
     }
     // TODO: else can be a func call with one left value or multi left value
 }
