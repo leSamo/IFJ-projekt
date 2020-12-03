@@ -141,21 +141,54 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
     else if (rightSideNode->type == NODE_Func_Call) {
         if (strcmp(rightSideNode->content.str, "inputs") == 0) {
             ASTNode *outputStringNode = leftSideNode->children[0];
-            ASTNode *outputIntNode = leftSideNode->children[1];
+            ASTNode *outputErrNode = leftSideNode->children[1];
 
+            // no need to check type, string takes anything
             printf("READ LF@%s string\n", outputStringNode->content.str);
         }
         else if (strcmp(rightSideNode->content.str, "inputi") == 0) {
-            ASTNode *outputStringNode = leftSideNode->children[0];
-            ASTNode *outputIntNode = leftSideNode->children[1];
+            ASTNode *outputIntNode = leftSideNode->children[0];
+            ASTNode *outputErrNode = leftSideNode->children[1];
 
-            printf("READ LF@%s int\n", outputStringNode->content.str);
+            printf("\nCREATEFRAME\n");
+            printf("DEFVAR TF@res%d\n", consecutiveLabelId);
+            printf("DEFVAR TF@type%d\n", consecutiveLabelId);
+
+            printf("READ TF@res%d int\n", consecutiveLabelId);
+            printf("TYPE TF@type%d TF@res%d\n", consecutiveLabelId, consecutiveLabelId);
+
+            printf("JUMPIFNEQ !error%d string@int TF@type%d\n", consecutiveLabelId, consecutiveLabelId);
+            printf("MOVE LF@%s TF@res%d\n", outputIntNode->content.str, consecutiveLabelId);
+
+            printf("JUMP !end%d\n", consecutiveLabelId);
+            printf("LABEL !error%d\n", consecutiveLabelId);
+
+            printf("MOVE LF@%s int@1\n", outputErrNode->content.str);
+
+            printf("LABEL !end%d\n", consecutiveLabelId++);
+            printf("CLEARS\n\n");
         }
         else if (strcmp(rightSideNode->content.str, "inputf") == 0) {
-            ASTNode *outputStringNode = leftSideNode->children[0];
-            ASTNode *outputIntNode = leftSideNode->children[1];
+            ASTNode *outputFloatNode = leftSideNode->children[0];
+            ASTNode *outputErrNode = leftSideNode->children[1];
 
-            printf("READ LF@%s float\n", outputStringNode->content.str);
+            printf("\nCREATEFRAME\n");
+            printf("DEFVAR TF@res%d\n", consecutiveLabelId);
+            printf("DEFVAR TF@type%d\n", consecutiveLabelId);
+
+            printf("READ TF@res%d float\n", consecutiveLabelId);
+            printf("TYPE TF@type%d TF@res%d\n", consecutiveLabelId, consecutiveLabelId);
+
+            printf("JUMPIFNEQ !error%d string@float TF@type%d\n", consecutiveLabelId, consecutiveLabelId);
+            printf("MOVE LF@%s TF@res%d\n", outputFloatNode->content.str, consecutiveLabelId);
+
+            printf("JUMP !end%d\n", consecutiveLabelId);
+            printf("LABEL !error%d\n", consecutiveLabelId);
+
+            printf("MOVE LF@%s int@1\n", outputErrNode->content.str);
+
+            printf("LABEL !end%d\n", consecutiveLabelId++);
+            printf("CLEARS\n\n");
         }
         else if (strcmp(rightSideNode->content.str, "len") == 0) {
             ASTNode *outputIntNode = leftSideNode;
