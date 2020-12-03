@@ -33,6 +33,30 @@ void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable) {
 
     printf("\nPOPFRAME # func main LF\n");
     printf("EXIT int@0\n");
+
+    // generate other functions
+    for (int i = 0; i < astRoot->childrenCount; i++) {
+        ASTNode *funcDefNode = astRoot->children[i];
+
+        if (strcmp(funcDefNode->content.str, "main") != 0) {
+            ASTNode *funcDefBlockNode = AST_GetChildOfType(funcDefNode, NODE_Block);
+            ASTNode *funcDefParamsNode = AST_GetChildOfType(funcDefNode, NODE_Func_Def_Param_List);
+
+            IntBuffer *blockScope = IntBufferCreate();
+            IntBufferPush(blockScope, funcDefBlockNode->id);
+
+            printf("LABEL *%s\n", funcDefNode->content.str);
+            printf("PUSHFRAME\n");
+
+            for (int i = 0; i < funcDefParamsNode->childrenCount; i++) {
+                printf("DEFVAR LF@%s\n", funcDefParamsNode->children[i]->children[0]->content.str);
+                printf("MOVE LF@%s LF@!arg%d\n", funcDefParamsNode->children[i]->children[0]->content.str, i);
+            }
+
+            generateBlock(funcDefNode, symtable, *blockScope);
+            printf("RETURN\n");
+        }
+    }
 }
 
 void generateStructure(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
@@ -219,6 +243,19 @@ void generateFuncCall(ASTNode *funcCallNode, ST_Node *symtable, IntBuffer scope)
             printTerm(funcCallNode->children[i]->type, funcCallNode->children[i]->content, "LF");
             printf("\n");
         }
+    }
+    else {
+        printf("CREATEFRAME\n");
+
+        for (int i = 0; i < funcCallNode->childrenCount; i++) {
+            printf("DEFVAR TF@!arg%d\n", i);
+
+            printf("MOVE TF@!arg%d ", i);
+            printTerm(funcCallNode->children[i]->type, funcCallNode->children[i]->content, "LF");
+            printf("\n");
+        }
+
+        printf("CALL *%s\n", funcCallNode->content.str);
     }
 }
 
