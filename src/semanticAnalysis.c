@@ -68,7 +68,7 @@ void AST_SecondPass(ASTNode *astNode, ST_Node **symTableRoot) {
 
 void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer scopes) {
     if (astNode != NULL) {
-        if (astNode->type == NODE_Block) {
+        if (astNode->type == NODE_Block || astNode->type == NODE_For) {
             IntBufferPush(&scopes, astNode->id);
         }
         else if (astNode->type == NODE_Define) {

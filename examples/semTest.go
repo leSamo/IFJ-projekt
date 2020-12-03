@@ -1,6 +1,15 @@
 package main
 
 func main() {
+	i := 0
+
+	for i := 0; i == 0; {
+		i := 5
+	}
+}
+
+/*
+func main() {
 	a := 5
 	a = 6
 
@@ -19,7 +28,7 @@ func a (i int) (int) {
 
 	return b
 }
-
+*/
 /*
 func main() {
 
