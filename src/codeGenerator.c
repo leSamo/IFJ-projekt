@@ -20,7 +20,7 @@ void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable) {
     printf(".IFJcode20\n\n");
     printf("LABEL *main\n");
     printf("CREATEFRAME\n");
-    printf("PUSHFRAME\n");
+    printf("PUSHFRAME # func main LF\n\n");
 
     ASTNode *mainBlockNode = AST_GetChildOfType(mainNode, NODE_Block);
 
@@ -31,7 +31,7 @@ void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable) {
         generateStructure(mainBlockNode->children[i], symtable, *mainScope);
     }
 
-    printf("POPFRAME\n");
+    printf("\nPOPFRAME # func main LF\n");
     printf("EXIT int@0\n");
 }
 
@@ -49,12 +49,54 @@ void generateStructure(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
         case NODE_If_Else:
             generateIfElse(node, symtable, scope);
             break;
+        case NODE_For:
+            generateFor(node, symtable, scope);
+            break;
         case NODE_Block:
-            for (int i = 0; i < node->childrenCount; i++) {
-                generateStructure(node->children[i], symtable, scope);
-            }
+            generateBlock(node, symtable, scope);
             break;
     }
+}
+
+void generateBlock(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
+    for (int i = 0; i < node->childrenCount; i++) {
+        generateStructure(node->children[i], symtable, scope);
+    }
+}
+
+void generateFor(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
+    ASTNode *blockNode = AST_GetChildOfType(node, NODE_Block);
+    ASTNode *defineNode = AST_GetChildOfType(node, NODE_Define);
+    ASTNode *expNode = AST_GetChildOfType(node, NODE_Exp);
+    ASTNode *assignNode = AST_GetChildOfType(node, NODE_Assign); // there may be multiple assignments
+
+    IntBufferPush(&scope, node->id); // for header scope
+
+    char expId[14];
+    sprintf(expId, "!exp_%d", consecutiveLabelId);
+
+    if (defineNode != NULL) {
+        generateDefinition(defineNode, symtable, scope); // for definition
+    }
+
+    printf("DEFVAR LF@%s\n", expId); // expression result temp
+
+    printf("\nLABEL !for_start_%d\n", consecutiveLabelId);
+
+    generateExpression(expNode, symtable, scope, expId);
+    printf("JUMPIFNEQ !for_end_%d LF@!exp_%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
+
+    IntBufferPush(&scope, blockNode->id);
+    generateBlock(blockNode, symtable, scope); // TODO: Update scope
+
+    if (assignNode != NULL) {
+        generateAssignment(assignNode, symtable, scope); // for assignment
+    }
+
+    printf("JUMP !for_start_%d\n", consecutiveLabelId);
+    printf("\nLABEL !for_end_%d\n", consecutiveLabelId);
+
+    consecutiveLabelId++;
 }
 
 void generateIfElse(ASTNode *node, ST_Node *symtable, IntBuffer scope) {

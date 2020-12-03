@@ -1,6 +1,13 @@
 package main
 
 func main() {
+
+	for i := 0; i < 5; i = i + 1 {
+		print("ahoj\n")
+	}
+
+
+	/*
 	a := 5 >= 0
 	a = 8
 	print(5, 5.5, "ahoj", a)
@@ -23,4 +30,5 @@ func main() {
 	f := 8.0 + 5.0
 
 	print("\n")
+	*/
 }

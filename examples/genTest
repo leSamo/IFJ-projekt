@@ -2,82 +2,32 @@
 
 LABEL *main
 CREATEFRAME
-PUSHFRAME
-DEFVAR LF@a
+PUSHFRAME # func main LF
 
-CREATEFRAME
-DEFVAR TF@$t
-DEFVAR TF@$t1
-DEFVAR TF@$t2
-EQ TF@$t1 int@5 int@0
-GT TF@$t2 int@5 int@0
-OR TF@$t TF@$t1 TF@$t2
-MOVE LF@a TF@$t
-CLEARS
-
-MOVE LF@a int@8
-WRITE int@5
-WRITE float@0x1.6p+2
-WRITE string@ahoj
-WRITE LF@a
+DEFVAR LF@i
+MOVE LF@i int@0
 DEFVAR LF@!exp_0
 
+LABEL !for_start_0
+
 CREATEFRAME
 DEFVAR TF@$t
-DEFVAR TF@$t1
-EQ TF@$t1 LF@a int@8
-NOT TF@$t TF@$t1
+LT TF@$t LF@i int@5
 MOVE LF@!exp_0 TF@$t
 CLEARS
 
-JUMPIFNEQ !neg_0 LF@!exp_0 bool@true
-LABEL !pos_0
-WRITE string@pos
-JUMP !end_0
-LABEL !neg_0
-WRITE string@neg
-LABEL !end_0
-DEFVAR LF@b
-MOVE LF@b string@ahoj\032\035\035\035
+JUMPIFNEQ !for_end_0 LF@!exp_0 bool@true
+WRITE string@ahoj\010
 
 CREATEFRAME
 DEFVAR TF@$t
-DEFVAR TF@$tl
-CONCAT TF@$tl LF@b string@\032
-CONCAT TF@$t TF@$tl string@kamarat
-MOVE LF@b TF@$t
-CLEARS
-
-WRITE LF@b
-WRITE int@4223372036854775807
-DEFVAR LF@s
-
-CREATEFRAME
-DEFVAR TF@$t
-DEFVAR TF@$tl
-CONCAT TF@$tl string@a string@a
-CONCAT TF@$t TF@$tl string@a
-MOVE LF@s TF@$t
-CLEARS
-
-DEFVAR LF@i
-
-CREATEFRAME
-DEFVAR TF@$t
-DEFVAR TF@$tl
-MUL TF@$tl int@5 int@5
-ADD TF@$t TF@$tl LF@a
+ADD TF@$t LF@i int@1
 MOVE LF@i TF@$t
 CLEARS
 
-DEFVAR LF@f
+JUMP !for_start_0
 
-CREATEFRAME
-DEFVAR TF@$t
-ADD TF@$t float@0x1p+3 float@0x1.4p+2
-MOVE LF@f TF@$t
-CLEARS
+LABEL !for_end_0
 
-WRITE string@\010
-POPFRAME
+POPFRAME # func main LF
 EXIT int@0
