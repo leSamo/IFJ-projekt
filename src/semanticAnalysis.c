@@ -240,7 +240,6 @@ typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot, IntBuf
 }
 
 bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **symTableRoot, typeTag type, IntBuffer scopes) {
-    // TODO: Check if string literals are using only NODE_Add
     if (partialExpNode->childrenCount == 0) { // this node is leaf
         typeTag expType = partialExpNode->valueType;
 
@@ -248,6 +247,14 @@ bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **symTableRoot, typ
         if (expType == TAG_Unknown) {
             expType = ST_GetVariableType(partialExpNode->content.str, symTableRoot, scopes);
         }
+
+        // Check if string literals are using only NODE_Add
+        if (expType == TAG_String) {
+            if (partialExpNode->parent->type == NODE_Sub || partialExpNode->parent->type == NODE_Mul || partialExpNode->parent->type == NODE_Div) {
+                throwError(INCOMPATIBLE_TYPE_ERROR, "Invalid operation on string error\n", false);
+            }
+        }
+
         return expType == type;
     }
     else if (partialExpNode->childrenCount == 1) {
