@@ -190,6 +190,10 @@ void generateFuncCall(ASTNode *funcCallNode, ST_Node *symtable, IntBuffer scope)
 }
 
 void generateExpression(ASTNode *expNode, ST_Node *symtable, IntBuffer scope, char *resultId) {
+    if (strcmp(resultId, "_") == 0) {
+        return;
+    }
+
     if (!isNodeOperator(expNode->children[0]->type)) {
         printf("MOVE LF@%s ", resultId);
         printTerm(expNode->children[0]->type, expNode->children[0]->content, "LF");
