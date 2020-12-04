@@ -33,5 +33,8 @@ bool isNodeOperator(ASTNodeType type);
 /* Returns true if token type is operator (+,-,*,/,<,<=,>,>=,==,!=) */
 bool isOperator(tokenType type);
 
+/* Returns true if node type is relation operator (<,<=,>,>=,==,!=) */
+bool isNodeRelationalOperator(ASTNodeType type);
+
 /* Returns true if token can be legally followed by newline symbol (+,-,*,/,(,<,<=,>,>=,==,!=) */
 bool canHaveNewlineAfter(tokenType type);

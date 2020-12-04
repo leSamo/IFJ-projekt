@@ -1,4 +1,4 @@
-//compiler 1
+//compiler 1 2
 //
 package m]ain
 

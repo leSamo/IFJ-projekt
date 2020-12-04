@@ -264,6 +264,11 @@ bool NodeBufferCollapse(NodeBuffer *buffer, int pos) {
             }
         }
 
+        // check if arithmetic operator is used on result of relational operator (boolean)
+        if (isNodeRelationalOperator(leftOperand->type) || isNodeRelationalOperator(rightOperand->type)) {
+            throwError(INCOMPATIBLE_TYPE_ERROR, "Applying arithmetic operator on bool error\n", true);
+        }
+
         AST_AttachNode(operator, leftOperand);
         AST_AttachNode(operator, rightOperand);
 
@@ -349,6 +354,21 @@ bool isOperator(tokenType type) {
         case TOK_More_Then:
         case TOK_Less_Equal_Then:
         case TOK_Less_Then:
+            return true;
+        
+        default:
+            return false;
+    }
+}
+
+bool isNodeRelationalOperator(ASTNodeType type) {
+    switch (type) {
+        case NODE_Equal:
+        case NODE_Not_Equal:
+        case NODE_More_Equal_Then:
+        case NODE_More_Then:
+        case NODE_Less_Equal_Then:
+        case NODE_Less_Then:
             return true;
         
         default:
