@@ -74,12 +74,19 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer
         else if (astNode->type == NODE_For) {
             IntBufferPush(&scopes, astNode->id);
             ASTNode *forExpNode = AST_GetChildOfType(astNode, NODE_Exp);
+            ASTNode *forDefNode = AST_GetChildOfType(astNode, NODE_Define);
             ASTNodeType expRootType = forExpNode->children[0]->type;
 
             if (expRootType != NODE_Equal && expRootType != NODE_Not_Equal && expRootType != NODE_More_Then
              && expRootType != NODE_More_Equal_Then && expRootType != NODE_Less_Then && expRootType != NODE_Less_Equal_Then) {
                 throwError(INCOMPATIBLE_TYPE_ERROR, "If expression doesn't evaluate to bool error\n", false);
             }
+
+            if (forDefNode != NULL) {
+                ST_VariableDefinition(forDefNode, symTableRoot, scopes);
+            }
+
+            ST_DeriveExpressionType(forExpNode, symTableRoot, scopes);
         }
         else if (astNode->type == NODE_If_Else) {
             ASTNode *ifExpNode = AST_GetChildOfType(astNode, NODE_Exp);
@@ -89,8 +96,10 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer
              && expRootType != NODE_More_Equal_Then && expRootType != NODE_Less_Then && expRootType != NODE_Less_Equal_Then) {
                 throwError(INCOMPATIBLE_TYPE_ERROR, "If expression doesn't evaluate to bool error\n", false);
             }
+
+            ST_DeriveExpressionType(ifExpNode, symTableRoot, scopes);
         }
-        else if (astNode->type == NODE_Define) {
+        else if (astNode->type == NODE_Define && astNode->parent->type != NODE_For) {
             ST_VariableDefinition(astNode, symTableRoot, scopes);
         }
         else if (astNode->type == NODE_Assign) {

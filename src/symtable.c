@@ -185,7 +185,7 @@ void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node, IntBuff
             ST_Insert(&(*RootPtr)->LPtr, id, type, node, scopes);
         }
         else {
-            throwError(DEFINITION_TYPE_ERROR, "Variable redefinition in the same scope error\n", false);
+            throwError(DEFINITION_ERROR, "Variable redefinition in the same scope error\n", false);
         }
     }
     else if (strcmp(id, (*RootPtr)->id) < 0) {
