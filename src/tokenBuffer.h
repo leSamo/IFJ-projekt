@@ -3,6 +3,7 @@
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00)
  * Date: November 2020
+ * Description: Variable length token buffer with create, push, top, pop, pop front and dispose functions.
  * ================================= */
 
 #ifndef TOKEN_BUFFER
@@ -13,12 +14,12 @@
 #define INITIAL_TOKEN_BUFFER_SIZE 10
 
 typedef struct TokenBuffer {
-    int count;
-    int capacity;
+    int count;          // how many tokens are inside buffer
+    int capacity;       // how many tokens could fit inside buffer before reallocation
     Token *tokens;
 } TokenBuffer;
 
-/* Allocates, initates and returns a token buffer */
+/* Allocates, initates and returns a new token buffer */
 TokenBuffer* TokenBufferCreate();
 
 /* Pushes one token into supplied buffer */
@@ -36,7 +37,7 @@ Token TokenBufferPop(TokenBuffer *buffer);
 /* Returns first inserted token of the buffer and removes it from the buffer */
 Token TokenBufferPopFront(TokenBuffer **buffer);
 
-/* Debug function to print out all the items from the buffer */
+/* [DEBUG] Print out all the items from the buffer */
 void TokenBufferPrint(TokenBuffer *buffer);
 
 /* Deallocated token buffer */

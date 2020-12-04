@@ -3,6 +3,7 @@
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00)
  * Date: November 2020
+ * Description: Variable length token buffer with create, push, top, pop, pop front and dispose functions.
  * ================================= */
 
 #include <stdlib.h>
@@ -14,10 +15,9 @@ TokenBuffer* TokenBufferCreate() {
     TokenBuffer *buffer = malloc(sizeof(TokenBuffer));
     buffer->tokens = malloc(sizeof(Token) * INITIAL_TOKEN_BUFFER_SIZE);
 
-    if (buffer == NULL || buffer->tokens == NULL ) {
-        throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
+    if (buffer == NULL || buffer->tokens == NULL) { // at least one allocation failed
         deallocateAll();
-        exit(INTERNAL_ERROR);
+        throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
     }
 
     buffer->count = 0;
@@ -27,15 +27,14 @@ TokenBuffer* TokenBufferCreate() {
 }
 
 void TokenBufferPush(TokenBuffer *buffer, Token token) {
-    if (buffer->count + 1 == buffer->capacity) {
-        buffer->capacity *= 2;
+    if (buffer->count + 1 == buffer->capacity) { // we ran out of space inside buffer
+        buffer->capacity *= 2; // double previous capacity
         Token* newArray = realloc(buffer->tokens, sizeof(Token) * buffer->capacity);
 
-        if (newArray == NULL) {
+        if (newArray == NULL) { // realloc failed
             TokenBufferDispose(&buffer);
-            throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
             deallocateAll();
-            exit(INTERNAL_ERROR);
+            throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
         }
         else {
             buffer->tokens = newArray;
@@ -56,11 +55,10 @@ Token TokenBufferTop(TokenBuffer *buffer) {
     if (buffer->count > 0) {
         return buffer->tokens[buffer->count - 1];
     }
-    else {
+    else { // buffer was empty, top operation is invalid
         TokenBufferDispose(&buffer);
+        //deallocateAll();
         throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
-        deallocateAll();
-        exit(SYNTAX_ERROR);
     }
 }
 
@@ -68,18 +66,18 @@ Token TokenBufferPop(TokenBuffer *buffer) {
     if (buffer->count > 0) {
         return buffer->tokens[--buffer->count];
     }
-    else {
+    else { // buffer was empty, pop operation is invalid
         TokenBufferDispose(&buffer);
+        //deallocateAll();
         throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
-        deallocateAll();
-        exit(SYNTAX_ERROR);
     }
 }
 
 Token TokenBufferPopFront(TokenBuffer **buffer) {
     if ((*buffer)->count > 0) {
-        Token returnToken = (*buffer)->tokens[0];
+        Token returnToken = (*buffer)->tokens[0]; // return first token
 
+        // shift all tokens after first left by one
         for (int i = 0; i < (*buffer)->count - 1; i++) {
             (*buffer)->tokens[i] = (*buffer)->tokens[i + 1];
         }
@@ -87,11 +85,10 @@ Token TokenBufferPopFront(TokenBuffer **buffer) {
         (*buffer)->count--;
         return returnToken;
     }
-    else {
+    else { // buffer was empty, pop front operation is invalid
         TokenBufferDispose(buffer);
+        //deallocateAll();
         throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
-        deallocateAll();
-        exit(SYNTAX_ERROR);
     }
 }
 
@@ -101,13 +98,7 @@ void TokenBufferPrint(TokenBuffer *buffer) {
     }
 
     for (int i = 0; i < buffer->count; i++) {
-        Token currentToken = buffer->tokens[i];
-        if (currentToken.type == TOK_Int_Literal) {
-            printf("%s: %ld\n", getTokenName(currentToken.type), currentToken.i);
-        }
-        else {
-            printf("%s\n", getTokenName(currentToken.type));
-        }
+        printf("%s\n", getTokenName(buffer->tokens[i].type));
     }
 }
 

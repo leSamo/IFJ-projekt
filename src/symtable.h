@@ -15,7 +15,7 @@
 
 #include "intBuffer.h"
 
-/* Of what type node is */
+/* Of what type is the symbol */
 typedef enum {
     SYM_None,
     SYM_Unused,
@@ -25,32 +25,33 @@ typedef enum {
     SYM_Func
 } symType;
 
+/* Symtable node AKA symbol */
 typedef struct ST_Node {
-    char *id;
-    IntBuffer *scopes;
+    char *id;             // used to identify scope for block nodes
+    IntBuffer *scopes;    // array of scopes from outermost to innermost
     symType type;
-    ASTNode *node;
+    ASTNode *node;        // which AST node defined this symbol
 
     struct ST_Node *LPtr; // left child
     struct ST_Node *RPtr; // right child
 } ST_Node;
 
-/* Initializes symtable and fills it with built-in variables and functions */
+/* Initializes symtable */
 void ST_Init(ST_Node **);
 
 /* Fills symtable it with built-in variables and functions */
 void ST_SetupBuiltIn(ST_Node **RootPtr);
 
-/* Searches identifier with supplied scopes (or their parents) in the symtable */
+/* Searches identifier with supplied scopes (or their parent scopes) in the symtable */
 ST_Node* ST_Search(ST_Node *RootPtr, ST_Node *CurrentPtr, char *searchedId, IntBuffer scopes);
 
 /* Creates a new symbol and inserts it into the symtable */
 void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node, IntBuffer scopes);
 
-/* Recursively deallocates all nodes of the symtable */
+/* Recursively deallocates all nodes from the symtable */
 void ST_Dispose(ST_Node **);
 
-/* [DEBUG] Prints symtable, initially level should be 0 */
+/* [DEBUG] Recursivelly prints symtable, initially level should be 0 */
 void ST_PrettyPrint(ST_Node *nodePtr, int level);
 
 #endif

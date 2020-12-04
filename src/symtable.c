@@ -25,10 +25,10 @@ void ST_Init(ST_Node **RootPtr) {
 }
 
 void ST_SetupBuiltIn(ST_Node **RootPtr) {
-
+    // parent to register all these nodes for future deallocation
     ASTBuiltIn = AST_CreateNode(NULL, NODE_Empty);
 
-    // writeonly _ variable
+    // write-only _ variable
     ST_Insert(RootPtr, "_", TAG_Any, NULL, GLOBAL_SCOPE);
 
     // TODO: Create function node factory
@@ -119,17 +119,21 @@ void ST_SetupBuiltIn(ST_Node **RootPtr) {
 }
 
 ST_Node* ST_Search(ST_Node *RootPtr, ST_Node *CurrentPtr, char *searchedId, IntBuffer scopes) {
+    // if search in this scope was unsuccessful, search parent scopes
     if (CurrentPtr == NULL) {
         if (scopes.count > 0) {
             scopes.count--;
             return ST_Search(RootPtr, RootPtr, searchedId, scopes);
         }
         else {
+            // we didn't find it in any parent scope
             return NULL;
         }
     }
 
+    // I found symbol with the searched identifier
     if (strcmp(searchedId, CurrentPtr->id) == 0) {
+        // returns 0 if scopes match, returns -1 or 1 if not to indicate search direction
         int scopeComparison = IntBufferCompare(*CurrentPtr->scopes, scopes);
 
         if (scopeComparison < 0) {
@@ -139,10 +143,12 @@ ST_Node* ST_Search(ST_Node *RootPtr, ST_Node *CurrentPtr, char *searchedId, IntB
             return ST_Search(RootPtr, CurrentPtr->LPtr, searchedId, scopes);
         }
         else {
+            // both identifier and scope match
             return CurrentPtr;
         }
     }
 
+    // identifier doesn't match searched one
     if (strcmp(searchedId, CurrentPtr->id) < 0) {
         return ST_Search(RootPtr, CurrentPtr->RPtr, searchedId, scopes);
     }
@@ -152,13 +158,17 @@ ST_Node* ST_Search(ST_Node *RootPtr, ST_Node *CurrentPtr, char *searchedId, IntB
 }
 
 void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node, IntBuffer scopes) {
-    if (*RootPtr == NULL) {        
+    if (*RootPtr == NULL) { // found empty slot
         ST_Node *new_leaf = malloc(sizeof(ST_Node));
         new_leaf->id = newString(strlen(id));
         
-        // TODO: Check if malloc was successful
+        if (new_leaf == NULL) {
+            throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
+        }
 
         strcpy(new_leaf->id, id);
+
+        // copy scopes from argument to symbol node
         new_leaf->scopes = IntBufferCreate();
         new_leaf->scopes->capacity = scopes.capacity;
         new_leaf->scopes->count = scopes.count;
@@ -176,6 +186,7 @@ void ST_Insert(ST_Node **RootPtr, char *id, symType type, ASTNode *node, IntBuff
         *RootPtr = new_leaf;
     }
     else if (strcmp(id, (*RootPtr)->id) == 0) { // tree already has node with this id
+        // find out if the scopes are the same, if yes throw error, if no indicate direction
         int scopeComparison = IntBufferCompare(*(*RootPtr)->scopes, scopes);
 
         if (scopeComparison < 0) {
@@ -210,12 +221,14 @@ void ST_Dispose(ST_Node **RootPtr) {
 
 void ST_PrettyPrint(ST_Node *nodePtr, int level) {
     if (nodePtr != NULL) {
+        // indicate node depth in the tree by indentation
         for (int i = 0; i < level; i++) {
             printf("  ");
         }
 
         printf("%s\n", nodePtr->id);
 
+        // children should be indented a bit more then parent
         ST_PrettyPrint(nodePtr->LPtr, level + 1);
         ST_PrettyPrint(nodePtr->RPtr, level + 1);
     }
