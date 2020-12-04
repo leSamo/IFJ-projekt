@@ -81,6 +81,22 @@ void generateStructure(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
         case NODE_Block:
             generateBlock(node, symtable, scope);
             break;
+        case NODE_Return:
+            generateReturn(node, symtable, scope);
+            break;
+    }
+}
+
+void generateReturn(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
+    ASTNode *parentFunctionNode = AST_GetParentOfType(node, NODE_Func_Def);
+    ASTNode *returnParamsNode = AST_GetChildOfType(parentFunctionNode, NODE_Func_Def_Return);
+
+    for (int i = 0; i < node->childrenCount; i++) {
+        char expId[16];
+        sprintf(expId, "!ret%d", i);
+
+        printf("DEFVAR LF@%s\n", expId);
+        generateExpression(node->children[i], symtable, scope, expId);
     }
 }
 
@@ -240,8 +256,31 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
 
             printf("FLOAT2INT LF@%s LF@%s\n", outputIntNode->content.str, inputFloatNode->content.str);
         }
+        else {
+            if (leftSideNode->type == NODE_Identifier) { // one return value
+                generateFuncCall(rightSideNode, symtable, scope);
+
+                if (strcmp(leftSideNode->content.str, "_") != 0) {
+                    printf("MOVE LF@%s TF@!ret0\n", leftSideNode->content.str);
+                }
+
+                printf("CLEARS\n");
+            }
+            else if (leftSideNode->type == NODE_Multi_L_Value) { // more return values
+                generateFuncCall(rightSideNode, symtable, scope);
+
+                for (int i = 0; i < leftSideNode->childrenCount; i++) {
+                    if (strcmp(leftSideNode->children[i]->content.str, "_") == 0) {
+                        continue;
+                    }
+
+                    printf("MOVE LF@%s TF@!ret%d\n", leftSideNode->children[i]->content.str, i);
+                }
+
+                printf("CLEARS\n");
+            }
+        }
     }
-    // TODO: else can be a func call with one left value or multi left value
 }
 
 void generateFuncCall(ASTNode *funcCallNode, ST_Node *symtable, IntBuffer scope) {
