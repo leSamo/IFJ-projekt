@@ -244,6 +244,56 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
 
             printf("STRLEN LF@%s LF@%s\n", outputIntNode->content.str, inputStringNode->content.str);
         }
+        else if (strcmp(rightSideNode->content.str, "ord") == 0) {
+            ASTNode *inputStringNode = rightSideNode->children[0];
+            ASTNode *inputPositionNode = rightSideNode->children[1];
+    
+            ASTNode *outputAsciiNode = leftSideNode->children[0];
+            ASTNode *outputErrorNode = leftSideNode->children[1];
+
+            printf("DEFVAR LF@!len%d\n", consecutiveLabelId);
+            printf("STRLEN LF@!len%d ", consecutiveLabelId);
+            printTerm(inputStringNode->type, inputStringNode->content, "LF");
+            printf("\n");
+
+            // check if pos isn't less than 0
+            printf("DEFVAR LF@!isErr%d\n", consecutiveLabelId);
+            printf("GT LF@!isErr%d int@0 ", consecutiveLabelId);
+            printTerm(inputPositionNode->type, inputPositionNode->content, "LF");
+            printf("\n");
+            printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
+
+            // check if pos isn't more than strlen
+            printf("LT LF@!isErr%d LF@!len%d ", consecutiveLabelId, consecutiveLabelId);
+            printTerm(inputPositionNode->type, inputPositionNode->content, "LF");
+            printf("\n");
+            printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
+
+            // check if pos isn't as much as strlen, error because index starts with 0
+            printf("EQ LF@!isErr%d LF@!len%d ", consecutiveLabelId, consecutiveLabelId);
+            printTerm(inputPositionNode->type, inputPositionNode->content, "LF");
+            printf("\n");
+            printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
+
+            // no error branch
+            printf("MOVE LF@%s int@0\n", outputErrorNode->content.str);
+
+            printf("STRI2INT LF@%s ", outputAsciiNode->content.str);
+            printTerm(inputStringNode->type, inputStringNode->content, "LF");
+            printf(" ");
+            printTerm(inputPositionNode->type, inputPositionNode->content, "LF");
+            printf("\n");
+
+            printf("JUMP !end%d\n", consecutiveLabelId);
+            printf("LABEL !err%d\n", consecutiveLabelId);
+
+            // error branch
+            printf("MOVE LF@%s int@1\n", outputErrorNode->content.str);
+
+            printf("LABEL !end%d\n", consecutiveLabelId);
+
+            consecutiveLabelId++;
+        }
         else if (strcmp(rightSideNode->content.str, "int2float") == 0) {
             ASTNode *outputFloatNode = leftSideNode;
             ASTNode *inputIntNode = rightSideNode->children[0];

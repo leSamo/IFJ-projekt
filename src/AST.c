@@ -45,6 +45,14 @@ ASTNode* AST_CreateTaggedNode(ASTNode *parent, ASTNodeType type, typeTag tag) {
     return AST_CreateNodeGeneral(parent, type, tag, tu);
 }
 
+ASTNode* AST_CreateFuncParamNode(ASTNode *paramList, ASTNodeType type, typeTag tag) {
+    ASTNode *param = AST_CreateNode(paramList, NODE_Func_Def_Param);
+    AST_CreateStringNode(param, NODE_Identifier, "Param");
+    AST_CreateTaggedNode(param, type, tag);
+
+    return param;
+}
+
 ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag contentType, typeUnion content) {
     ASTNode *node = malloc(sizeof(ASTNode));
 

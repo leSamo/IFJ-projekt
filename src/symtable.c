@@ -66,7 +66,7 @@ void ST_SetupBuiltIn(ST_Node **RootPtr) {
     // func int2float(i int) (float64)
     ASTNode *int2float = AST_CreateStringNode(ASTBuiltIn, NODE_Func_Def, "int2float");
     ASTNode *int2floatParams = AST_CreateNode(int2float, NODE_Func_Def_Param_List);
-    AST_CreateTaggedNode(int2floatParams, NODE_Type_Int, TAG_Int);
+    AST_CreateFuncParamNode(int2floatParams, NODE_Type_Int, TAG_Int);
     ASTNode *int2floatReturn = AST_CreateNode(int2float, NODE_Func_Def_Return);
     AST_CreateTaggedNode(int2floatReturn, NODE_Type_Float, TAG_Float);
     ST_Insert(RootPtr, "int2float", SYM_Func, int2float, GLOBAL_SCOPE);
@@ -74,7 +74,7 @@ void ST_SetupBuiltIn(ST_Node **RootPtr) {
     // func float2int(f float64) (int)
     ASTNode *float2int = AST_CreateStringNode(ASTBuiltIn, NODE_Func_Def, "float2int");
     ASTNode *float2intParams = AST_CreateNode(float2int, NODE_Func_Def_Param_List);
-    AST_CreateTaggedNode(float2intParams, NODE_Type_Float, TAG_Float);
+    AST_CreateFuncParamNode(float2intParams, NODE_Type_Float, TAG_Float);
     ASTNode *float2intReturn = AST_CreateNode(float2int, NODE_Func_Def_Return);
     AST_CreateTaggedNode(float2intReturn, NODE_Type_Int, TAG_Int);
     ST_Insert(RootPtr, "float2int", SYM_Func, float2int, GLOBAL_SCOPE);
@@ -82,7 +82,7 @@ void ST_SetupBuiltIn(ST_Node **RootPtr) {
     // func len(s string) (int)
     ASTNode *len = AST_CreateStringNode(ASTBuiltIn, NODE_Func_Def, "len");
     ASTNode *lenParams = AST_CreateNode(len, NODE_Func_Def_Param_List);
-    AST_CreateTaggedNode(lenParams, NODE_Type_String, TAG_String);
+    AST_CreateFuncParamNode(lenParams, NODE_Type_String, TAG_String);
     ASTNode *lenReturn = AST_CreateNode(len, NODE_Func_Def_Return);
     AST_CreateTaggedNode(lenReturn, NODE_Type_Int, TAG_Int);
     ST_Insert(RootPtr, "len", SYM_Func, len, GLOBAL_SCOPE);
@@ -90,9 +90,9 @@ void ST_SetupBuiltIn(ST_Node **RootPtr) {
     // func substr(s string, i int, n int) (string, int)
     ASTNode *substr = AST_CreateStringNode(ASTBuiltIn, NODE_Func_Def, "substr");
     ASTNode *substrParams = AST_CreateNode(substr, NODE_Func_Def_Param_List);
-    AST_CreateTaggedNode(substrParams, NODE_Type_String, TAG_String);
-    AST_CreateTaggedNode(substrParams, NODE_Type_Int, TAG_Int);
-    AST_CreateTaggedNode(substrParams, NODE_Type_Int, TAG_Int);
+    AST_CreateFuncParamNode(substrParams, NODE_Type_String, TAG_String);
+    AST_CreateFuncParamNode(substrParams, NODE_Type_Int, TAG_Int);
+    AST_CreateFuncParamNode(substrParams, NODE_Type_Int, TAG_Int);
     ASTNode *substrReturn = AST_CreateNode(substr, NODE_Func_Def_Return);
     AST_CreateTaggedNode(substrReturn, NODE_Type_String, TAG_String);
     AST_CreateTaggedNode(substrReturn, NODE_Type_Int, TAG_Int);
@@ -101,8 +101,8 @@ void ST_SetupBuiltIn(ST_Node **RootPtr) {
     // func ord(s string, i int) (int, int)
     ASTNode *ord = AST_CreateStringNode(ASTBuiltIn, NODE_Func_Def, "ord");
     ASTNode *ordParams = AST_CreateNode(ord, NODE_Func_Def_Param_List);
-    AST_CreateTaggedNode(ordParams, NODE_Type_String, TAG_String);
-    AST_CreateTaggedNode(ordParams, NODE_Type_Int, TAG_Int);
+    AST_CreateFuncParamNode(ordParams, NODE_Type_String, TAG_String);
+    AST_CreateFuncParamNode(ordParams, NODE_Type_Int, TAG_Int);
     ASTNode *ordReturn = AST_CreateNode(ord, NODE_Func_Def_Return);
     AST_CreateTaggedNode(ordReturn, NODE_Type_Int, TAG_Int);
     AST_CreateTaggedNode(ordReturn, NODE_Type_Int, TAG_Int);
@@ -111,7 +111,7 @@ void ST_SetupBuiltIn(ST_Node **RootPtr) {
     // func chr(i int) (string, int)
     ASTNode *chr = AST_CreateStringNode(ASTBuiltIn, NODE_Func_Def, "chr");
     ASTNode *chrParams = AST_CreateNode(chr, NODE_Func_Def_Param_List);
-    AST_CreateTaggedNode(chrParams, NODE_Type_Int, TAG_Int);
+    AST_CreateFuncParamNode(chrParams, NODE_Type_Int, TAG_Int);
     ASTNode *chrReturn = AST_CreateNode(chr, NODE_Func_Def_Return);
     AST_CreateTaggedNode(chrReturn, NODE_Type_String, TAG_String);
     AST_CreateTaggedNode(chrReturn, NODE_Type_Int, TAG_Int);
