@@ -217,7 +217,7 @@ void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTa
     ASTNode *funcDefinition = ST_GetFuncNode(funcName, symTableRoot);
     ASTNode *funcDefParamList = AST_GetChildOfType(funcDefinition, NODE_Func_Def_Param_List);
 
-    if (funcDefParamList != NULL) { // fixed param count
+    if (funcDefParamList != NULL) { // fixed param count (unlike built-in print function)
         if (funcDefParamList->childrenCount != funcCallNode->childrenCount) {
             throwError(ARGUMENT_ERROR, "Incorrect argument count in function call\n", false);
         }
@@ -258,12 +258,16 @@ typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot, IntBuf
     }
 }
 
-bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **symTableRoot, typeTag type, IntBuffer scopes) {
+bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **symTableRoot, typeTag type, IntBuffer scopes) {   
     if (partialExpNode->childrenCount == 0) { // this node is leaf
         typeTag expType = partialExpNode->valueType;
 
         // we don't know type - it's an identifier - look into symbol table
         if (expType == TAG_Unknown) {
+            if (strcmp(partialExpNode->content.str, "_") == 0) {
+                throwError(DEFINITION_ERROR, "Reading of _ variable error\n", false);
+            }
+
             expType = ST_GetVariableType(partialExpNode->content.str, symTableRoot, scopes);
         }
 
@@ -289,6 +293,9 @@ bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag type, I
     typeTag termType;
 
     if (termNode->type == NODE_Identifier) {
+        if (strcmp(termNode->content.str, "_") == 0) {
+            throwError(DEFINITION_ERROR, "Write-only variable _ in function call error\n" , false);
+        }
         termType = ST_GetVariableType(termNode->content.str, symTableRoot, scopes);
     }
     else if (termNode->type == NODE_Literal_Int)  {
@@ -311,7 +318,7 @@ typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot, IntBuffer scopes) {
         return symbol->type;
     }
     else {
-        throwError(DEFINITION_ERROR, "Undefined variable\n", false);
+        throwError(DEFINITION_ERROR, "Undefined variable error\n", false);
     }
 }
 

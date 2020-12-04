@@ -54,6 +54,8 @@ void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable) {
             }
 
             generateBlock(funcDefNode, symtable, *blockScope);
+            // TODO: setup output params
+            printf("POPFRAME\n");
             printf("RETURN\n");
         }
     }

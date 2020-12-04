@@ -28,7 +28,7 @@ void ST_SetupBuiltIn(ST_Node **RootPtr) {
 
     ASTBuiltIn = AST_CreateNode(NULL, NODE_Empty);
 
-    // readonly _ variable
+    // writeonly _ variable
     ST_Insert(RootPtr, "_", TAG_Any, NULL, GLOBAL_SCOPE);
 
     // TODO: Create function node factory

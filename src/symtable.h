@@ -18,7 +18,7 @@
 /* Of what type node is */
 typedef enum {
     SYM_None,
-    SYM_Readonly,
+    SYM_Unused,
     SYM_Int,
     SYM_Float,
     SYM_String,
