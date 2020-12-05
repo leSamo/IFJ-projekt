@@ -1,3 +1,4 @@
+//nogo
 //
 package main
 

@@ -67,7 +67,7 @@ Token getToken_NL_required() {
     Token nextToken = getToken();
 
     if (nextToken.type != TOK_Newline) {
-        throwError(SYNTAX_ERROR, "Expected newline, found none", true);
+        throwError(SYNTAX_ERROR, "Expected newline, found none\n", true);
         deallocateAll();
         exit(SYNTAX_ERROR);
     }
@@ -266,7 +266,7 @@ bool NT_Prolog() {
 
 bool NT_Stat(ASTNode *parentNode) {
     bool ret = false;
-    Token nextToken = getToken_NL_optional();
+    Token nextToken = getToken_NL_required();
 
     if (!TokenBufferEmpty(tokenBuffer)) {
         fprintf(stderr, "Unbalanced construction error\n");
@@ -298,6 +298,7 @@ bool NT_Stat(ASTNode *parentNode) {
             ret = NT_Exps(node, false) && NT_Stat(parentNode);
         }
         else if (secondToken.type == TOK_Newline) {
+            overlapToken = secondToken;
             ASTNode *node = AST_CreateNode(parentNode, NODE_Return);
             ret = NT_Stat(parentNode);
         }
@@ -469,7 +470,8 @@ bool NT_Exps_N(ASTNode *parentNode, bool createAssignment) {
             fprintf(stderr,"Unbalanced construction error\n");
             return false;
         }
-
+        
+        overlapToken = nextToken;
         ret = true;
     }
 
