@@ -117,12 +117,9 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer
             ASTNode *paramListNode = AST_GetChildOfType(astNode, NODE_Func_Def_Param_List);
             ASTNode *blockNode = AST_GetChildOfType(astNode, NODE_Block);
             IntBuffer blockScope;
-            blockScope.count = scopes.count;
-            blockScope.capacity = scopes.capacity;
-            
-            for (int i = 0; i < scopes.count; i++) {
-                blockScope.content[i] = scopes.content[i];
-            }
+            blockScope.count = 1;
+            blockScope.capacity = 1;
+            blockScope.content = &blockNode->id;
 
             for (int i = 0; i < paramListNode->childrenCount; i++) {
                 ASTNode *paramNode = paramListNode->children[i];

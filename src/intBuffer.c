@@ -69,10 +69,12 @@ int IntBufferCompare(IntBuffer buffer1, IntBuffer buffer2) {
 }
 
 void IntBufferPrint(IntBuffer *buffer) {
-    printf("=== INT BUFFER ===\n");
+    if (buffer->count == 0) {
+        printf("buffer is empty");
+    }
 
     for (int i = 0; i < buffer->count; i++) {
-        printf("%d\n", buffer->content[i]);
+        printf("%d ", buffer->content[i]);
     }
 }
 

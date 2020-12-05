@@ -226,7 +226,9 @@ void ST_PrettyPrint(ST_Node *nodePtr, int level) {
             printf("  ");
         }
 
-        printf("%s\n", nodePtr->id);
+        printf("%s ", nodePtr->id);
+        IntBufferPrint(nodePtr->scopes);
+        printf("\n");
 
         // children should be indented a bit more then parent
         ST_PrettyPrint(nodePtr->LPtr, level + 1);

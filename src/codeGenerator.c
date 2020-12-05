@@ -43,7 +43,6 @@ void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable) {
             ASTNode *funcDefParamsNode = AST_GetChildOfType(funcDefNode, NODE_Func_Def_Param_List);
 
             IntBuffer *blockScope = IntBufferCreate();
-            IntBufferPush(blockScope, funcDefBlockNode->id);
 
             printf("LABEL *%s\n", funcDefNode->content.str);
             printf("PUSHFRAME\n");
@@ -79,6 +78,7 @@ void generateStructure(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
             generateFor(node, symtable, scope);
             break;
         case NODE_Block:
+            IntBufferPush(&scope, node->id);
             generateBlock(node, symtable, scope);
             break;
         case NODE_Return:
