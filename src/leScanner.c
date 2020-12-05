@@ -501,33 +501,33 @@ void printToken(Token token) {
 char* getTokenName(tokenType type) {
     switch (type) {
         case TOK_Int_Literal:
-            return "Int           ";
+            return "Int";
         case TOK_Float_Literal:
-            return "Float         ";
+            return "Float";
         case TOK_Identifier:
-            return "Identifier    ";
+            return "Identifier";
         case TOK_String_Literal:
-            return "String        ";
+            return "String";
         case TOK_Comma:
             return "Comma         ";
         case TOK_Semicolon:
             return "Semicolon     ";
         case TOK_L_Paren:
-            return "Left paren    ";
+            return "Left paren";
         case TOK_R_Paren:
-            return "Right paren   ";
+            return "Right pare";
         case TOK_L_Brace:
             return "Left brace    ";
         case TOK_R_Brace:
             return "Right brace   ";
         case TOK_Add:
-            return "Addition      ";
+            return "Addition";
         case TOK_Sub:
-            return "Subtraction   ";
+            return "Subtraction";
         case TOK_Mul:
             return "Multiplication";
         case TOK_Div:
-            return "Division      ";
+            return "Division";
         case TOK_Else_Keyword:
             return "Else          ";
         case TOK_Float_Keyword:
@@ -566,6 +566,16 @@ char* getTokenName(tokenType type) {
             return "--";
         case TOK_EOF:
             return "EOF";
+        case TOK_P_$:
+            return "$";
+        case TOK_P_Greater:
+            return ">";
+        case TOK_P_Less:
+            return "<";
+        case TOK_P_Equal:
+            return "=";
+        case TOK_P_Ex:
+            return "Ex";
         default:
             return "Unknown       ";
     }

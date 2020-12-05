@@ -25,7 +25,33 @@ typedef enum {
 } errorCode;
 
 /* list of all token types */
-typedef enum {
+typedef enum {    
+    
+    /*tokens for precendence analysis*//*
+    Plus = 0,
+    Minus = 0,
+    Multiply = 1,
+    Divide = 1,
+    LeftBracket = 2,
+    RightBracket = 3,
+    Identifier = 4,
+    GreaterThan = 5,
+    LessThan = 5,
+    GreaterEqualThan = 5,
+    LessEqualThan = 5,
+    Equal = 5,
+    NotEqual = 5,
+    EOLT = 6,
+   */
+
+    /* precendecnce tokens*/
+    TOK_P_Greater = 100,
+    TOK_P_Less = 200,
+    TOK_P_Equal = 300,
+    TOK_P_Empty = 400,
+    TOK_P_Ex = 500,
+    TOK_P_$ = 900,
+
     TOK_Empty,
     TOK_Identifier,
 
@@ -74,6 +100,7 @@ typedef enum {
     TOK_Comma,
     TOK_Semicolon,
     TOK_EOF
+
 } tokenType;
 
 /* represents one token each token has type and some have value of either type int, float or string */

@@ -31,6 +31,11 @@ bool TokenBufferEmpty(TokenBuffer *buffer);
 /* Returns token on the top of the buffer */
 Token TokenBufferTop(TokenBuffer *buffer);
 
+/* Returns second token on the top of the buffer */
+Token TokenBufferSecondTop(TokenBuffer *buffer);
+
+Token TokenBufferNTop(TokenBuffer *buffer, int n);
+
 /* Returns last inserted token of the buffer and removes it from the buffer */
 Token TokenBufferPop(TokenBuffer *buffer);
 

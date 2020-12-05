@@ -62,6 +62,30 @@ Token TokenBufferTop(TokenBuffer *buffer) {
     }
 }
 
+Token TokenBufferSecondTop(TokenBuffer *buffer) {
+    if (buffer->count > 0) {
+        return buffer->tokens[buffer->count - 2];
+    }
+    else {
+        TokenBufferDispose(&buffer);
+        throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
+        deallocateAll();
+        exit(SYNTAX_ERROR);
+    }
+}
+
+Token TokenBufferNTop(TokenBuffer *buffer, int n) {
+    if (buffer->count > 0) {
+        return buffer->tokens[buffer->count - n];
+    }
+    else {
+        TokenBufferDispose(&buffer);
+        throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
+        deallocateAll();
+        exit(SYNTAX_ERROR);
+    }
+}
+
 Token TokenBufferPop(TokenBuffer *buffer) {
     if (buffer->count > 0) {
         return buffer->tokens[--buffer->count];

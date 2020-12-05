@@ -1,8 +1,10 @@
 package main
 
 func main() {
+	
+	b := 6 + 3 - 6 - 5
+
 	/*
-	b := 6
 	a,b = 6,5
 	c = 5 * 8 + 5 * 8 * (5 + 9595)
 	a = a * c
@@ -19,7 +21,7 @@ func main() {
 	}
 	*/
 }
-
+/*
 func ahoj(a string, b float64) (int) {
   for ; 0 ; a = 5 {
 	a = 5 + 6
@@ -29,3 +31,4 @@ func ahoj(a string, b float64) (int) {
 
   return a, b
 }
+*/

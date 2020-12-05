@@ -16,366 +16,217 @@
 #include "leScanner.h"
 #include "AST.c"
 
-bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapTokenOut) {
-    TokenBuffer *operatorStack = TokenBufferCreate();
-    TokenBuffer *outputQueue = TokenBufferCreate();
+typedef enum {
+    SHIFTT = 1, // <
+    REDUCE = 2, // >
+    EQUALL = 3, // =
+    ERRORR = -1
+} PAT_Element;
 
-    Token currentToken = EMPTY_TOKEN, previousToken = EMPTY_TOKEN;
+typedef enum {
+    Plus = 0,
+    Minus = 0,
+    Multiply = 1,
+    Divide = 1,
+    LeftBracket = 2,
+    RightBracket = 3,
+    Identifier = 4,
+    GreaterThan = 5,
+    LessThan = 5,
+    GreaterEqualThan = 5,
+    LessEqualThan = 5,
+    Equal = 5,
+    NotEqual = 5,
+    EOLT = 6
+} PAT_Header;
 
-    for (int i = 0; ; i++) {
-        if (i == 0 && overlapTokenIn.type != TOK_Empty){
-            currentToken = overlapTokenIn;
-        }
-        else {
-            previousToken = currentToken;
-            currentToken = getToken();
-        }
+PAT_Element PA_Table[7][7] = {
+    /* +-      * /      (       )      id      rel      $  */
+    {REDUCE, SHIFTT, SHIFTT, REDUCE, SHIFTT, REDUCE, REDUCE},  // +-
+    {REDUCE, REDUCE, SHIFTT, REDUCE, SHIFTT, REDUCE, REDUCE},  // /*
+    {SHIFTT, SHIFTT, SHIFTT, EQUALL, SHIFTT, SHIFTT, ERRORR},  // (
+    {REDUCE, REDUCE, ERRORR, REDUCE, ERRORR, REDUCE, REDUCE},  // )
+    {REDUCE, REDUCE, ERRORR, REDUCE, ERRORR, REDUCE, REDUCE},  // id
+    {SHIFTT, SHIFTT, SHIFTT, REDUCE, SHIFTT, ERRORR, REDUCE},  // rel
+    {SHIFTT, SHIFTT, SHIFTT, ERRORR, SHIFTT, SHIFTT, ERRORR}}; // $
 
-        if (currentToken.type == TOK_Newline) {
-            if (!canHaveNewlineAfter(previousToken.type)) {
-                // I got one more token then I should have, give it back
-                *overlapTokenOut = currentToken;
-                break;
-            }
-        }
-        else if (!isValidExpToken(currentToken.type)) {
-            // I got one more token then I should have, give it back
-            *overlapTokenOut = currentToken;
+PAT_Header PAT_GetFromTok(Token token) {
+    switch (token.type) {
+    case TOK_Add:
+    case TOK_Sub:
+        return Plus;
+        break;
+    case TOK_Mul:
+    case TOK_Div:
+        return Multiply;
+        break;
+    case TOK_R_Paren:
+        return RightBracket;
+        break;
+    case TOK_L_Paren:
+        return LeftBracket;
+        break;
+
+    case TOK_Identifier:
+    case TOK_Int_Literal:
+    case TOK_String_Literal:
+    case TOK_Float_Literal:
+        return Identifier;
+        break;
+    case TOK_More_Then:
+    case TOK_More_Equal_Then:
+    case TOK_Less_Then:
+    case TOK_Less_Equal_Then:
+    case TOK_Equal:
+    case TOK_Not_Equal:
+        return GreaterThan;
+        break;
+    case TOK_Newline:
+    default:
+        return EOLT;
+        break;
+    }
+}
+
+PAT_Element PAT_GetSign(PAT_Header Row, PAT_Header Column) {
+    return PA_Table[Row][Column];
+}
+
+bool handleExpression(ASTNode *expRoot, Token overlapTokenIn) {
+    // buffer initialization
+    TokenBuffer *Stack = TokenBufferCreate();
+    printf("\n================\n\n");
+
+    // insert $ as bottom of stack
+    Token tmp;
+    Token tmpp;
+    tmp.type = TOK_P_$;
+    TokenBufferPush(Stack, tmp);
+
+    // token initialization
+    Token currentToken = getToken();
+
+    PAT_Element currentElement;
+
+    //while (currentToken.type != TOK_Newline) {
+    int i = 0;
+
+    while (i != 30) {
+
+        //printf("\n%s, %s, %d\n", getTokenName(TokenBufferTop(Stack).type), getTokenName(currentToken.type), currentElement);
+        currentElement = PAT_GetSign(PAT_GetFromTok(TokenBufferTop(Stack)), PAT_GetFromTok(currentToken));
+        
+        if (TokenBufferTop(Stack).type == TOK_P_Ex && currentToken.type == TOK_Newline && currentElement == -1)
+            currentElement = REDUCE;
+
+        if (TokenBufferTop(Stack).type == TOK_P_Ex && currentToken.type == TOK_Newline  && TokenBufferSecondTop(Stack).type == TOK_P_$)
             break;
-        }
+        //printf("%s, %s, %d\n", getTokenName(TokenBufferTop(Stack).type), getTokenName(currentToken.type), currentElement);
 
-        if (currentToken.type == TOK_Int_Literal || currentToken.type == TOK_Float_Literal ||
-            currentToken.type == TOK_String_Literal || currentToken.type == TOK_Identifier) {
-            TokenBufferPush(outputQueue, currentToken);
-        }
-        else if (currentToken.type == TOK_L_Paren) {
-            if (previousToken.type != TOK_Empty) {
-                if (previousToken.type == TOK_Int_Literal || previousToken.type == TOK_Float_Literal || previousToken.type == TOK_String_Literal || previousToken.type == TOK_Identifier ) {
-                    throwError(SYNTAX_ERROR, "Invalid expression.\n", true);
-
-                    TokenBufferDispose(&operatorStack);
-                    TokenBufferDispose(&outputQueue);
-
-                    return false;
-                }
+        if (currentElement == SHIFTT) {
+            tmp.type = TOK_P_Less;
+            // shift first identifier
+            if (TokenBufferTop(Stack).type == TOK_P_$ && PAT_GetFromTok(currentToken) == Identifier) {
+                TokenBufferPush(Stack, tmp);
+                TokenBufferPush(Stack, currentToken);
+                currentToken = getToken();
             }
-
-            TokenBufferPush(operatorStack, currentToken);
-        }
-        else if (isOperator(currentToken.type)) {
-            if (operatorStack->count > 0) {
-                Token previous = TokenBufferPop(operatorStack);
-
-                if (previous.type != TOK_L_Paren && getPriority(currentToken.type) <= getPriority(previous.type)) {
-                    TokenBufferPush(outputQueue, previous);
-                }
-                else {
-                    TokenBufferPush(operatorStack, previous);
-                }
+            // shift identifier
+            else if (PAT_GetFromTok(currentToken) == Identifier) {
+                TokenBufferPush(Stack, tmp);
+                TokenBufferPush(Stack, currentToken);
+                currentToken = getToken();
             }
-
-            TokenBufferPush(operatorStack, currentToken);
-        }
-        else if (currentToken.type == TOK_R_Paren) {
-            if (previousToken.type != TOK_Empty) {
-                if (isOperator(previousToken.type)) {
-                    throwError(SYNTAX_ERROR, "Invalid expression.\n", true);
-
-                    TokenBufferDispose(&operatorStack);
-                    TokenBufferDispose(&outputQueue);
-
-                    return false;
-                }
+            // shift add or sub operation
+            else if (TokenBufferTop(Stack).type == TOK_P_Ex && PAT_GetFromTok(currentToken) == Plus) {
+                tmpp = TokenBufferPop(Stack);
+                TokenBufferPush(Stack, tmp);
+                TokenBufferPush(Stack, tmpp);
+                TokenBufferPush(Stack, currentToken);
+                currentToken = getToken();
             }
-
-            if (operatorStack->count == 0) {
-                throwError(SYNTAX_ERROR, "Unpaired parentheses error.\n", true);
-
-                TokenBufferDispose(&operatorStack);
-                TokenBufferDispose(&outputQueue);
-
-                return false;
-            }
-
-            while (TokenBufferTop(operatorStack).type != TOK_L_Paren) {
-                Token token = TokenBufferPop(operatorStack);
-                TokenBufferPush(outputQueue, token);
-
-                if (operatorStack->count == 0) {
-                    throwError(SYNTAX_ERROR, "Unpaired parentheses error.\n", true);
-
-                    TokenBufferDispose(&operatorStack);
-                    TokenBufferDispose(&outputQueue);
-
-                    return false;
-                }
-            }
-
-            // pop left paren
-            TokenBufferPop(operatorStack);
-        }        
-    }
-
-    while (operatorStack->count > 0) {
-        Token token = TokenBufferPop(operatorStack);
-
-        if (token.type == TOK_L_Paren) {
-            throwError(SYNTAX_ERROR, "Unpaired parentheses error.\n", true);
-
-            TokenBufferDispose(&operatorStack);
-            TokenBufferDispose(&outputQueue);
-
-            return false;
-        }
-
-        TokenBufferPush(outputQueue, token);
-    }
-
-    ASTNode *expHead = verifyOutput(outputQueue);
-
-    bool ret = false;
-
-    if (expHead != NULL) {
-        ret = true;
-        AST_AttachNode(expRoot, expHead);
-    }
-
-    TokenBufferDispose(&operatorStack);
-    TokenBufferDispose(&outputQueue);
-
-    return ret;
-}
-
-ASTNode* verifyOutput(TokenBuffer *outputQueue) {
-    NodeBuffer *nodeBuffer = malloc(sizeof(NodeBuffer));
-    nodeBuffer->count = outputQueue->count;
-    nodeBuffer->nodes = malloc(sizeof(ASTNode*) * outputQueue->count);
-
-    for (int i = 0; i < outputQueue->count; i++) {
-        switch (outputQueue->tokens[i].type) {
-            case TOK_Int_Literal:
-                nodeBuffer->nodes[i] = AST_CreateIntNode(NULL, NODE_Literal_Int, outputQueue->tokens[i].i);
-                nodeBuffer->nodes[i]->valueType = TAG_Int;
-                break;
-            case TOK_Float_Literal:
-                nodeBuffer->nodes[i] = AST_CreateFloatNode(NULL, NODE_Literal_Float, outputQueue->tokens[i].f);
-                nodeBuffer->nodes[i]->valueType = TAG_Float;
-                break;
-            case TOK_String_Literal:
-                nodeBuffer->nodes[i] = AST_CreateStringNode(NULL, NODE_Literal_String, outputQueue->tokens[i].str);
-                nodeBuffer->nodes[i]->valueType = TAG_String;
-                break;
-            case TOK_Identifier:
-                nodeBuffer->nodes[i] = AST_CreateStringNode(NULL, NODE_Identifier, outputQueue->tokens[i].str);
-                nodeBuffer->nodes[i]->valueType = TAG_Unknown;
-                break;
-            case TOK_Add:
-                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Add);
-                break;
-            case TOK_Sub:
-                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Sub);
-                break;
-            case TOK_Mul:
-                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Mul);
-                break;
-            case TOK_Div:
-                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Div);
-                break;
-            case TOK_Less_Then:
-                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Less_Then);
-                break;
-            case TOK_More_Then:
-                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_More_Then);
-                break;
-            case TOK_Less_Equal_Then:
-                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Less_Equal_Then);
-                break;
-            case TOK_More_Equal_Then:
-                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_More_Equal_Then);
-                break;
-            case TOK_Equal:
-                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Equal);
-                break;
-            case TOK_Not_Equal:
-                nodeBuffer->nodes[i] = AST_CreateNode(NULL, NODE_Not_Equal);
-                break;
-        }
-    }
-
-    for (int i = 0; nodeBuffer->count > 1; i++) {
-        ASTNode *currentNode = nodeBuffer->nodes[i];
-
-        if (i >= nodeBuffer->count ) {
-            free(nodeBuffer->nodes);
-            free(nodeBuffer);
-
-            return NULL;
-        }
-
-        if (isNodeOperator(currentNode->type) && !currentNode->isOperatorResult) {
-            if (!NodeBufferCollapse(nodeBuffer, i)) {
-                free(nodeBuffer->nodes);
-                free(nodeBuffer);
-
-                return NULL;
-            }
-            i = 0;
-        }
-    }    
-
-    if (nodeBuffer->count == 1) {
-        ASTNode *returnNode = nodeBuffer->nodes[0];
-
-        free(nodeBuffer->nodes);
-        free(nodeBuffer);
-
-        return returnNode;
-    }
-    else {
-        free(nodeBuffer->nodes);
-        free(nodeBuffer);
-
-        return NULL;
-    }
-}
-
-bool NodeBufferCollapse(NodeBuffer *buffer, int pos) {
-    if (pos < 2 || buffer->count < 3) {
-        return false;
-    }
-    else {
-        // both should be numbers
-        if ((isNodeOperator(buffer->nodes[pos - 2]->type) && !buffer->nodes[pos - 2]->isOperatorResult)
-         || (isNodeOperator(buffer->nodes[pos - 1]->type) && !buffer->nodes[pos - 1]->isOperatorResult)) {
-            return false;
-        } 
-
-        ASTNode *leftOperand  = buffer->nodes[pos - 2];
-        ASTNode *rightOperand = buffer->nodes[pos - 1];
-        ASTNode *operator     = buffer->nodes[  pos  ];
-
-        // check division by zero
-        if (operator->type == NODE_Div) {
-            if (rightOperand->type == NODE_Literal_Int && rightOperand->content.i == 0) {
-                throwError(ZERO_DIVISION_ERROR, "Division by zero error\n", true);
-            }
-            else if (rightOperand->type == NODE_Literal_Float && rightOperand->content.f == 0.0) {
-                throwError(ZERO_DIVISION_ERROR, "Division by zero error\n", true);
+            // shift mul or div operation
+            else if (TokenBufferTop(Stack).type == TOK_P_Ex && PAT_GetFromTok(currentToken) == Multiply) {
+                tmpp = TokenBufferPop(Stack);
+                TokenBufferPush(Stack, tmp);
+                TokenBufferPush(Stack, tmpp);
+                TokenBufferPush(Stack, currentToken);
+                currentToken = getToken();
             }
         }
 
-        // check if arithmetic operator is used on result of relational operator (boolean)
-        if (isNodeRelationalOperator(leftOperand->type) || isNodeRelationalOperator(rightOperand->type)) {
-            throwError(INCOMPATIBLE_TYPE_ERROR, "Applying arithmetic operator on bool error\n", true);
+        if (currentElement == REDUCE) {
+
+            // reduce identifier -> Exp
+            if (PAT_GetFromTok(TokenBufferTop(Stack)) == Identifier && TokenBufferSecondTop(Stack).type == TOK_P_Less) {
+                TokenBufferPop(Stack);
+                TokenBufferPop(Stack);
+                tmp.type = TOK_P_Ex;
+                
+                TokenBufferPush(Stack, tmp);
+                //printf("%d\n", currentElement);
+            }
+            // reduce Exp */ Exp -> Exp
+            else if (currentToken.type == TOK_Newline && PAT_GetFromTok(TokenBufferNTop(Stack, 2)) == Multiply) {
+                //printf("ml\n");                
+                TokenBufferPop(Stack); // pop EXPz
+                TokenBufferPop(Stack); // Pop
+                TokenBufferPop(Stack); // Pop EXP
+                TokenBufferPop(Stack); // Pop <
+                tmp.type = TOK_P_Ex;
+                TokenBufferPush(Stack, tmp);
+                /*
+               if (tmp.type == TOK_Add){
+                   expRoot->type = NODE_Add;
+               } else {
+                   expRoot->type = NODE_Sub;
+               }
+               
+               expRoot->childrenCount = 2;         */
+            }
+            // reduce Exp +- Exp -> Exp
+            else if (currentToken.type == TOK_Newline && PAT_GetFromTok(TokenBufferNTop(Stack, 2)) == Plus) {
+                //printf("pl\n");
+
+                TokenBufferPop(Stack); // pop EXP
+                TokenBufferPop(Stack); // Pop
+                TokenBufferPop(Stack); // Pop EXP
+                TokenBufferPop(Stack); // Pop <
+                tmp.type = TOK_P_Ex;
+                TokenBufferPush(Stack, tmp);
+                /*
+               if (tmp.type == TOK_Mul){
+                   expRoot->type = NODE_Mul;
+               } else {
+                   expRoot->type = NODE_Div;
+               }
+
+                expRoot->childrenCount = 2;*/
+            }
         }
 
-        AST_AttachNode(operator, leftOperand);
-        AST_AttachNode(operator, rightOperand);
-
-        operator->isOperatorResult = true;
-    
-        for (int i = pos + 1; i < buffer->count; i++) {
-            buffer->nodes[i - 2] = buffer->nodes[i];
-        }
-
-        buffer->nodes[pos - 2] = operator;
-
-        buffer->count -= 2;
-
-        return true;
+        i++;
     }
-}
 
-// priorities are reversed to project assignment
-int getPriority(tokenType type) {
-    switch (type) {
-        case TOK_Mul:
-        case TOK_Div:
-            return 3;
-        case TOK_Add:
-        case TOK_Sub:
-            return 2;
-        case TOK_Less_Then:
-        case TOK_Less_Equal_Then:
-        case TOK_More_Then:
-        case TOK_More_Equal_Then:
-        case TOK_Equal:
-        case TOK_Not_Equal:
-            return 1;
-    }
-}
+    printf("\n");
+    TokenBufferPrint(Stack);
 
-bool isValidExpToken(tokenType type) {
-    switch (type) {
-        case TOK_Identifier:
-        case TOK_Int_Literal:
-        case TOK_Float_Literal:
-        case TOK_String_Literal:
-        case TOK_L_Paren:
-        case TOK_R_Paren:
-        case TOK_Mul:
-        case TOK_Div:
-        case TOK_Add:
-        case TOK_Sub:
-        case TOK_Less_Then:
-        case TOK_Less_Equal_Then:
-        case TOK_More_Then:
-        case TOK_More_Equal_Then:
-        case TOK_Equal:
-        case TOK_Not_Equal:
-            return true;
-        default:
-            return false;
-    }
+    //printf("%s\n", getTokenName(TokenBufferPop(Stack).type));
+
+    TokenBufferDispose(&Stack);
+    printf("\n================\n\n");
+    return true;
 }
 
 bool isNodeOperator(ASTNodeType type) {
     switch (type) {
-        case NODE_Identifier:
-        case NODE_Literal_String:
-        case NODE_Literal_Int:
-        case NODE_Literal_Float:
-            return false;
-    
-        default:
-            return true;
-    }
-}
+    case NODE_Identifier:
+    case NODE_Literal_String:
+    case NODE_Literal_Int:
+    case NODE_Literal_Float:
+        return false;
 
-bool isOperator(tokenType type) {
-    switch (type) {
-        case TOK_Add:
-        case TOK_Sub:
-        case TOK_Mul:
-        case TOK_Div:
-        case TOK_Equal:
-        case TOK_Not_Equal:
-        case TOK_More_Equal_Then:
-        case TOK_More_Then:
-        case TOK_Less_Equal_Then:
-        case TOK_Less_Then:
-            return true;
-        
-        default:
-            return false;
+    default:
+        return true;
     }
-}
-
-bool isNodeRelationalOperator(ASTNodeType type) {
-    switch (type) {
-        case NODE_Equal:
-        case NODE_Not_Equal:
-        case NODE_More_Equal_Then:
-        case NODE_More_Then:
-        case NODE_Less_Equal_Then:
-        case NODE_Less_Then:
-            return true;
-        
-        default:
-            return false;
-    }
-}
-
-bool canHaveNewlineAfter(tokenType type) {
-    return isOperator(type) || type == TOK_L_Paren || type == TOK_Newline;
 }

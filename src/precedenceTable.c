@@ -1,10 +1,11 @@
-/* ======== precedenceTable.c ========
+/* ========= expressions.c =========
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
- * Author: 
+ * Author: Emma Krompaščíková (xkromp00), Samuel Olekšák (xoleks00)
  * Date: November 2020
+ * Description: Expression syntactic analysis with postfix conversion using shunting-yard algorithm
  * ================================= */
-
+/*
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -16,10 +17,10 @@
 #include "AST.c"
 
 typedef enum {
-    GreaterSign = 1, // >
-    LessSign = 2,    // <
-    EqualSign = 3,   // =
-    Empty = -1
+    SHIFTT = 1, // >
+    REDUCE = 2,    // <
+    EQUALL = 3,   // =
+    ERRORR = -1
 } PAT_Element;
 
 typedef enum {
@@ -39,17 +40,17 @@ typedef enum {
     EOLT = 6
 } PAT_Header;
 
-PAT_Element PA_Table[7][7] = {
-    {GreaterSign, LessSign, LessSign, GreaterSign, LessSign, GreaterSign, GreaterSign},
-    {GreaterSign, GreaterSign, LessSign, GreaterSign, LessSign, GreaterSign, GreaterSign},
-    {LessSign, LessSign, LessSign, Equal, LessSign, LessSign, Empty},
-    {GreaterSign, GreaterSign, Empty, GreaterSign, Empty, GreaterSign, GreaterSign},
-    {GreaterSign, GreaterSign, Empty, GreaterSign, Empty, GreaterSign, GreaterSign},
-    {LessSign, LessSign, LessSign, GreaterSign, LessSign, Empty, GreaterSign},
-    {LessSign, LessSign, LessSign, Empty, LessSign, LessSign, Empty}};
+Token PA_Table[7][7] = {
+    {SHIFTT, REDUCE, REDUCE, SHIFTT, REDUCE, SHIFTT, SHIFTT},
+    {SHIFTT, SHIFTT, REDUCE, SHIFTT, REDUCE, SHIFTT, SHIFTT},
+    {REDUCE, REDUCE, REDUCE, EQUALL, REDUCE, REDUCE, ERRORR},
+    {SHIFTT, SHIFTT, ERRORR, SHIFTT, ERRORR, SHIFTT, SHIFTT},
+    {SHIFTT, SHIFTT, ERRORR, SHIFTT, ERRORR, SHIFTT, SHIFTT},
+    {REDUCE, REDUCE, REDUCE, SHIFTT, REDUCE, ERRORR, SHIFTT},
+    {REDUCE, REDUCE, REDUCE, ERRORR, REDUCE, REDUCE, ERRORR}};
 
-PAT_Element PAT_GetSign(PAT_Header Row, PAT_Header Column) {
-    return PA_Table[Row][Column];
+Token PAT_GetSign(Token Row, Token Column) {
+    return PA_Table[Row.type][Column.type];
 }
 
 PAT_Header PAT_GetFromTok(tokenType token) {
@@ -83,34 +84,61 @@ PAT_Header PAT_GetFromTok(tokenType token) {
         return GreaterThan;
         break;
     default:
+        return EOLT;
         break;
     }
 }
 
-// EXAMPLE: ifj08-cz.pdf 7
-
-bool handleExpressionnn(ASTNode *expRoot, Token overlapTokenIn, Token *overlapTokenOut) {
+bool handleExpression(ASTNode *expRoot, Token overlapTokenIn) {
     // buffer initialization
     TokenBuffer *Stack = TokenBufferCreate();
-
+   TokenBufferPush(Stack, EOLT );
     // token initialization
     Token currentToken = EMPTY_TOKEN;
 
     while (currentToken.type != TOK_EOF) {
         currentToken = getToken();
-
+        //printf("%d\n", TokenBufferTop(Stack).type);    
+        
         switch (PAT_GetSign(PAT_GetFromTok(currentToken.type), TokenBufferTop(Stack).type)) {
-        case GreaterSign:
+
+        case SHIFTT:
+            
             break;
-        case LessSign:
+        case REDUCE:
             break;
-        case EqualSign:
+        case EQUALL:
             break;
-        case Empty:
+        case ERRORR:
             break;
         default:
             break;
         }
     }
-    return false;
+
+
+
+    TokenBufferDispose(&Stack);
+    return true;
 }
+
+int reduce(TokenBuffer* stack){
+    Token tmp = TokenBufferTop(stack);
+
+   
+}
+
+
+bool isNodeOperator(ASTNodeType type) {
+    switch (type) {
+        case NODE_Identifier:
+        case NODE_Literal_String:
+        case NODE_Literal_Int:
+        case NODE_Literal_Float:
+            return false;
+    
+        default:
+            return true;
+    }
+}
+*/
