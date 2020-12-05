@@ -294,6 +294,42 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
 
             consecutiveLabelId++;
         }
+        else if (strcmp(rightSideNode->content.str, "chr") == 0) {
+            ASTNode *inputAsciiNode = rightSideNode->children[0];
+    
+            ASTNode *outputCharNode = leftSideNode->children[0];
+            ASTNode *outputErrorNode = leftSideNode->children[1];
+
+            // check if ascii isn't less than 0
+            printf("DEFVAR LF@!isErr%d\n", consecutiveLabelId);
+            printf("GT LF@!isErr%d int@0 ", consecutiveLabelId);
+            printTerm(inputAsciiNode->type, inputAsciiNode->content, "LF");
+            printf("\n");
+            printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
+
+            // check if ascii isn't more than 255
+            printf("LT LF@!isErr%d int@255 ", consecutiveLabelId, consecutiveLabelId);
+            printTerm(inputAsciiNode->type, inputAsciiNode->content, "LF");
+            printf("\n");
+            printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
+
+            // no error branch
+            printf("MOVE LF@%s int@0\n", outputErrorNode->content.str);
+
+            printf("INT2Char LF@%s ", outputCharNode->content.str);
+            printTerm(inputAsciiNode->type, inputAsciiNode->content, "LF");
+            printf("\n");
+
+            printf("JUMP !end%d\n", consecutiveLabelId);
+            printf("LABEL !err%d\n", consecutiveLabelId);
+
+            // error branch
+            printf("MOVE LF@%s int@1\n", outputErrorNode->content.str);
+
+            printf("LABEL !end%d\n", consecutiveLabelId);
+
+            consecutiveLabelId++;
+        }
         else if (strcmp(rightSideNode->content.str, "int2float") == 0) {
             ASTNode *outputFloatNode = leftSideNode;
             ASTNode *inputIntNode = rightSideNode->children[0];
