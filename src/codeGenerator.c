@@ -251,10 +251,12 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             ASTNode *outputAsciiNode = leftSideNode->children[0];
             ASTNode *outputErrorNode = leftSideNode->children[1];
 
+            // get input string length - 1
             printf("DEFVAR LF@!len%d\n", consecutiveLabelId);
             printf("STRLEN LF@!len%d ", consecutiveLabelId);
             printTerm(inputStringNode->type, inputStringNode->content, "LF");
             printf("\n");
+            printf("SUB LF@!len%d LF@!len%d int@1\n", consecutiveLabelId, consecutiveLabelId);
 
             // check if pos isn't less than 0
             printf("DEFVAR LF@!isErr%d\n", consecutiveLabelId);
@@ -263,14 +265,8 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("\n");
             printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
 
-            // check if pos isn't more than strlen
+            // check if pos isn't more than strlen - 1
             printf("LT LF@!isErr%d LF@!len%d ", consecutiveLabelId, consecutiveLabelId);
-            printTerm(inputPositionNode->type, inputPositionNode->content, "LF");
-            printf("\n");
-            printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
-
-            // check if pos isn't as much as strlen, error because index starts with 0
-            printf("EQ LF@!isErr%d LF@!len%d ", consecutiveLabelId, consecutiveLabelId);
             printTerm(inputPositionNode->type, inputPositionNode->content, "LF");
             printf("\n");
             printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
@@ -319,6 +315,94 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("INT2Char LF@%s ", outputCharNode->content.str);
             printTerm(inputAsciiNode->type, inputAsciiNode->content, "LF");
             printf("\n");
+
+            printf("JUMP !end%d\n", consecutiveLabelId);
+            printf("LABEL !err%d\n", consecutiveLabelId);
+
+            // error branch
+            printf("MOVE LF@%s int@1\n", outputErrorNode->content.str);
+
+            printf("LABEL !end%d\n", consecutiveLabelId);
+
+            consecutiveLabelId++;
+        }
+        else if (strcmp(rightSideNode->content.str, "substr") == 0) {
+            ASTNode *inputStringNode = rightSideNode->children[0];
+            ASTNode *inputStartIndexNode = rightSideNode->children[1];
+            ASTNode *inputLengthNode = rightSideNode->children[2];
+    
+            ASTNode *outputStringNode = leftSideNode->children[0];
+            ASTNode *outputErrorNode = leftSideNode->children[1];
+
+            // get input string length - 1
+            printf("DEFVAR LF@!len%d\n", consecutiveLabelId);
+            printf("STRLEN LF@!len%d ", consecutiveLabelId);
+            printTerm(inputStringNode->type, inputStringNode->content, "LF");
+            printf("\n");
+            printf("SUB LF@!len%d LF@!len%d int@1\n", consecutiveLabelId, consecutiveLabelId);
+
+            // check if substring length isn't less than 0
+            printf("DEFVAR LF@!isErr%d\n", consecutiveLabelId);
+            printf("GT LF@!isErr%d int@0 ", consecutiveLabelId);
+            printTerm(inputLengthNode->type, inputLengthNode->content, "LF");
+            printf("\n");
+            printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
+
+            // check if start index isn't less than 0
+            printf("GT LF@!isErr%d int@0 ", consecutiveLabelId);
+            printTerm(inputStartIndexNode->type, inputStartIndexNode->content, "LF");
+            printf("\n");
+            printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
+
+            // check if start index isn't more than strlen - 1
+            printf("LT LF@!isErr%d LF@!len%d ", consecutiveLabelId, consecutiveLabelId);
+            printTerm(inputStartIndexNode->type, inputStartIndexNode->content, "LF");
+            printf("\n");
+            printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
+
+            // temp result string variable
+            printf("DEFVAR LF@string%d\n", consecutiveLabelId);
+            printf("MOVE LF@string%d string@\n", consecutiveLabelId);
+
+            // save start index to temp variable
+            printf("DEFVAR LF@startIndex%d\n", consecutiveLabelId);
+            printf("MOVE LF@startIndex%d ", consecutiveLabelId);
+            printTerm(inputStartIndexNode->type, inputStartIndexNode->content, "LF");
+            printf("\n");
+
+            // no error branch
+            printf("MOVE LF@%s int@0\n", outputErrorNode->content.str);
+
+            // calculate end index
+            printf("DEFVAR LF@!endIndex%d\n", consecutiveLabelId);
+            printf("ADD LF@!endIndex%d ", consecutiveLabelId);
+            printTerm(inputStartIndexNode->type, inputStartIndexNode->content, "LF");
+            printf(" ");
+            printTerm(inputLengthNode->type, inputLengthNode->content, "LF");
+            printf("\n");
+
+            // temp variable to store currently moved char
+            printf("DEFVAR LF@!currChar%d\n", consecutiveLabelId);
+
+            // loop which gets one char at the time and appends it to the result
+            printf("LABEL !loop%d\n", consecutiveLabelId);
+
+            // get char store it in temp
+            printf("GETCHAR LF@!currChar%d ", consecutiveLabelId);
+            printTerm(inputStringNode->type, inputStringNode->content, "LF");
+            printf(" LF@startIndex%d\n", consecutiveLabelId);
+
+            // append temp char to result
+            printf("CONCAT LF@string%d LF@string%d LF@!currChar%d\n", consecutiveLabelId, consecutiveLabelId, consecutiveLabelId);
+
+            // increment start index by one
+            printf("ADD LF@startIndex%d LF@startIndex%d int@1\n", consecutiveLabelId, consecutiveLabelId);
+
+            // if start index != end index do another iteration
+            printf("JUMPIFNEQ !loop%d LF@startIndex%d LF@!endIndex%d\n", consecutiveLabelId, consecutiveLabelId, consecutiveLabelId);
+
+            // move substring from temp to result
+            printf("MOVE LF@%s LF@string%d\n", outputStringNode->content.str, consecutiveLabelId);
 
             printf("JUMP !end%d\n", consecutiveLabelId);
             printf("LABEL !err%d\n", consecutiveLabelId);
