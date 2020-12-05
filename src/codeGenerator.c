@@ -371,7 +371,9 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("\n");
 
             // no error branch
-            printf("MOVE LF@%s int@0\n", outputErrorNode->content.str);
+            if (strcmp(outputErrorNode->content.str, "_") != 0) {
+                printf("MOVE LF@%s int@0\n", outputErrorNode->content.str);
+            }
 
             // calculate end index
             printf("DEFVAR LF@!endIndex%d\n", consecutiveLabelId);
@@ -402,13 +404,17 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("JUMPIFNEQ !loop%d LF@startIndex%d LF@!endIndex%d\n", consecutiveLabelId, consecutiveLabelId, consecutiveLabelId);
 
             // move substring from temp to result
-            printf("MOVE LF@%s LF@string%d\n", outputStringNode->content.str, consecutiveLabelId);
+            if (strcmp(outputStringNode->content.str, "_") != 0) {
+                printf("MOVE LF@%s LF@string%d\n", outputStringNode->content.str, consecutiveLabelId);
+            }
 
             printf("JUMP !end%d\n", consecutiveLabelId);
             printf("LABEL !err%d\n", consecutiveLabelId);
 
             // error branch
-            printf("MOVE LF@%s int@1\n", outputErrorNode->content.str);
+            if (strcmp(outputErrorNode->content.str, "_") != 0) {
+                printf("MOVE LF@%s int@1\n", outputErrorNode->content.str);
+            }
 
             printf("LABEL !end%d\n", consecutiveLabelId);
 

@@ -107,7 +107,7 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer
         }
         else if (astNode->type == NODE_Func_Call && astNode->parent->type != NODE_Assign) {
             // func call without return types
-            ASTNode *funcNode = ST_GetFuncNode(astNode->content.str, symTableRoot);
+            ASTNode *funcNode = ST_GetFuncNode(astNode->content.str, symTableRoot, scopes);
             ST_CheckFuncCallArgs(astNode, funcNode->content.str, symTableRoot, scopes);
         }
         else if (astNode->type == NODE_Return) {
@@ -157,7 +157,7 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer s
     ASTNode *rightSideNode = astNode->children[1];
 
     if (variableNode->type == NODE_Multi_L_Value) {
-        ASTNode *funcNode = ST_GetFuncNode(rightSideNode->content.str, symTableRoot);
+        ASTNode *funcNode = ST_GetFuncNode(rightSideNode->content.str, symTableRoot, scopes);
         ASTNode *returnTypesNode = AST_GetChildOfType(funcNode, NODE_Func_Def_Return);
 
         if (returnTypesNode->childrenCount != variableNode->childrenCount) {
@@ -183,7 +183,7 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer s
             rightSideType = ST_DeriveExpressionType(rightSideNode, symTableRoot, scopes);
         }
         else if (rightSideNode->type == NODE_Func_Call) {
-            ASTNode *funcNode = ST_GetFuncNode(rightSideNode->content.str, symTableRoot);
+            ASTNode *funcNode = ST_GetFuncNode(rightSideNode->content.str, symTableRoot, scopes);
             ASTNode *returnTypesNode = AST_GetChildOfType(funcNode, NODE_Func_Def_Return);
     
             if (returnTypesNode->childrenCount != 1) {
@@ -220,7 +220,7 @@ void ST_Return(ASTNode *returnNode, ST_Node **symTableRoot, IntBuffer scopes) {
 }
 
 void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTableRoot, IntBuffer scopes) {
-    ASTNode *funcDefinition = ST_GetFuncNode(funcName, symTableRoot);
+    ASTNode *funcDefinition = ST_GetFuncNode(funcName, symTableRoot, scopes);
     ASTNode *funcDefParamList = AST_GetChildOfType(funcDefinition, NODE_Func_Def_Param_List);
 
     if (funcDefParamList != NULL) { // fixed param count (unlike built-in print function)
@@ -328,10 +328,14 @@ typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot, IntBuffer scopes) {
     }
 }
 
-ASTNode *ST_GetFuncNode(char *id, ST_Node **symTableRoot) {
-    ST_Node *symbol = ST_Search(*symTableRoot, *symTableRoot, id, GLOBAL_SCOPE);
+ASTNode *ST_GetFuncNode(char *id, ST_Node **symTableRoot, IntBuffer scopes) {
+    ST_Node *symbol = ST_Search(*symTableRoot, *symTableRoot, id, scopes);
 
     if (symbol != NULL) {
+        if (symbol->type != SYM_Func) {
+            throwError(DEFINITION_ERROR, "Calling shadowed function identifier error\n", false);
+        }
+
         return symbol->node;
     }
     else {

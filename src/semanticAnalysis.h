@@ -49,4 +49,4 @@ bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag type, I
 typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot, IntBuffer scopes);
 
 /* Fetch function by id from symbol table and return its node */
-ASTNode * ST_GetFuncNode(char *id, ST_Node **symTableRoot);
+ASTNode *ST_GetFuncNode(char *id, ST_Node **symTableRoot, IntBuffer scopes);
