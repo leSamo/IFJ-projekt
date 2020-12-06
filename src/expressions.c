@@ -82,6 +82,7 @@ PAT_Header PAT_GetFromTok(Token token) {
         return GreaterThan;
         break;
     case TOK_Newline:
+    case TOK_P_$:
     default:
         return EOLT;
         break;
@@ -92,10 +93,129 @@ PAT_Element PAT_GetSign(PAT_Header Row, PAT_Header Column) {
     return PA_Table[Row][Column];
 }
 
+bool Reduce(TokenBuffer *Stack, Token currentToken) {
+    Token tmp;
+    Token tmpp;
+
+    // Reduce identifier to EXP_token
+    if (PAT_GetFromTok(TokenBufferTop(Stack)) == Identifier && TokenBufferSecondTop(Stack).type == TOK_P_Less) {
+        tmpp = TokenBufferPop(Stack); // pop identifier
+        TokenBufferPop(Stack);        // pop <
+        if (tmpp.type == TOK_Int_Literal) {
+            tmp.i = tmpp.i;
+        }
+        tmp.type = TOK_P_Ex;
+        TokenBufferPush(Stack, tmp);
+        printf("Reducing identifier\n");
+        return true;
+    }
+    // Reduce multiplication or division
+    else if (TokenBufferNTop(Stack, 1).type == TOK_P_Ex &&
+             PAT_GetFromTok(TokenBufferNTop(Stack, 2)) == Multiply &&
+             TokenBufferNTop(Stack, 3).type == TOK_P_Ex &&
+             TokenBufferNTop(Stack, 4).type == TOK_P_Less) {
+        printf("Reducing multiplication or division\n");
+        TokenBufferPop(Stack); // Pop EXP
+        TokenBufferPop(Stack); // Pop
+        TokenBufferPop(Stack); // Pop EXP
+        TokenBufferPop(Stack); // Pop <
+        tmp.type = TOK_P_Ex;
+        TokenBufferPush(Stack, tmp);
+        return true;
+    }
+     // Reduce addition or subtraction
+    else if (TokenBufferNTop(Stack, 1).type == TOK_P_Ex &&
+             PAT_GetFromTok(TokenBufferNTop(Stack, 2)) == Plus &&
+             TokenBufferNTop(Stack, 3).type == TOK_P_Ex &&
+             TokenBufferNTop(Stack, 4).type == TOK_P_Less) {
+        printf("Reducing addition or subtraction\n");
+        TokenBufferPop(Stack); // Pop EXP
+        TokenBufferPop(Stack); // Pop
+        TokenBufferPop(Stack); // Pop EXP
+        TokenBufferPop(Stack); // Pop <
+        tmp.type = TOK_P_Ex;
+        TokenBufferPush(Stack, tmp);
+        return true;
+    }
+    return false;
+}
+
+void InsertShiftAfterTopTerminal(TokenBuffer *Stack, Token currentToken) {
+    int i = 1;
+    TokenBuffer *tmpStack = TokenBufferCreate();
+    Token tmp = TokenBufferNTop(Stack, i);
+    Token tmpp;
+
+    do {
+        if (tmp.type == TOK_Int_Literal ||
+            tmp.type == TOK_Float_Literal ||
+            tmp.type == TOK_String_Literal ||
+            tmp.type == TOK_Add ||
+            tmp.type == TOK_Sub ||
+            tmp.type == TOK_Mul ||
+            tmp.type == TOK_Div ||
+            tmp.type == TOK_P_$) {
+
+            for (int j = 1; j < i; j++) {
+                tmpp = TokenBufferPop(Stack);
+                TokenBufferPush(tmpStack, tmpp);
+            }
+
+            tmpp.type = TOK_P_Less;
+            TokenBufferPush(Stack, tmpp);
+
+            for (int j = 1; j < i; j++) {
+                tmpp = TokenBufferPop(tmpStack);
+                TokenBufferPush(Stack, tmpp);
+            }
+            TokenBufferPush(Stack, currentToken);
+            TokenBufferDispose(&tmpStack);
+            break;
+        }
+        i++;
+        tmp = TokenBufferNTop(Stack, i);
+    } while (i != 10);
+
+    TokenBufferDispose(&tmpStack);
+}
+
+Token GetTopTerminal(TokenBuffer *Stack) {
+    int i = 1;
+    Token tmp = TokenBufferNTop(Stack, i);
+    do {
+        if (tmp.type == TOK_Int_Literal ||
+            tmp.type == TOK_Float_Literal ||
+            tmp.type == TOK_String_Literal ||
+            tmp.type == TOK_Add ||
+            tmp.type == TOK_Sub ||
+            tmp.type == TOK_Mul ||
+            tmp.type == TOK_Div ||
+            tmp.type == TOK_P_$) {
+            return tmp;
+            break;
+        }
+        i++;
+        tmp = TokenBufferNTop(Stack, i);
+    } while (i != 40);
+}
+
+void FillInputStack(TokenBuffer *InStack, Token ovrlapIn) {
+    Token tmp = getToken();
+    do {
+        TokenBufferPush(InStack, tmp);
+        tmp = getToken();
+    } while (tmp.type != TOK_Newline);
+    tmp.type = TOK_P_$;
+    TokenBufferPush(InStack, tmp);
+}
+
 bool handleExpression(ASTNode *expRoot, Token overlapTokenIn) {
     // buffer initialization
-    TokenBuffer *Stack = TokenBufferCreate();
+    TokenBuffer *Stack = TokenBufferCreate();   
+    TokenBuffer *Input = TokenBufferCreate();
     printf("\n================\n\n");
+
+    FillInputStack(Input, overlapTokenIn);
 
     // insert $ as bottom of stack
     Token tmp;
@@ -104,107 +224,38 @@ bool handleExpression(ASTNode *expRoot, Token overlapTokenIn) {
     TokenBufferPush(Stack, tmp);
 
     // token initialization
-    Token currentToken = getToken();
-
+    Token currentToken = TokenBufferPopFront(&Input);
+   
     PAT_Element currentElement;
 
     //while (currentToken.type != TOK_Newline) {
     int i = 0;
 
-    while (i != 30) {
+    while (i != 50) {
 
-        //printf("\n%s, %s, %d\n", getTokenName(TokenBufferTop(Stack).type), getTokenName(currentToken.type), currentElement);
-        currentElement = PAT_GetSign(PAT_GetFromTok(TokenBufferTop(Stack)), PAT_GetFromTok(currentToken));
-        
-        if (TokenBufferTop(Stack).type == TOK_P_Ex && currentToken.type == TOK_Newline && currentElement == -1)
+        //printf("\n%s, %s, %d\n", getTokenName(GetTopTerminal(Stack).type), getTokenName(currentToken.type), currentElement);
+        currentElement = PAT_GetSign(PAT_GetFromTok(GetTopTerminal(Stack)), PAT_GetFromTok(currentToken));
+        //printf("%s, %s, %d\n", getTokenName(GetTopTerminal(Stack).type), getTokenName(currentToken.type), currentElement);
+
+        if (TokenBufferTop(Stack).type == TOK_P_Ex && currentToken.type == TOK_P_$) {
             currentElement = REDUCE;
-
-        if (TokenBufferTop(Stack).type == TOK_P_Ex && currentToken.type == TOK_Newline  && TokenBufferSecondTop(Stack).type == TOK_P_$)
-            break;
-        //printf("%s, %s, %d\n", getTokenName(TokenBufferTop(Stack).type), getTokenName(currentToken.type), currentElement);
+            printf("%s, %s, %d\n", getTokenName(TokenBufferTop(Stack).type), getTokenName(currentToken.type), currentElement);
+        }
 
         if (currentElement == SHIFTT) {
-            tmp.type = TOK_P_Less;
-            // shift first identifier
-            if (TokenBufferTop(Stack).type == TOK_P_$ && PAT_GetFromTok(currentToken) == Identifier) {
-                TokenBufferPush(Stack, tmp);
-                TokenBufferPush(Stack, currentToken);
-                currentToken = getToken();
-            }
-            // shift identifier
-            else if (PAT_GetFromTok(currentToken) == Identifier) {
-                TokenBufferPush(Stack, tmp);
-                TokenBufferPush(Stack, currentToken);
-                currentToken = getToken();
-            }
-            // shift add or sub operation
-            else if (TokenBufferTop(Stack).type == TOK_P_Ex && PAT_GetFromTok(currentToken) == Plus) {
-                tmpp = TokenBufferPop(Stack);
-                TokenBufferPush(Stack, tmp);
-                TokenBufferPush(Stack, tmpp);
-                TokenBufferPush(Stack, currentToken);
-                currentToken = getToken();
-            }
-            // shift mul or div operation
-            else if (TokenBufferTop(Stack).type == TOK_P_Ex && PAT_GetFromTok(currentToken) == Multiply) {
-                tmpp = TokenBufferPop(Stack);
-                TokenBufferPush(Stack, tmp);
-                TokenBufferPush(Stack, tmpp);
-                TokenBufferPush(Stack, currentToken);
-                currentToken = getToken();
-            }
+            InsertShiftAfterTopTerminal(Stack, currentToken);
+            currentToken = TokenBufferPopFront(&Input);            
         }
 
         if (currentElement == REDUCE) {
 
-            // reduce identifier -> Exp
-            if (PAT_GetFromTok(TokenBufferTop(Stack)) == Identifier && TokenBufferSecondTop(Stack).type == TOK_P_Less) {
-                TokenBufferPop(Stack);
-                TokenBufferPop(Stack);
-                tmp.type = TOK_P_Ex;
-                
-                TokenBufferPush(Stack, tmp);
-                //printf("%d\n", currentElement);
-            }
-            // reduce Exp */ Exp -> Exp
-            else if (currentToken.type == TOK_Newline && PAT_GetFromTok(TokenBufferNTop(Stack, 2)) == Multiply) {
-                //printf("ml\n");                
-                TokenBufferPop(Stack); // pop EXPz
-                TokenBufferPop(Stack); // Pop
-                TokenBufferPop(Stack); // Pop EXP
-                TokenBufferPop(Stack); // Pop <
-                tmp.type = TOK_P_Ex;
-                TokenBufferPush(Stack, tmp);
-                /*
-               if (tmp.type == TOK_Add){
-                   expRoot->type = NODE_Add;
-               } else {
-                   expRoot->type = NODE_Sub;
-               }
-               
-               expRoot->childrenCount = 2;         */
-            }
-            // reduce Exp +- Exp -> Exp
-            else if (currentToken.type == TOK_Newline && PAT_GetFromTok(TokenBufferNTop(Stack, 2)) == Plus) {
-                //printf("pl\n");
-
-                TokenBufferPop(Stack); // pop EXP
-                TokenBufferPop(Stack); // Pop
-                TokenBufferPop(Stack); // Pop EXP
-                TokenBufferPop(Stack); // Pop <
-                tmp.type = TOK_P_Ex;
-                TokenBufferPush(Stack, tmp);
-                /*
-               if (tmp.type == TOK_Mul){
-                   expRoot->type = NODE_Mul;
-               } else {
-                   expRoot->type = NODE_Div;
-               }
-
-                expRoot->childrenCount = 2;*/
-            }
+            Reduce(Stack, currentToken);           
+            TokenBufferPrint(Stack);
+            printf("\n");
         }
 
+        if (currentToken.type == TOK_P_$ && TokenBufferTop(Stack).type == TOK_P_Ex && TokenBufferNTop(Stack, 2).type == TOK_P_$)
+            break;
         i++;
     }
 
@@ -214,6 +265,8 @@ bool handleExpression(ASTNode *expRoot, Token overlapTokenIn) {
     //printf("%s\n", getTokenName(TokenBufferPop(Stack).type));
 
     TokenBufferDispose(&Stack);
+    TokenBufferDispose(&Input);
+
     printf("\n================\n\n");
     return true;
 }
