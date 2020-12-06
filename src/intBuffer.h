@@ -26,7 +26,10 @@ void IntBufferPush(IntBuffer *buffer, int newItem);
 /* Compares two buffers, resulting returned int is simalar to strcmp result */
 int IntBufferCompare(IntBuffer buffer1, IntBuffer buffer2);
 
-/* [DEBUG] Prints out the contents of the print buffer */
+/* Returns string with the contents of the int buffer starting with 2nd element, split with % for use as a prefix */
+void IntBufferPrefix(IntBuffer *buffer);
+
+/* [DEBUG] Prints out the contents of the int buffer */
 void IntBufferPrint(IntBuffer *buffer);
 
 /* Deallocated token buffer */

@@ -26,13 +26,15 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
 
 void generateFuncCall(ASTNode *funcCallNode, ST_Node *symtable, IntBuffer scope);
 
-void generateExpression(ASTNode *expNode, ST_Node *symtable, IntBuffer scope, char *resultId);
+void generateExpression(ASTNode *expNode, ST_Node *symtable, IntBuffer scope, char *resultId, bool tempFrame);
 
 void generateExpressionRecursively(ASTNode *expNode, ST_Node *symtable, IntBuffer scope, char *resultId);
 
-void printOperands(ASTNode *parentNode, char *leftChild, char *rightChild);
+void printOperands(ASTNode *parentNode, ST_Node *symtable, IntBuffer scope, char *leftChild, char *rightChild);
 
-void printTerm(typeTag type, typeUnion content, char *frame);
+void printVar(char *id, ST_Node *symtable, IntBuffer scopes, char *frame);
+
+void printTerm(ASTNode *node, ST_Node *symtable, IntBuffer scopes, char *frame);
 
 char* escapeString(char* string);
 

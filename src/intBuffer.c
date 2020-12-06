@@ -68,6 +68,14 @@ int IntBufferCompare(IntBuffer buffer1, IntBuffer buffer2) {
     }
 }
 
+void IntBufferPrefix(IntBuffer *buffer) {
+    if (buffer != NULL) {
+        for (int i = 1; i < buffer->count; i++) { // start with 2nd element, first is local scope
+            printf("%%%d", buffer->content[i]);
+        }
+    }
+}
+
 void IntBufferPrint(IntBuffer *buffer) {
     if (buffer->count == 0) {
         printf("buffer is empty");
