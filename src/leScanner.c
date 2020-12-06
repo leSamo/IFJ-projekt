@@ -515,7 +515,7 @@ char* getTokenName(tokenType type) {
         case TOK_L_Paren:
             return "Left paren";
         case TOK_R_Paren:
-            return "Right pare";
+            return "Right paren";
         case TOK_L_Brace:
             return "Left brace    ";
         case TOK_R_Brace:

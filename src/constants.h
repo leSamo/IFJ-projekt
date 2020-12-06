@@ -106,6 +106,8 @@ typedef enum {
 /* represents one token each token has type and some have value of either type int, float or string */
 typedef struct {
     tokenType type;
+    tokenType oldType;
+    int nodeNum;
     union {
         int64_t i;
         double f;

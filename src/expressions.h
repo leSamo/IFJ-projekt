@@ -13,7 +13,7 @@ typedef struct {
 } NodeBuffer;
 
 /* From tokens array in infix notation creates postfix notation */
-bool handleExpression(ASTNode *expRoot, Token overlapTokenIn);
+bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapTokenOut);
 
 /* Verify if output queue syntax is correct */
 ASTNode* verifyOutput(TokenBuffer *outputQueue);

@@ -509,11 +509,11 @@ bool NT_Exp(ASTNode *parentNode, Token overlapTokenIn, bool createAssignment) {
     }
 
     // pass it to expression parser
-    //Token* overlapTokenOut = malloc(sizeof(Token));
-    ret = handleExpression(node, overlapTokenIn);
+    Token *overlapTokenOut = malloc(sizeof(Token));
+    ret = handleExpression(node, overlapTokenIn, overlapTokenOut);
 
-    //overlapToken = *overlapTokenOut;
-    //free(overlapTokenOut);
+    overlapToken = *overlapTokenOut;
+    free(overlapTokenOut);
 
     return ret;
 }
