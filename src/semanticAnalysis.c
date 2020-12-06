@@ -237,7 +237,12 @@ void ST_CheckFuncCallArgs(ASTNode *funcCallNode, char *funcName, ST_Node **symTa
             }
         }
     }
-    // else variable param count, don't need to check
+    // else variable param count, just check if passing valid terms
+    else {
+        for (int i = 0; i < funcCallNode->childrenCount; i++) {
+            ST_CheckTermType(funcCallNode->children[i], symTableRoot, funcCallNode->children[i]->contentType, scopes);
+        }
+    }
 }
 
 
