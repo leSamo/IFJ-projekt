@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
         return SYNTAX_ERROR;
     }
 
-    AST_PrettyPrint(ASTRoot, 0); // print whole AST
+    //AST_PrettyPrint(ASTRoot, 0); // print whole AST
     //printf("=========================\n");
 
     /* Semantic analysis */
