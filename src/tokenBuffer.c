@@ -1,7 +1,7 @@
 /* ========= tokenBuffer.c =========
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
- * Author: Samuel Olekšák (xoleks00)
+ * Author: Samuel Olekšák (xoleks00), Michal Findra (xfindr00)
  * Date: November 2020
  * Description: Variable length token buffer with create, push, top, pop, pop front and dispose functions.
  * ================================= */
@@ -15,7 +15,8 @@ TokenBuffer* TokenBufferCreate() {
     TokenBuffer *buffer = malloc(sizeof(TokenBuffer));
     buffer->tokens = malloc(sizeof(Token) * INITIAL_TOKEN_BUFFER_SIZE);
 
-    if (buffer == NULL || buffer->tokens == NULL) { // at least one allocation failed
+    if (buffer == NULL || buffer->tokens == NULL) {
+        throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
         deallocateAll();
         throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
     }
@@ -59,18 +60,6 @@ Token TokenBufferTop(TokenBuffer *buffer) {
         TokenBufferDispose(&buffer);
         //deallocateAll();
         throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
-    }
-}
-
-Token TokenBufferSecondTop(TokenBuffer *buffer) {
-    if (buffer->count > 0) {
-        return buffer->tokens[buffer->count - 2];
-    }
-    else {
-        TokenBufferDispose(&buffer);
-        throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
-        deallocateAll();
-        exit(SYNTAX_ERROR);
     }
 }
 

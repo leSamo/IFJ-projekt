@@ -1,7 +1,7 @@
 /* ========= tokenBuffer.h =========
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
- * Author: Samuel Olekšák (xoleks00)
+ * Author: Samuel Olekšák (xoleks00), Michal Findra (xfindr00)
  * Date: November 2020
  * Description: Variable length token buffer with create, push, top, pop, pop front and dispose functions.
  * ================================= */
@@ -31,9 +31,7 @@ bool TokenBufferEmpty(TokenBuffer *buffer);
 /* Returns token on the top of the buffer */
 Token TokenBufferTop(TokenBuffer *buffer);
 
-/* Returns second token on the top of the buffer */
-Token TokenBufferSecondTop(TokenBuffer *buffer);
-
+/* Returns n-th token on the top of the buffer */
 Token TokenBufferNTop(TokenBuffer *buffer, int n);
 
 /* Returns last inserted token of the buffer and removes it from the buffer */
@@ -45,7 +43,7 @@ Token TokenBufferPopFront(TokenBuffer **buffer);
 /* [DEBUG] Print out all the items from the buffer */
 void TokenBufferPrint(TokenBuffer *buffer);
 
-/* Deallocated token buffer */
+/* Deallocates token buffer */
 void TokenBufferDispose(TokenBuffer **buffer);
 
 #endif

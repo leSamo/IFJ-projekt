@@ -22,22 +22,16 @@ typedef enum PAT_Element {
 
 /* Elements of operator precedence table header */
 typedef enum PAT_Header {
-    Plus = 0,
-    Minus = 0,
-    Multiply = 1,
-    Divide = 1,
-    LeftBracket = 2,
-    RightBracket = 3,
-    Identifier = 4,
-    GreaterThan = 5,
-    LessThan = 5,
-    GreaterEqualThan = 5,
-    LessEqualThan = 5,
-    Equal = 5,
-    NotEqual = 5,
-    EOLT = 6
+    Plus,
+    Multiply,
+    LeftBracket,
+    RightBracket,
+    Identifier,
+    GreaterThan,
+    EOLT
 } PAT_Header;
 
+/* Operator precedence table*/
 PAT_Element PA_Table[7][7] = {
     /* +-      * /      (       )      id      rel      $  */
     {REDUCE, SHIFTT, SHIFTT, REDUCE, SHIFTT, REDUCE, REDUCE},  // +-
@@ -54,26 +48,35 @@ PAT_Header PAT_GetHeaderFromToken(Token token);
 /* Retruns element from PAT */
 PAT_Element PAT_GetSign(PAT_Header Row, PAT_Header Column);
 
-/* Fill imput stack with token and check operators */
+/* Fills imput stack with token and check operators */
 Token FillInputStack(TokenBuffer *InStack, Token overlapIn);
-
-/* From tokens array in infix notation creates postfix notation */
-bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapTokenOut);
-
-/* Returns priority for that token (1,2,3) */
-int getPriority(tokenType type);
 
 /* Returns true if token type is valid for expression */
 bool isValidExpToken(tokenType type);
 
-/* Returnds true if AST node type is an operator (+,-,*,/,<,<=,>,>=,==,!=), similar to isOperator but with AST node type */
+/* Returns true if AST node type is an operator (+,-,*,/,<,<=,>,>=,==,!=), similar to isOperator but with AST node type */
 bool isNodeOperator(ASTNodeType type);
 
 /* Returns true if token type is operator (+,-,*,/,<,<=,>,>=,==,!=) */
 bool isOperator(tokenType type);
 
-/* Returns true if node type is relation operator (<,<=,>,>=,==,!=) */
-bool isNodeRelationalOperator(ASTNodeType type);
+/* Creates operation node and stroe it to node arr*/
+void ExpCreateOperationNode(ASTNodeType nodeType, Token firstTok, Token secondTok, ASTNode **nodes);
 
-/* Returns true if token can be legally followed by newline symbol (+,-,*,/,(,<,<=,>,>=,==,!=) */
-bool canHaveNewlineAfter(tokenType type);
+/* Creates leaf node and store it to node arr*/
+void ExpCreateIdentifNode(ASTNodeType nodeType, Token firstTok, ASTNode **nodes);
+
+/* Applies Reduction rule to top elements on Stack*/
+bool Reduce(TokenBuffer *Stack, Token currentToken, ASTNode **nodes);
+
+/* Inserts Shift token after top terminal in stack and insert current token to top of the stack*/
+void InsertShiftAfterTopTerminal(TokenBuffer *Stack, Token currentToken);
+
+/* Returns top terminal on stack */
+Token GetTopTerminal(TokenBuffer *Stack);
+
+/* Creates nodes from tokens array */
+bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapTokenOut);
+
+/*Attach expression node to parent tree*/
+void attachASTToRoot(ASTNode *expRoot, ASTNode **nodes);
