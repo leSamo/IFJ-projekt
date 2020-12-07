@@ -60,6 +60,12 @@ bool isNodeOperator(ASTNodeType type);
 /* Returns true if token type is operator (+,-,*,/,<,<=,>,>=,==,!=) */
 bool isOperator(tokenType type);
 
+/* Returns true if token type arithemtic is operator (+,-,*,/) */
+bool isNodeMathOperator(ASTNodeType type);
+
+/* Returns true if token type is comparation operator (<,<=,>,>=,==,!=)*/
+bool isNodeCompOperator(ASTNodeType type);
+
 /* Creates operation node and stroe it to node arr*/
 void ExpCreateOperationNode(ASTNodeType nodeType, Token firstTok, Token secondTok, ASTNode **nodes);
 

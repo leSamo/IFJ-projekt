@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     //ST_PrettyPrint(SymTableTree, 0);
 
     /* Intermediate code generation */
-    //generateCode(ASTRoot, mainFuncDef, SymTableTree);
+    generateCode(ASTRoot, mainFuncDef, SymTableTree);
     ST_Dispose(&SymTableTree);
 
     deallocateAll();

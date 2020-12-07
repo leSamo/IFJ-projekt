@@ -141,17 +141,56 @@ bool isOperator(tokenType type) {
     }
 }
 
+bool isNodeMathOperator(ASTNodeType type) {
+    switch (type) {
+    case NODE_Identifier:
+    case NODE_Literal_String:
+    case NODE_Literal_Int:
+    case NODE_Literal_Float:
+    case NODE_Less_Then:
+    case NODE_More_Then:
+    case NODE_Less_Equal_Then:
+    case NODE_More_Equal_Then:
+    case NODE_Equal:
+    case NODE_Not_Equal:
+        return false;
+    default:
+        return true;
+    }
+}
+
+bool isNodeCompOperator(ASTNodeType type) {
+    switch (type) {
+    case NODE_Identifier:
+    case NODE_Literal_String:
+    case NODE_Literal_Int:
+    case NODE_Literal_Float:
+    case NODE_Add:
+    case NODE_Sub:
+    case NODE_Mul:
+    case NODE_Div:
+        return false;
+
+    default:
+        return true;
+    }
+}
+
 void ExpCreateOperationNode(ASTNodeType nodeType, Token firstTok, Token secondTok, ASTNode **nodes) {
     ASTNode *Node = AST_CreateNode(NULL, nodeType);
     Node->isOperatorResult = true;
 
-    if (secondTok.nodeNum != 0) {
-        AST_AttachNode(Node, nodes[secondTok.nodeNum]);
+    // check if nodes have same operator type (boolean, arithmetic)
+    if ((isNodeMathOperator(nodeType) && (isNodeCompOperator(nodes[secondTok.nodeNum]->type) || isNodeCompOperator(nodes[firstTok.nodeNum]->type))) ||
+        (isNodeCompOperator(nodeType) && (isNodeMathOperator(nodes[secondTok.nodeNum]->type) || isNodeMathOperator(nodes[firstTok.nodeNum]->type)))) {
+        throwError(SYNTAX_ERROR, "Invalid expression.\n", true);
+        return;
     }
 
-    if (firstTok.nodeNum != 0) {
-        AST_AttachNode(Node, nodes[firstTok.nodeNum]);
-    }
+    // attach nodes to new created operation node
+    AST_AttachNode(Node, nodes[secondTok.nodeNum]);
+    AST_AttachNode(Node, nodes[firstTok.nodeNum]);
+
     nodes[nodeCounter] = Node;
 }
 
@@ -225,8 +264,10 @@ bool Reduce(TokenBuffer *Stack, Token currentToken, ASTNode **nodes) {
         }
 
         // check if operands are same type
-        if (firstOperand.oldType != secondOperand.oldType) {
-            return false;
+        if (!(firstOperand.oldType == TOK_Identifier || secondOperand.oldType == TOK_Identifier)) {
+            if (firstOperand.oldType != secondOperand.oldType) {
+                return false;
+            }
         }
 
         //create operation node
@@ -263,8 +304,10 @@ bool Reduce(TokenBuffer *Stack, Token currentToken, ASTNode **nodes) {
         }
 
         // chek if operands have same type
-        if (firstOperand.oldType != secondOperand.oldType) {
-            return false;
+        if (!(firstOperand.oldType == TOK_Identifier || secondOperand.oldType == TOK_Identifier)) {
+            if (firstOperand.oldType != secondOperand.oldType) {
+                return false;
+            }
         }
 
         // create operation node and attach leafs
@@ -292,8 +335,10 @@ bool Reduce(TokenBuffer *Stack, Token currentToken, ASTNode **nodes) {
         TokenBufferPop(Stack);                 // Pop <
 
         // check if operands are same type
-        if (firstOperand.oldType != secondOperand.oldType) {
-            return false;
+        if (!(firstOperand.oldType == TOK_Identifier || secondOperand.oldType == TOK_Identifier)) {
+            if (firstOperand.oldType != secondOperand.oldType) {
+                return false;
+            }
         }
 
         nodeCounter++;
@@ -334,6 +379,7 @@ bool Reduce(TokenBuffer *Stack, Token currentToken, ASTNode **nodes) {
     }
 
     // if no reduction was made return false
+    throwError(SYNTAX_ERROR, "Invalid expression.\n", true);
     return false;
 }
 
@@ -367,7 +413,7 @@ void InsertShiftAfterTopTerminal(TokenBuffer *Stack, Token currentToken) {
         }
         i++;
         tmp = TokenBufferNTop(Stack, i);
-    } while (i != 50);
+    } while (i != 100);
 
     TokenBufferDispose(&tmpStack);
 }
@@ -382,7 +428,7 @@ Token GetTopTerminal(TokenBuffer *Stack) {
         }
         i++;
         tmp = TokenBufferNTop(Stack, i);
-    } while (i != 50);
+    } while (i != 100);
 }
 
 void attachASTToRoot(ASTNode *expRoot, ASTNode **nodes) {
@@ -414,8 +460,10 @@ bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapToke
 
     int counter = 0; // counter to check for internal error
     while ((currentToken.type == TOK_P_$ && TokenBufferTop(Stack).type == TOK_P_Ex && TokenBufferNTop(Stack, 2).type == TOK_P_$) != true) {
+        //get element from the precedence table
         currentElement = PAT_GetSign(PAT_GetHeaderFromToken(GetTopTerminal(Stack)), PAT_GetHeaderFromToken(currentToken));
 
+        // element action
         if (currentElement == ERRORR) {
             TokenBufferDispose(&Stack);
             TokenBufferDispose(&Input);
