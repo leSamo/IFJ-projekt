@@ -566,6 +566,16 @@ char* getTokenName(tokenType type) {
             return "--";
         case TOK_EOF:
             return "EOF";
+        case TOK_P_$:
+            return "$";
+        case TOK_P_Greater:
+            return ">";
+        case TOK_P_Less:
+            return "<";
+        case TOK_P_Equal:
+            return "=";
+        case TOK_P_Ex:
+            return "Ex";
         default:
             return "Unknown       ";
     }

@@ -45,18 +45,17 @@ int main(int argc, char *argv[]) {
 
     //AST_PrettyPrint(ASTRoot, 0); // print whole AST
     //printf("=========================\n");
-    
+
     /* Semantic analysis */
     ST_Init(&SymTableTree);
 
     AST_FirstPass(ASTRoot, &SymTableTree);
     AST_SecondPass(ASTRoot, &SymTableTree);
-
+    
     //ST_PrettyPrint(SymTableTree, 0);
 
     /* Intermediate code generation */
-    generateCode(ASTRoot, mainFuncDef, SymTableTree);
-
+    //generateCode(ASTRoot, mainFuncDef, SymTableTree);
     ST_Dispose(&SymTableTree);
 
     deallocateAll();
@@ -510,7 +509,7 @@ bool NT_Exp(ASTNode *parentNode, Token overlapTokenIn, bool createAssignment) {
     }
 
     // pass it to expression parser
-    Token* overlapTokenOut = malloc(sizeof(Token));
+    Token *overlapTokenOut = malloc(sizeof(Token));
     ret = handleExpression(node, overlapTokenIn, overlapTokenOut);
 
     overlapToken = *overlapTokenOut;

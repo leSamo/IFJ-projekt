@@ -1,7 +1,7 @@
 /* ========== constants.h ==========
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
- * Author: Samuel Olekšák (xoleks00)
+ * Author: Samuel Olekšák (xoleks00), Michal Findra (xfindr00)
  * Date: November 2020
  * Description: Various structures, declarations and constants shared by multiple components
  * ================================= */
@@ -73,12 +73,23 @@ typedef enum {
     TOK_Newline,
     TOK_Comma,
     TOK_Semicolon,
-    TOK_EOF
+    TOK_EOF,
+
+    /* precendecnce table tokens*/
+    TOK_P_Greater,
+    TOK_P_Less,
+    TOK_P_Equal,
+    TOK_P_Empty,
+    TOK_P_Ex,
+    TOK_P_$,
+
 } tokenType;
 
 /* represents one token each token has type and some have value of either type int, float or string */
 typedef struct {
     tokenType type;
+    tokenType oldType;
+    int nodeNum;
     union {
         int64_t i;
         double f;
