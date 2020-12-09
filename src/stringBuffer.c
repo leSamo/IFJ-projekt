@@ -16,9 +16,8 @@ StringBuffer* StringBufferCreate() {
     buffer->content = malloc(sizeof(char*) * INITIAL_STRING_BUFFER_SIZE);
 
     if (buffer == NULL) {
-        throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
         deallocateAll();
-        exit(INTERNAL_ERROR);
+        throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
     }
 
     buffer->count = 0;
@@ -28,33 +27,33 @@ StringBuffer* StringBufferCreate() {
 }
 
 void StringBufferPush(StringBuffer *buffer, char *string) {
+    // if we ran out of space in the buffer, allocate new memory with double capacity 
     if (buffer->count + 1 == buffer->capacity) {
         buffer->capacity *= 2;
         char** newArray = realloc(buffer->content, sizeof(char*) * buffer->capacity);
 
         if (newArray == NULL) {
-            StringBufferDispose(buffer); // most likely unnecessary because deallocateAll does that
-            throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
+            StringBufferDispose(buffer);
             deallocateAll();
-            exit(INTERNAL_ERROR);
+            throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
         }
         else {
             buffer->content = newArray;
         }
+    }
 
-        buffer->content[buffer->count++] = string;
-    }
-    else {
-        buffer->content[buffer->count++] = string;
-    }
+    // push char pointer at the end
+    buffer->content[buffer->count++] = string;
 }
 
 void StringBufferDispose(StringBuffer *buffer) {
     if (buffer != NULL) {
+        // free each pointer inside the buffer
         for (int i = 0; i < buffer->count; i++) {
             free(buffer->content[i]);
         }
 
+        // free buffer itself
         free(buffer->content);
         free(buffer);
     }

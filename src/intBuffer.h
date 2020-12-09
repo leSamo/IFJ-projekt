@@ -23,7 +23,7 @@ IntBuffer* IntBufferCreate();
 /* Pushes one token into supplied buffer */
 void IntBufferPush(IntBuffer *buffer, int newItem);
 
-/* Compares two buffers, resulting returned int is simalar to strcmp result */
+/* Compares two buffers, resulting returned int is similar to strcmp result */
 int IntBufferCompare(IntBuffer buffer1, IntBuffer buffer2);
 
 /* Returns string with the contents of the int buffer starting with 2nd element, split with % for use as a prefix */

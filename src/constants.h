@@ -9,7 +9,7 @@
 #ifndef CONSTANTS
 #define CONSTANTS
 
-#include <stdint.h> // for int64_t
+#include <stdint.h> // necessary for int64_t
 
 // return codes for various error scenarios
 typedef enum {

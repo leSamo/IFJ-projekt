@@ -22,10 +22,10 @@ typedef struct StringBuffer {
 /* Allocates, initates and returns a string buffer */
 StringBuffer* StringBufferCreate();
 
-/* Pushes one token into supplied buffer */
+/* Pushes one string onto supplied buffer */
 void StringBufferPush(StringBuffer *buffer, char *string);
 
-/* Deallocated token buffer */
+/* Deallocated string buffer */
 void StringBufferDispose(StringBuffer *buffer);
 
 #endif

@@ -13,14 +13,12 @@
 #include "charBuffer.h"
 #include "memoryManager.h"
 
-/* Char buffer functions */
 charBuffer* charBufferCreate() {
     charBuffer *buffer = malloc(sizeof(charBuffer));
 
     if (buffer == NULL) {
-        throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
         deallocateAll();
-        exit(INTERNAL_ERROR);
+        throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
     }
 
     buffer->content = malloc(sizeof(char) * INITIAL_CHAR_BUFFER_SIZE);
@@ -31,25 +29,26 @@ charBuffer* charBufferCreate() {
 }
 
 void charBufferPush(charBuffer* buffer, char character) {
+    // if we ran out of space in the buffer, allocate new memory with double capacity 
     if (buffer->position + 1 == buffer->capacity) {
         buffer->capacity *= 2;
         char *newArray = realloc(buffer->content, sizeof(char) * buffer->capacity);
 
         if (newArray == NULL) {
-            free(buffer);
-            throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
             deallocateAll();
-            exit(INTERNAL_ERROR);
+            throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
         }
         else {
             buffer->content = newArray;
         }
     }
 
+    // push character at the end
     buffer->content[(buffer->position)++] = character;
 }
 
 char* charBufferGet(charBuffer* buffer) {
+    // clear buffer
     buffer->content[buffer->position] = '\0';
     buffer->position = 0;
 

@@ -24,6 +24,7 @@ ST_Node *SymTableTree;      // symbol table for semantic analysis
 char* newString(unsigned int length) {
     char* string = malloc(sizeof(char) * (length + 1));
 
+    // remember pointer to that string for future deallocation
     StringBufferPush(stringBuffer, string);
 
     return string;
