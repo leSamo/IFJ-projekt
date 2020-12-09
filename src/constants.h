@@ -2,7 +2,7 @@
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00), Michal Findra (xfindr00)
- * Date: November 2020
+ * Date: November, December 2020
  * Description: Various structures, declarations and constants shared by multiple components
  * ================================= */
 
@@ -88,8 +88,8 @@ typedef enum {
 /* represents one token each token has type and some have value of either type int, float or string */
 typedef struct {
     tokenType type;
-    tokenType oldType;
-    int nodeNum;
+    tokenType oldType; // used in expression analysis
+    int nodeNum; // used in expression analysis
     union {
         int64_t i;
         double f;

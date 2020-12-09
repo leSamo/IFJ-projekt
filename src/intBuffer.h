@@ -2,7 +2,7 @@
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00)
- * Date: November 2020
+ * Date: November, December 2020
  * Description: Int variable length array with create, push, compare and dispose functions
  * ================================= */
 

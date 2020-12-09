@@ -2,7 +2,7 @@
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00), Michal Findra (xfindr00)
- * Date: November 2020
+ * Date: November, December 2020
  * Description: N-ary abstract syntax tree for semantic analysis
  * ================================= */
 
@@ -46,6 +46,7 @@ ASTNode* AST_CreateTaggedNode(ASTNode *parent, ASTNodeType type, typeTag tag) {
 }
 
 ASTNode* AST_CreateFuncParamNode(ASTNode *paramList, ASTNodeType type, typeTag tag) {
+    // only for built-in functions, so their node structure is the same as user-defined functions
     ASTNode *param = AST_CreateNode(paramList, NODE_Func_Def_Param);
     AST_CreateStringNode(param, NODE_Identifier, "Param");
     AST_CreateTaggedNode(param, type, tag);
@@ -56,6 +57,9 @@ ASTNode* AST_CreateFuncParamNode(ASTNode *paramList, ASTNodeType type, typeTag t
 ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag contentType, typeUnion content) {
     ASTNode *node = malloc(sizeof(ASTNode));
 
+    // TODO: Check if malloc was successful
+
+    // register new child in parent node
     if (parent != NULL) {
         parent->children[parent->childrenCount++] = node;
     }
@@ -77,21 +81,24 @@ ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag conten
 }
 
 void AST_AttachNode(ASTNode *parent, ASTNode* child) {
+    // register new child in parent node
     parent->children[parent->childrenCount++] = child;
     child->parent = parent;
 }
 
 ASTNode* AST_GetChildOfType(ASTNode *parent, ASTNodeType type) {
+    // search all direct children
     for (int i = 0; i < parent->childrenCount; i++) {
         if (parent->children[i]->type == type) {
             return parent->children[i];
         }
     }
 
-    return NULL; // not found
+    return NULL; // child of that type not found
 }
 
 ASTNode* AST_GetDescendantOfType(ASTNode *parent, ASTNodeType type) {
+    // search all direct children and recursively search their children
     for (int i = 0; i < parent->childrenCount; i++) {
         if (parent->children[i]->type == type) {
             return parent->children[i];
@@ -99,16 +106,18 @@ ASTNode* AST_GetDescendantOfType(ASTNode *parent, ASTNodeType type) {
         else {
             ASTNode *childNode = AST_GetDescendantOfType(parent->children[i], type);
 
+            // bubble up found node through recursion
             if (childNode != NULL) {
                 return childNode;
             }
         }
     }
 
-    return NULL; // not found
+    return NULL; // descendant of that type not found
 }
 
 ASTNode* AST_GetParentOfType(ASTNode *child, ASTNodeType type) {
+    // search nodes parent and parent's parent and so on
     while (child->parent != NULL) {
         if (child->parent->type == type) {
             return child->parent;
@@ -117,16 +126,19 @@ ASTNode* AST_GetParentOfType(ASTNode *child, ASTNodeType type) {
         child = child->parent;
     }
 
-    return NULL; // not found
+    return NULL; // parent of that type not found
 }
 
 void AST_PrettyPrint(ASTNode *nodePtr, int level) {
+    // indent line level-times
     for (int i = 0; i < level; i++) {
         printf("  ");
     }
 
+    // print node name
     printf("[%d] %s", nodePtr->id, AST_GetNodeName(nodePtr->type));
 
+    // print node value, if it has some
     switch (nodePtr->contentType) {
         case TAG_Int:
             printf(" - %ld\n", nodePtr->content.i);
@@ -141,6 +153,7 @@ void AST_PrettyPrint(ASTNode *nodePtr, int level) {
             printf("\n");
     }
 
+    // increase indentation by one and recursively print all children
     for (int i = 0; i < nodePtr->childrenCount; i++) {
         AST_PrettyPrint(nodePtr->children[i], level + 1);
     }

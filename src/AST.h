@@ -2,13 +2,13 @@
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00), Michal Findra (xfindr00)
- * Date: November 2020
+ * Date: November, December 2020
  * Description: N-ary abstract syntax tree for semantic analysis
  * ================================= */
 
 /* type of structure AST node represents */
 typedef enum ASTNodeType {
-    NODE_Empty,
+    NODE_Empty, // used to indicate that no overlap node is passed
     NODE_Prog,
     NODE_Block,
     NODE_Func_Def,
@@ -66,21 +66,39 @@ typedef union typeUnion {
 #define AST_NODE_CHILDREN 50
 
 typedef struct ASTNode {
-    int id; // used only in block nodes to identify scope
+    int id; // used in block and for nodes to identify scope
     ASTNodeType type;
 
     struct ASTNode *parent;
     struct ASTNode *children[AST_NODE_CHILDREN];
     int childrenCount;
 
-    bool isOperatorResult; // true if node was created 
-    typeTag valueType;
+    bool isOperatorResult; // true if node was created in expression as a result of operator
+    typeTag valueType; // indicate what primitive type node is
 
-    typeTag contentType;
+    typeTag contentType; // indicate if i,f or str field of content union is used
     typeUnion content;
 } ASTNode;
 
-/* Create a new AST node and attach it to supplied parent node */
+/* Create node containing int literal and attach it to the parent */
+ASTNode* AST_CreateIntNode(ASTNode *parent, ASTNodeType type, int64_t i);
+
+/* Create node containing float literal and attach it to the parent */
+ASTNode* AST_CreateFloatNode(ASTNode *parent, ASTNodeType type, double f);
+
+/* Create node containing string literal and attach it to the parent */
+ASTNode* AST_CreateStringNode(ASTNode *parent, ASTNodeType type, char* str);
+
+/* Create attributeless node attach it to the parent */
+ASTNode* AST_CreateNode(ASTNode *parent, ASTNodeType type);
+
+/* Create tagged node attach it to the parent */
+ASTNode* AST_CreateTaggedNode(ASTNode *parent, ASTNodeType type, typeTag tag);
+
+/* Create func param node with parameters and attach it to the parent, used for built-in functions */
+ASTNode* AST_CreateFuncParamNode(ASTNode *paramList, ASTNodeType type, typeTag tag);
+
+/* Create a new AST node and attach it to supplied parent node, do not use outside of this file, use 6 functions above */
 ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag contentType, typeUnion content);
 
 /* Attaches child into first free child slot of the parent node */
@@ -89,7 +107,7 @@ void AST_AttachNode(ASTNode *parent, ASTNode* child);
 /* Finds first direct child node of desired type */
 ASTNode* AST_GetChildOfType(ASTNode *parent, ASTNodeType type);
 
-/* Finds first (direct or indirect) child node of desired type */
+/* Recursively finds first (direct or indirect) child node of desired type */
 ASTNode* AST_GetDescendantOfType(ASTNode *parent, ASTNodeType type);
 
 /* Finds closest (direct or indirect) parent node of desired type */

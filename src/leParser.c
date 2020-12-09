@@ -2,7 +2,7 @@
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
  * Author: Emma Krompaščíková (xkromp00), Samuel Olekšák (xoleks00), Michal Findra (xfindr00)
- * Date: November 2020
+ * Date: November, December 2020
  * Description: Syntactic analysis using recursive descent
  * ================================= */
 
@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     stringBuffer = StringBufferCreate();
     tokenBuffer = TokenBufferCreate();
 
-    // LEXICAL ANALYSIS
+    // [DEBUG] Print all tokens
     /*
     Token currentToken;
     while((currentToken = getToken()).type != TOK_EOF) {
@@ -34,13 +34,12 @@ int main(int argc, char *argv[]) {
     }
     */
 
-    // recursive descent start
+    /* Syntactic analysis */
     bool semanticAnalysisSucess = NT_Prog();
 
     if (!semanticAnalysisSucess) {
+        //deallocateAll();
         throwError(SYNTAX_ERROR, "Syntactic error\n", true);
-        deallocateAll();
-        return SYNTAX_ERROR;
     }
 
     //AST_PrettyPrint(ASTRoot, 0); // print whole AST
@@ -54,7 +53,7 @@ int main(int argc, char *argv[]) {
     
     //ST_PrettyPrint(SymTableTree, 0);
 
-    /* Intermediate code generation */
+    /* Final code generation */
     generateCode(ASTRoot, mainFuncDef, SymTableTree);
     ST_Dispose(&SymTableTree);
 

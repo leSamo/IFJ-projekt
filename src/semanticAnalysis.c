@@ -2,7 +2,7 @@
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
  * Author: Samuel Olekšák (xoleks00), Michal Findra (xfindr00)
- * Date: November 2020
+ * Date: November, December 2020
  * Description: Two-pass semantic analysis
  * ================================= */
 
@@ -79,7 +79,7 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer
 
             if (expRootType != NODE_Equal && expRootType != NODE_Not_Equal && expRootType != NODE_More_Then
              && expRootType != NODE_More_Equal_Then && expRootType != NODE_Less_Then && expRootType != NODE_Less_Equal_Then) {
-                throwError(INCOMPATIBLE_TYPE_ERROR, "If expression doesn't evaluate to bool error\n", false);
+                throwError(INCOMPATIBLE_TYPE_ERROR, "For expression doesn't evaluate to bool error\n", false);
             }
 
             if (forDefNode != NULL) {

@@ -1,8 +1,8 @@
 /* ========= charBuffer.c ==========
  * Project: IFJ 2020/21 project
  * Team: 067, variant I
- * Author: Samuel Olekšák (xoleks00)
- * Date: November 2020
+ * Author: Samuel Olekšák (xoleks00), Emma Krompaščíková (xkromp00)
+ * Date: November, December 2020
  * Description: Char variable length stack with create, push, get + clear and dispose functions
  * ================================= */
 
