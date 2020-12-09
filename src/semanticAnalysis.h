@@ -24,6 +24,9 @@ void AST_SecondPass(ASTNode *astNode, ST_Node **symTableRoot);
 /* Recursively traverse tree and look for variable definitions */
 void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer scopes);
 
+/* Check if function definition is correct */
+void ST_FuncDefinition(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer scopes);
+
 /* Add variable to symbol table with its type and scope */
 void ST_VariableDefinition(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer scopes);
 

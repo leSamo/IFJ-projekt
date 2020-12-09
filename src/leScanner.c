@@ -16,12 +16,14 @@
 #include "charBuffer.c"
 #include "memoryManager.c"
 
-/* Increments when newline char is read, used in error messages */
+// Increments when newline char is read, used in error messages
 int currentLine = 1;
 
+// If parser gets one more token than it should have it can give it back with overlap token
 Token overlapToken = {TOK_Empty};
 
 Token getToken() {
+    // if parser sent back overlap token then return it first and clear it
     if (overlapToken.type != TOK_Empty) {
         Token tokenToReturn = overlapToken;
         overlapToken.type = TOK_Empty;
@@ -31,6 +33,7 @@ Token getToken() {
     int currentChar;
     state currentState = AS_Default;
 
+    // used when reading string with escaped ascii char
     char hexEscapeBuffer;
 
     while (true) {
@@ -38,7 +41,7 @@ Token getToken() {
 
         switch (currentState)
         {
-        case AS_Default:
+        case AS_Default: // initial state
             if (currentChar == '0') {
                 charBufferPush(scannerBuffer, currentChar);
                 currentState = AS_Leading_Zero;
@@ -289,8 +292,7 @@ Token getToken() {
             }
             break;
         
-        case AS_String_Escape:
-            // TODO: should characters with ascii 31 and less be writable without escape?
+        case AS_String_Escape: // inside string after reading \, initiate escape sequence
             if (currentChar == 'n') {
                 charBufferPush(scannerBuffer, '\n');
                 currentState = AS_String;
@@ -384,7 +386,7 @@ Token getToken() {
             break;
         
         default:
-            throwError(LEXICAL_ERROR, "Lexical error: reached invalid state.\n", true);
+            throwError(LEXICAL_ERROR, "Reached invalid state.\n", true);
         }
     }
 }
@@ -450,6 +452,7 @@ Token newFloatToken(float content) {
 Token newWordToken(char* content) {
     Token newToken;
 
+    // check if identifier matches any keyword
     for (int i = 0; i < KEYWORDS_ARRAY_SIZE; i++) {
         if (strcmp(content, keywords[i].word) == 0) {
             newToken.type = keywords[i].type;
@@ -460,11 +463,13 @@ Token newWordToken(char* content) {
     newToken.type = TOK_Identifier;
     newToken.str = newString((strlen(content)));
     strcpy(newToken.str, content);
+
     return newToken;
 }
 
 Token newStringToken(char* content) {
     Token newToken;
+
     newToken.type = TOK_String_Literal;
     newToken.str = newString((strlen(content)));
     strcpy(newToken.str, content);
@@ -472,8 +477,9 @@ Token newStringToken(char* content) {
     return newToken;
 }
 
-Token newHalfToken(tokenType type) {
+Token newHalfToken(tokenType type) { // attributeless token
     Token newToken;
+
     newToken.type = type;
 
     return newToken;

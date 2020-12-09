@@ -147,10 +147,10 @@ bool isNodeMathOperator(ASTNodeType type) {
     case NODE_Literal_String:
     case NODE_Literal_Int:
     case NODE_Literal_Float:
-    case NODE_Less_Then:
-    case NODE_More_Then:
-    case NODE_Less_Equal_Then:
-    case NODE_More_Equal_Then:
+    case NODE_Less_Than:
+    case NODE_Greater_Than:
+    case NODE_Less_Equal_Than:
+    case NODE_Greater_Equal_Than:
     case NODE_Equal:
     case NODE_Not_Equal:
         return false;
@@ -343,16 +343,16 @@ bool Reduce(TokenBuffer *Stack, Token currentToken, ASTNode **nodes) {
 
         nodeCounter++;
         if (operator.type == TOK_More_Then) {
-            ExpCreateOperationNode(NODE_More_Then, firstOperand, secondOperand, nodes);
+            ExpCreateOperationNode(NODE_Greater_Than, firstOperand, secondOperand, nodes);
         }
         else if (operator.type == TOK_Less_Then) {
-            ExpCreateOperationNode(NODE_Less_Then, firstOperand, secondOperand, nodes);
+            ExpCreateOperationNode(NODE_Less_Than, firstOperand, secondOperand, nodes);
         }
         else if (operator.type == TOK_More_Equal_Then) {
-            ExpCreateOperationNode(NODE_More_Equal_Then, firstOperand, secondOperand, nodes);
+            ExpCreateOperationNode(NODE_Greater_Equal_Than, firstOperand, secondOperand, nodes);
         }
         else if (operator.type == TOK_Less_Equal_Then) {
-            ExpCreateOperationNode(NODE_Less_Equal_Then, firstOperand, secondOperand, nodes);
+            ExpCreateOperationNode(NODE_Less_Equal_Than, firstOperand, secondOperand, nodes);
         }
         else if (operator.type == TOK_Equal) {
             ExpCreateOperationNode(NODE_Equal, firstOperand, secondOperand, nodes);

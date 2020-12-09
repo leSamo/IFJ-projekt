@@ -600,15 +600,15 @@ void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBu
             printOperands(parentNode, symtable, scope, leftChild, rightChild);
             printf("NOT TF@%s TF@%s1\n", resultId, resultId);
             break;
-        case NODE_Less_Then:
+        case NODE_Less_Than:
             printf("LT TF@%s ", resultId);
             printOperands(parentNode, symtable, scope, leftChild, rightChild);
             break;
-        case NODE_More_Then:
+        case NODE_Greater_Than:
             printf("GT TF@%s ", resultId);
             printOperands(parentNode, symtable, scope, leftChild, rightChild);
             break;
-        case NODE_Less_Equal_Then:
+        case NODE_Less_Equal_Than:
             printf("DEFVAR TF@%s1\n", resultId);
             printf("DEFVAR TF@%s2\n", resultId);
             printf("EQ TF@%s1 ", resultId);
@@ -617,7 +617,7 @@ void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBu
             printOperands(parentNode, symtable, scope, leftChild, rightChild);
             printf("OR TF@%s TF@%s1 TF@%s2\n", resultId, resultId, resultId);
             break;
-        case NODE_More_Equal_Then:
+        case NODE_Greater_Equal_Than:
             printf("DEFVAR TF@%s1\n", resultId);
             printf("DEFVAR TF@%s2\n", resultId);
             printf("EQ TF@%s1 ", resultId);

@@ -42,7 +42,6 @@ int main(int argc, char *argv[]) {
     }
 
     //AST_PrettyPrint(ASTRoot, 0); // print whole AST
-    //printf("=========================\n");
 
     /* Semantic analysis */
     ST_Init(&SymTableTree);
@@ -50,7 +49,7 @@ int main(int argc, char *argv[]) {
     AST_FirstPass(ASTRoot, &SymTableTree);
     AST_SecondPass(ASTRoot, &SymTableTree);
     
-    //ST_PrettyPrint(SymTableTree, 0);
+    //ST_PrettyPrint(SymTableTree, 0); // print symtable
 
     /* Final code generation */
     generateCode(ASTRoot, mainFuncDef, SymTableTree);
@@ -136,8 +135,10 @@ bool NT_Func_Def(ASTNode *parentNode) {
 
     if (identifierNode.type == TOK_Identifier) {
         if (getToken().type == TOK_L_Paren) {
+            // semantic action: create function definition node
             ASTNode *funcNode = AST_CreateStringNode(parentNode, NODE_Func_Def, identifierNode.str);
             ASTNode *blockNode = AST_CreateNode(funcNode, NODE_Block);
+
             ret = NT_Param_List(funcNode) && NT_Return_Types(funcNode) && NT_Stat(blockNode);
         }
     }
@@ -156,6 +157,7 @@ bool NT_Param_List(ASTNode *parentNode) {
         ret = true;
     }
     else if (nextToken.type == TOK_Identifier) {
+        // semantic action: create function parameter node
         ASTNode *paramNode = AST_CreateNode(node, NODE_Func_Def_Param);
         ASTNode *idNode = AST_CreateStringNode(paramNode, NODE_Identifier, nextToken.str);
 
@@ -175,7 +177,9 @@ bool NT_Param_List_N(ASTNode *parentNode) {
     }
     else if (nextToken.type == TOK_Comma) {
         Token idToken = getToken_NL_optional();
+
         if (idToken.type == TOK_Identifier)  {
+            // semantic action: create function parameter node
             ASTNode *paramNode = AST_CreateNode(parentNode, NODE_Func_Def_Param);
             ASTNode *idNode = AST_CreateStringNode(paramNode, NODE_Identifier, idToken.str);
             
@@ -233,7 +237,7 @@ bool NT_Return_Types_Start(ASTNode *parentNode) {
         ret = getToken().type == TOK_L_Brace;
     }
     else {
-        overlapToken = nextToken;
+        overlapToken = nextToken; // return one token back to the scanner
         ret = NT_Type(parentNode) && NT_Return_Types_N(parentNode) && getToken().type == TOK_L_Brace;
     }
 }
@@ -270,38 +274,49 @@ bool NT_Stat(ASTNode *parentNode) {
     bool ret = false;
     Token nextToken = getToken_NL_required();
 
+    // if there was a multi-assignment check if amount of L-values and R-values was the same
     if (!TokenBufferEmpty(tokenBuffer)) {
         fprintf(stderr, "Unbalanced construction error\n");
         return false;
     }
 
     if (nextToken.type == TOK_Identifier) {
+        // push token to buffer, in case this will be multi-assignment
         TokenBufferPush(tokenBuffer, nextToken);
+        
         ret = NT_Var(parentNode) && NT_Stat(parentNode);
     }
     else if (nextToken.type == TOK_R_Brace) {
         ret = true;
     }
     else if (nextToken.type == TOK_If_Keyword) {
+        // semantic action: create if-else parameter node
         ASTNode *node = AST_CreateNode(parentNode, NODE_If_Else);
+
         ret = NT_If_Else(node) && NT_Stat(parentNode);
     }
     else if (nextToken.type == TOK_For_Keyword) {
+        // semantic action: create for node
         ASTNode *node = AST_CreateNode(parentNode, NODE_For);
         ASTNode *blockNode = AST_CreateNode(node, NODE_Block);
+
         ret = NT_For_Def(node) && NT_For_Exp(node) && NT_For_Assign(node) && NT_Stat(blockNode) && NT_Stat(parentNode);
     }
     else if (nextToken.type == TOK_Return_Keyword) {
         Token secondToken = getToken();
 
         if (isExpFirst(secondToken.type)) {
-            overlapToken = secondToken;
+            overlapToken = secondToken; // return one token back to the scanner
+
             ASTNode *node = AST_CreateNode(parentNode, NODE_Return);
+
             ret = NT_Exps(node, false) && NT_Stat(parentNode);
         }
         else if (secondToken.type == TOK_Newline) {
-            overlapToken = secondToken;
+            overlapToken = secondToken; // return one token back to the scanner
+
             ASTNode *node = AST_CreateNode(parentNode, NODE_Return);
+
             ret = NT_Stat(parentNode);
         }
 
@@ -316,24 +331,31 @@ bool NT_Var(ASTNode *parentNode) {
     Token nextToken = getToken();
 
     if (nextToken.type == TOK_Assign) {
+         // semantic action: create assignment node
         ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
         ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
+        
         ret = NT_Exp_Or_Fn(assignNode);
     }
     else if (nextToken.type == TOK_Define) {
+         // semantic action: create definition node
         ASTNode *defineNode = AST_CreateNode(parentNode, NODE_Define);
         ASTNode *idNode = AST_CreateStringNode(defineNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
+        
         ret = NT_Exp(defineNode, EMPTY_TOKEN, false);
     }
     else if (nextToken.type == TOK_Comma) {
         Token idToken = getToken();
+
         if (idToken.type == TOK_Identifier) {
+            // reading multi-assignment, push to token buffer to be later converted into multiple assign nodes
             TokenBufferPush(tokenBuffer, idToken);
             ret = NT_Var_N(parentNode);
         }
     }
     else if (nextToken.type == TOK_L_Paren) {
         ASTNode *node = AST_CreateStringNode(parentNode, NODE_Func_Call, TokenBufferPopFront(&tokenBuffer).str);
+        
         ret = NT_Func_Args(node);
     }
 
@@ -350,24 +372,13 @@ bool NT_Var_N(ASTNode *parentNode) {
     }
     else if (nextToken.type == TOK_Comma) {
         Token idToken = getToken();
+
         if (idToken.type == TOK_Identifier) {
+            // reading multi-assignment, push to token buffer to be later converted into multiple assign nodes
             TokenBufferPush(tokenBuffer, idToken);
             ret = NT_Var_N(parentNode);
         }
     }
-    /*
-    else if (nextToken.type == TOK_L_Paren) {
-        ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
-        ASTNode *multiNode = AST_CreateNode(assignNode, NODE_Multi_L_Value);
-
-        while (tokenBuffer->count > 1) {
-            ASTNode *value = AST_CreateStringNode(multiNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
-        }
-
-        ASTNode *funcNode = AST_CreateStringNode(parentNode, NODE_Func_Call, TokenBufferPopFront(&tokenBuffer).str);
-        ret = NT_Func_Args(funcNode);
-    }
-    */
 
     return ret;
 }
@@ -387,6 +398,7 @@ bool NT_Exps(ASTNode *parentNode, bool createAssignment) {
                 assignNode = AST_CreateNode(parentNode, NODE_Assign);
                 ASTNode *multiNode = AST_CreateNode(assignNode, NODE_Multi_L_Value);
 
+                // reading multi-assignment, pop identificators and pair them with expression to create assignment nodes
                 while (!TokenBufferEmpty(tokenBuffer)) {
                     ASTNode *value = AST_CreateStringNode(multiNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
                 }
@@ -396,10 +408,12 @@ bool NT_Exps(ASTNode *parentNode, bool createAssignment) {
             }
 
             ASTNode *funcNode = AST_CreateStringNode(assignNode, NODE_Func_Call, firstToken.str);
+            
             ret = NT_Func_Args(funcNode);
         }
         else {
-            overlapToken = secondToken;
+            overlapToken = secondToken; // return one token back to the scanner
+
             ret = NT_Exp(parentNode, firstToken, createAssignment) && NT_Exps_N(parentNode, createAssignment);
         }
     }
@@ -417,10 +431,12 @@ bool NT_Exp_Or_Fn(ASTNode *parentNode) {
 
         if (firstToken.type == TOK_Identifier && secondToken.type == TOK_L_Paren) {
             ASTNode *funcNode = AST_CreateStringNode(parentNode, NODE_Func_Call, firstToken.str);
+            
             ret = NT_Func_Args(funcNode);
         }
         else {
-            overlapToken = secondToken;
+            overlapToken = secondToken; // return one token back to the scanner
+            
             ret = NT_Exp(parentNode, firstToken, false);
         }
     }
@@ -437,7 +453,7 @@ bool NT_Func_Args(ASTNode *parentNode) {
         ret = true;
     }
     else {
-        overlapToken = nextToken;
+        overlapToken = nextToken; // return one token back to the scanner
         ret = NT_Term(parentNode) && NT_Func_Args_N(parentNode);
     }
 
@@ -468,12 +484,13 @@ bool NT_Exps_N(ASTNode *parentNode, bool createAssignment) {
         ret = NT_Exp(parentNode, EMPTY_TOKEN, createAssignment) && NT_Exps_N(parentNode, createAssignment);
     }
     else if (nextToken.type == TOK_Newline) {
+        // there was a multi-assignment check if amount of L-values and R-values was the same
         if (!TokenBufferEmpty(tokenBuffer)) {
-            fprintf(stderr,"Unbalanced construction error\n");
+            fprintf(stderr, "Unbalanced construction error\n");
             return false;
         }
         
-        overlapToken = nextToken;
+        overlapToken = nextToken; // return one token back to the scanner
         ret = true;
     }
 
@@ -502,20 +519,23 @@ bool NT_Exp(ASTNode *parentNode, Token overlapTokenIn, bool createAssignment) {
 
     ASTNode *node;
 
-    if (createAssignment) {
+    if (createAssignment) { // semantic action: create assignment node
         ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Assign);
         AST_CreateStringNode(assignNode, NODE_Identifier, TokenBufferPopFront(&tokenBuffer).str);
+        
         node = AST_CreateNode(assignNode, NODE_Exp);
     }
     else {
         node = AST_CreateNode(parentNode, NODE_Exp);
     }
 
-    // pass it to expression parser
+    // provide expression parser pointer to return token it might have read and should not have
     Token *overlapTokenOut = malloc(sizeof(Token));
+
+    // pass it to expression parser
     ret = handleExpression(node, overlapTokenIn, overlapTokenOut);
 
-    overlapToken = *overlapTokenOut;
+    overlapToken = *overlapTokenOut; // return one token back to the scanner
     free(overlapTokenOut);
 
     return ret;
@@ -527,10 +547,12 @@ bool NT_If_Else(ASTNode *parentNode) {
     if (NT_Exp(parentNode, EMPTY_TOKEN, false)) {
         if (getToken().type == TOK_L_Brace) {
             ASTNode *positiveNode = AST_CreateNode(parentNode, NODE_Block);
+
             if (NT_Stat(positiveNode)) {
                 if (getToken().type == TOK_Else_Keyword) {
                     if (getToken().type == TOK_L_Brace) {
                         ASTNode *negativeNode = AST_CreateNode(parentNode, NODE_Block);
+
                         ret = NT_Stat(negativeNode);
                     }
                 }
@@ -552,6 +574,7 @@ bool NT_For_Def(ASTNode *parentNode) {
     else if (nextToken.type == TOK_Identifier) {
         ASTNode *assignNode = AST_CreateNode(parentNode, NODE_Define);
         ASTNode *idNode = AST_CreateStringNode(assignNode, NODE_Identifier, nextToken.str);
+
         ret = NT_For_Def_Var(assignNode);
     }
 
@@ -596,7 +619,9 @@ bool NT_For_Assign(ASTNode *parentNode) {
         ret = true;
     }
     else if (nextToken.type == TOK_Identifier) {
+        // push token to buffer, in case this will be multi-assignment
         TokenBufferPush(tokenBuffer, nextToken);
+
         ret = NT_For_Assign_Var(parentNode);
     }
 
@@ -611,6 +636,7 @@ bool NT_For_Assign_Var(ASTNode *parentNode) {
     if (nextToken.type == TOK_Comma) {
         Token secondToken = getToken();
         if (secondToken.type == TOK_Identifier) {
+            // push token to buffer, in case this will be multi-assignment
             TokenBufferPush(tokenBuffer, secondToken);
             ret = NT_For_Assign_Var(parentNode);
         }

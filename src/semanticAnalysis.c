@@ -17,6 +17,7 @@
 ASTNode *mainFuncDef = NULL;
 
 void AST_FirstPass(ASTNode *astNode, ST_Node **symTableRoot) {
+    // recursively traverse tree
     AST_FirstPassTraversal(astNode, symTableRoot);
 
     // check if main func is present and has no params and no return type
@@ -35,10 +36,12 @@ void AST_FirstPass(ASTNode *astNode, ST_Node **symTableRoot) {
 
 void AST_FirstPassTraversal(ASTNode *astNode, ST_Node **symTableRoot) {
     if (astNode != NULL) {
+        // when you find function node, add it into symtable
         if (astNode->type == NODE_Func_Def) {
             ST_AddFunction(astNode, symTableRoot);
         }
 
+        // recursively call this on node's children
         for (int i = 0; i < astNode->childrenCount; i++) {
             AST_FirstPassTraversal(astNode->children[i], symTableRoot);
         }
@@ -46,19 +49,22 @@ void AST_FirstPassTraversal(ASTNode *astNode, ST_Node **symTableRoot) {
 }
 
 void ST_AddFunction(ASTNode *astNode, ST_Node **symTableRoot) {
-    if (astNode->parent != ASTRoot) { // syntactic analyzer should cover this
+    // detect if function is defined inside another function
+    if (astNode->parent != ASTRoot) {
         throwError(OTHER_SEMANTIC_ERROR, "Nested function definition error\n", false);
     }
 
+    // when you find main function node, save it into special variable
     if (strcmp(astNode->content.str, "main") == 0) {
         mainFuncDef = astNode;
     }
 
-    // check if parent is prog, else error
+    // insert symbol into symtable
     ST_Insert(symTableRoot, astNode->content.str, SYM_Func, astNode, GLOBAL_SCOPE);
 }
 
 void AST_SecondPass(ASTNode *astNode, ST_Node **symTableRoot) {
+    // buffer to save current scope during traversal
     IntBuffer *scopes = IntBufferCreate();
 
     AST_SecondPassTraversal(astNode, symTableRoot, *scopes);
@@ -69,34 +75,44 @@ void AST_SecondPass(ASTNode *astNode, ST_Node **symTableRoot) {
 void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer scopes) {
     if (astNode != NULL) {
         if (astNode->type == NODE_Block) {
+            // we are entering block add new scope id to the scope buffer
             IntBufferPush(&scopes, astNode->id);
         }
         else if (astNode->type == NODE_For) {
+            // for header is a new scope, add it to the scope buffer
             IntBufferPush(&scopes, astNode->id);
+
             ASTNode *forExpNode = AST_GetChildOfType(astNode, NODE_Exp);
             ASTNode *forDefNode = AST_GetChildOfType(astNode, NODE_Define);
+
+            // check if expression evaluates to bool (has relational operator at its root)
             ASTNodeType expRootType = forExpNode->children[0]->type;
 
-            if (expRootType != NODE_Equal && expRootType != NODE_Not_Equal && expRootType != NODE_More_Then
-             && expRootType != NODE_More_Equal_Then && expRootType != NODE_Less_Then && expRootType != NODE_Less_Equal_Then) {
+            if (expRootType != NODE_Equal && expRootType != NODE_Not_Equal && expRootType != NODE_Greater_Than
+             && expRootType != NODE_Greater_Equal_Than && expRootType != NODE_Less_Than && expRootType != NODE_Less_Equal_Than) {
                 throwError(INCOMPATIBLE_TYPE_ERROR, "For expression doesn't evaluate to bool error\n", false);
             }
 
             if (forDefNode != NULL) {
+                // check if define part is valid
                 ST_VariableDefinition(forDefNode, symTableRoot, scopes);
             }
 
+            // check if expression part is valid
             ST_DeriveExpressionType(forExpNode, symTableRoot, scopes);
         }
         else if (astNode->type == NODE_If_Else) {
             ASTNode *ifExpNode = AST_GetChildOfType(astNode, NODE_Exp);
+
+            // check if expression evaluates to bool (has relational operator at its root)
             ASTNodeType expRootType = ifExpNode->children[0]->type;
 
-            if (expRootType != NODE_Equal && expRootType != NODE_Not_Equal && expRootType != NODE_More_Then
-             && expRootType != NODE_More_Equal_Then && expRootType != NODE_Less_Then && expRootType != NODE_Less_Equal_Then) {
+            if (expRootType != NODE_Equal && expRootType != NODE_Not_Equal && expRootType != NODE_Greater_Than
+             && expRootType != NODE_Greater_Equal_Than && expRootType != NODE_Less_Than && expRootType != NODE_Less_Equal_Than) {
                 throwError(INCOMPATIBLE_TYPE_ERROR, "If expression doesn't evaluate to bool error\n", false);
             }
 
+            // check if expression part is valid
             ST_DeriveExpressionType(ifExpNode, symTableRoot, scopes);
         }
         else if (astNode->type == NODE_Define && astNode->parent->type != NODE_For) {
@@ -114,31 +130,42 @@ void AST_SecondPassTraversal(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer
             ST_Return(astNode, symTableRoot, scopes);
         }
         else if (astNode->type == NODE_Func_Def) {
-            ASTNode *paramListNode = AST_GetChildOfType(astNode, NODE_Func_Def_Param_List);
-            ASTNode *blockNode = AST_GetChildOfType(astNode, NODE_Block);
-            IntBuffer blockScope;
-            blockScope.count = 1;
-            blockScope.capacity = 1;
-            blockScope.content = &blockNode->id;
-
-            for (int i = 0; i < paramListNode->childrenCount; i++) {
-                ASTNode *paramNode = paramListNode->children[i];
-                ASTNode *idNode = AST_GetChildOfType(paramNode, NODE_Identifier);
-                ASTNode *typeNode = paramNode->children[1];
-
-                ST_Insert(symTableRoot, idNode->content.str, typeNode->contentType, idNode, blockScope);
-            }
-
-            ASTNode *returnListNode = AST_GetChildOfType(astNode, NODE_Func_Def_Return);
-            if (returnListNode->childrenCount > 0) {
-                if (AST_GetDescendantOfType(blockNode, NODE_Return) == NULL) {
-                    throwError(ARGUMENT_ERROR, "Missing return statement in function definition\n", false);
-                }
-            }
+            ST_FuncDefinition(astNode, symTableRoot, scopes);
         }
 
+        // recursively call this function on each nodes children
         for (int i = 0; i < astNode->childrenCount; i++) {
             AST_SecondPassTraversal(astNode->children[i], symTableRoot, scopes);
+        }
+    }
+}
+
+void ST_FuncDefinition(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer scopes) {
+    ASTNode *paramListNode = AST_GetChildOfType(astNode, NODE_Func_Def_Param_List);
+    ASTNode *blockNode = AST_GetChildOfType(astNode, NODE_Block);
+
+    // outer function block has only one scope (block id)
+    IntBuffer blockScope;
+
+    blockScope.count = 1;
+    blockScope.capacity = 1;
+    blockScope.content = &blockNode->id;
+
+    // insert each param into symtable
+    for (int i = 0; i < paramListNode->childrenCount; i++) {
+        ASTNode *paramNode = paramListNode->children[i];
+        ASTNode *idNode = AST_GetChildOfType(paramNode, NODE_Identifier);
+        ASTNode *typeNode = paramNode->children[1];
+
+        ST_Insert(symTableRoot, idNode->content.str, typeNode->contentType, idNode, blockScope);
+    }
+
+    // check if all return statement within function are compatible with definition
+    ASTNode *returnListNode = AST_GetChildOfType(astNode, NODE_Func_Def_Return);
+
+    if (returnListNode->childrenCount > 0) {
+        if (AST_GetDescendantOfType(blockNode, NODE_Return) == NULL) {
+            throwError(ARGUMENT_ERROR, "Missing return statement in function definition\n", false);
         }
     }
 }
@@ -156,6 +183,7 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer s
     ASTNode *variableNode = astNode->children[0];
     ASTNode *rightSideNode = astNode->children[1];
 
+    // has more left side identifiers, must be a function call
     if (variableNode->type == NODE_Multi_L_Value) {
         ASTNode *funcNode = ST_GetFuncNode(rightSideNode->content.str, symTableRoot, scopes);
         ASTNode *returnTypesNode = AST_GetChildOfType(funcNode, NODE_Func_Def_Return);
@@ -179,13 +207,14 @@ void ST_VariableAssignment(ASTNode *astNode, ST_Node **symTableRoot, IntBuffer s
         typeTag variableType = ST_GetVariableType(variableNode->content.str, symTableRoot, scopes);
         typeTag rightSideType;
 
+        // check if assignment left and right side match in types 
         if (rightSideNode->type == NODE_Exp) {
             rightSideType = ST_DeriveExpressionType(rightSideNode, symTableRoot, scopes);
         }
         else if (rightSideNode->type == NODE_Func_Call) {
             ASTNode *funcNode = ST_GetFuncNode(rightSideNode->content.str, symTableRoot, scopes);
             ASTNode *returnTypesNode = AST_GetChildOfType(funcNode, NODE_Func_Def_Return);
-    
+
             if (returnTypesNode->childrenCount != 1) {
                 throwError(ARGUMENT_ERROR, "Invalid return value count in func call assignment\n", false);
             }
@@ -254,13 +283,15 @@ typeTag ST_DeriveExpressionType(ASTNode *expNode, ST_Node **symTableRoot, IntBuf
         seedNode = seedNode->children[0];
     } while (seedNode->children[0] != NULL);
 
+    // we assume the expression is of that type of that leaf node
     typeTag expType = seedNode->valueType;
 
     // we don't know type - it's an identifier - look into symbol table
     if (expType == TAG_Unknown) {
         expType = ST_GetVariableType(seedNode->content.str, symTableRoot, scopes);
     }
-    
+
+    // verify if the whole expression is of that type
     if (ST_CheckExpressionType(expNode, symTableRoot, expType, scopes)) {
         return expType;
     }
@@ -291,6 +322,7 @@ bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **symTableRoot, typ
 
         return expType == type;
     }
+    // recursively call this funcion for nodes children
     else if (partialExpNode->childrenCount == 1) {
         return ST_CheckExpressionType(partialExpNode->children[0], symTableRoot, type, scopes);
     }
@@ -300,13 +332,15 @@ bool ST_CheckExpressionType(ASTNode *partialExpNode, ST_Node **symTableRoot, typ
     }
 }
 
-bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag type, IntBuffer scopes) {
+bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag expectedType, IntBuffer scopes) {
     typeTag termType;
 
     if (termNode->type == NODE_Identifier) {
         if (strcmp(termNode->content.str, "_") == 0) {
             throwError(DEFINITION_ERROR, "Write-only variable _ in function call error\n" , false);
         }
+
+        // fetch identifier type from symtable
         termType = ST_GetVariableType(termNode->content.str, symTableRoot, scopes);
     }
     else if (termNode->type == NODE_Literal_Int)  {
@@ -319,10 +353,11 @@ bool ST_CheckTermType(ASTNode *termNode, ST_Node **symTableRoot, typeTag type, I
         termType = TAG_String;
     }
 
-    return termType == type;
+    return termType == expectedType;
 }
 
 typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot, IntBuffer scopes) {
+    // fetch variable identifier type from symtable
     ST_Node *symbol = ST_Search(*symTableRoot, *symTableRoot, id, scopes);
 
     if (symbol != NULL) {
@@ -334,16 +369,17 @@ typeTag ST_GetVariableType(char *id, ST_Node **symTableRoot, IntBuffer scopes) {
 }
 
 ASTNode *ST_GetFuncNode(char *id, ST_Node **symTableRoot, IntBuffer scopes) {
+    // fetch function identifier type from symtable
     ST_Node *symbol = ST_Search(*symTableRoot, *symTableRoot, id, scopes);
 
     if (symbol != NULL) {
         if (symbol->type != SYM_Func) {
-            throwError(DEFINITION_ERROR, "Calling shadowed function identifier error\n", false);
+            throwError(DEFINITION_ERROR, "Calling function identifier shadow by variable error\n", false);
         }
 
         return symbol->node;
     }
     else {
-        throwError(DEFINITION_ERROR, "Undefined func variable\n", false);
+        throwError(DEFINITION_ERROR, "Undefined function identifier\n", false);
     }
 }
