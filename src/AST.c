@@ -183,7 +183,8 @@ void AST_Delete(ASTNode **nodePtr) {
         for (int i = 0; i < (*nodePtr)->childrenCount; i++) {
             AST_Delete(&(*nodePtr)->children[i]);
         }
-
+        
+        free((*nodePtr)->children);
         free(*nodePtr);
 
         *nodePtr = NULL;
