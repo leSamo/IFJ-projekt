@@ -38,7 +38,6 @@ int main(int argc, char *argv[]) {
     bool semanticAnalysisSucess = NT_Prog();
 
     if (!semanticAnalysisSucess) {
-        deallocateAll();
         throwError(SYNTAX_ERROR, "Syntactic error\n", true);
     }
 
@@ -57,6 +56,7 @@ int main(int argc, char *argv[]) {
     generateCode(ASTRoot, mainFuncDef, SymTableTree);
     ST_Dispose(&SymTableTree);
 
+    // successfuly compiled input program
     deallocateAll();
     return 0;
 }
@@ -66,8 +66,6 @@ Token getToken_NL_required() {
 
     if (nextToken.type != TOK_Newline) {
         throwError(SYNTAX_ERROR, "Expected newline, found none\n", true);
-        deallocateAll();
-        exit(SYNTAX_ERROR);
     }
 
     do {

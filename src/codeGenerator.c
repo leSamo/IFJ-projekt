@@ -58,6 +58,8 @@ void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable) {
             printf("RETURN\n");
         }
     }
+
+    IntBufferDispose(&mainScope);
 }
 
 void generateStructure(ASTNode *node, ST_Node *symtable, IntBuffer scope) {

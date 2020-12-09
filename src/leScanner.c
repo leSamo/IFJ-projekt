@@ -385,8 +385,6 @@ Token getToken() {
         
         default:
             throwError(LEXICAL_ERROR, "Lexical error: reached invalid state.\n", true);
-            deallocateAll();
-            exit(LEXICAL_ERROR);
         }
     }
 }

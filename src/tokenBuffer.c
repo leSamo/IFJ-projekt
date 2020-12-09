@@ -17,8 +17,6 @@ TokenBuffer* TokenBufferCreate() {
 
     if (buffer == NULL || buffer->tokens == NULL) {
         throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
-        deallocateAll();
-        throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
     }
 
     buffer->count = 0;
@@ -34,7 +32,6 @@ void TokenBufferPush(TokenBuffer *buffer, Token token) {
 
         if (newArray == NULL) { // realloc failed
             TokenBufferDispose(&buffer);
-            deallocateAll();
             throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
         }
         else {
@@ -58,7 +55,6 @@ Token TokenBufferTop(TokenBuffer *buffer) {
     }
     else { // buffer was empty, top operation is invalid
         TokenBufferDispose(&buffer);
-        //deallocateAll();
         throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
     }
 }
@@ -67,11 +63,9 @@ Token TokenBufferNTop(TokenBuffer *buffer, int n) {
     if (buffer->count > 0) {
         return buffer->tokens[buffer->count - n];
     }
-    else {
+    else { // buffer was empty, top operation is invalid
         TokenBufferDispose(&buffer);
         throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
-        deallocateAll();
-        exit(SYNTAX_ERROR);
     }
 }
 
@@ -81,7 +75,6 @@ Token TokenBufferPop(TokenBuffer *buffer) {
     }
     else { // buffer was empty, pop operation is invalid
         TokenBufferDispose(&buffer);
-        //deallocateAll();
         throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
     }
 }
@@ -100,7 +93,6 @@ Token TokenBufferPopFront(TokenBuffer **buffer) {
     }
     else { // buffer was empty, pop front operation is invalid
         TokenBufferDispose(buffer);
-        //deallocateAll();
         throwError(SYNTAX_ERROR, "Unbalanced construction error\n", true);
     }
 }

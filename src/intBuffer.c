@@ -20,7 +20,6 @@ IntBuffer* IntBufferCreate() {
     buffer->content = malloc(sizeof(int) * INITIAL_INT_BUFFER_SIZE);
 
     if (buffer == NULL) {
-        deallocateAll();
         throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
     }
 
@@ -38,7 +37,6 @@ void IntBufferPush(IntBuffer *buffer, int newItem) {
 
         if (newArray == NULL) {
             IntBufferDispose(&buffer);
-            deallocateAll();
             throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
         }
         else {

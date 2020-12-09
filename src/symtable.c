@@ -212,7 +212,7 @@ void ST_Dispose(ST_Node **RootPtr) {
         ST_Dispose(&(*RootPtr)->RPtr);
         ST_Dispose(&(*RootPtr)->LPtr);
         
-        // IntBufferDispose(&(*RootPtr)->scopes);
+        IntBufferDispose(&(*RootPtr)->scopes);
         free(*RootPtr);
     }
     
