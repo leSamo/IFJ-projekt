@@ -94,10 +94,10 @@ Token getToken() {
                 currentState = AS_Equal;
             }
             else if (currentChar == '<') {
-                currentState = AS_Less_Then;
+                currentState = AS_Less_Than;
             }
             else if (currentChar == '>') {
-                currentState = AS_More_Then;
+                currentState = AS_Greater_Than;
             }
             else if (currentChar == '!') {
                 currentState = AS_Exclamation;
@@ -335,23 +335,23 @@ Token getToken() {
                 return newHalfToken(TOK_Assign);
             }
 
-        case AS_Less_Then:
+        case AS_Less_Than:
             if (currentChar == '=') {
-                return newHalfToken(TOK_Less_Equal_Then);
+                return newHalfToken(TOK_Less_Equal_Than);
             }
             else {
                 ungetChar(currentChar);
-                return newHalfToken(TOK_Less_Then);
+                return newHalfToken(TOK_Less_Than);
             }
             break;
 
-        case AS_More_Then:
+        case AS_Greater_Than:
             if (currentChar == '=') {
-                return newHalfToken(TOK_More_Equal_Then);
+                return newHalfToken(TOK_Greater_Equal_Than);
             }
             else {
                 ungetChar(currentChar);
-                return newHalfToken(TOK_More_Then);
+                return newHalfToken(TOK_Greater_Than);
             }
             break;
         
@@ -554,13 +554,13 @@ char* getTokenName(tokenType type) {
             return "Define        ";
         case TOK_Assign:
             return "Assign        ";
-        case TOK_Less_Then:
-            return "Less then     ";
-        case TOK_Less_Equal_Then:
+        case TOK_Less_Than:
+            return "Less than     ";
+        case TOK_Less_Equal_Than:
             return "Less or equal ";
-        case TOK_More_Then:
-            return "More then     ";
-        case TOK_More_Equal_Then:
+        case TOK_Greater_Than:
+            return "More than     ";
+        case TOK_Greater_Equal_Than:
             return "More or equal ";
         case TOK_Equal:
             return "Equal         ";

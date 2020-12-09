@@ -258,13 +258,13 @@ char* AST_GetNodeName(ASTNodeType type) {
         case NODE_Div:
             return "Division";
         case NODE_Less_Than:
-            return "Less then";
+            return "Less than";
         case NODE_Greater_Than:
-            return "More then";
+            return "Greater than";
         case NODE_Less_Equal_Than:
-            return "Less or equal then";
+            return "Less or equal than";
         case NODE_Greater_Equal_Than:
-            return "More or equal then";
+            return "Greater or equal than";
         case NODE_Equal:
             return "Equal";
         case NODE_Not_Equal:

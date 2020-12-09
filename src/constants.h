@@ -45,10 +45,10 @@ typedef enum {
     TOK_Div,
 
     /* relational operators */
-    TOK_Less_Then,
-    TOK_More_Then,
-    TOK_Less_Equal_Then,
-    TOK_More_Equal_Then,
+    TOK_Less_Than,
+    TOK_Greater_Than,
+    TOK_Less_Equal_Than,
+    TOK_Greater_Equal_Than,
     TOK_Equal,
     TOK_Not_Equal,
 

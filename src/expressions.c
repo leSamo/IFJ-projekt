@@ -40,10 +40,10 @@ PAT_Header PAT_GetHeaderFromToken(Token token) {
     case TOK_Float_Literal:
         return Identifier;
         break;
-    case TOK_More_Then:
-    case TOK_More_Equal_Then:
-    case TOK_Less_Then:
-    case TOK_Less_Equal_Then:
+    case TOK_Greater_Than:
+    case TOK_Greater_Equal_Than:
+    case TOK_Less_Than:
+    case TOK_Less_Equal_Than:
     case TOK_Equal:
     case TOK_Not_Equal:
         return GreaterThan;
@@ -96,10 +96,10 @@ bool isValidExpToken(tokenType type) {
     case TOK_Div:
     case TOK_Add:
     case TOK_Sub:
-    case TOK_Less_Then:
-    case TOK_Less_Equal_Then:
-    case TOK_More_Then:
-    case TOK_More_Equal_Then:
+    case TOK_Less_Than:
+    case TOK_Less_Equal_Than:
+    case TOK_Greater_Than:
+    case TOK_Greater_Equal_Than:
     case TOK_Equal:
     case TOK_Not_Equal:
     case TOK_P_$:
@@ -130,10 +130,10 @@ bool isOperator(tokenType type) {
     case TOK_Div:
     case TOK_Equal:
     case TOK_Not_Equal:
-    case TOK_More_Equal_Then:
-    case TOK_More_Then:
-    case TOK_Less_Equal_Then:
-    case TOK_Less_Then:
+    case TOK_Greater_Equal_Than:
+    case TOK_Greater_Than:
+    case TOK_Less_Equal_Than:
+    case TOK_Less_Than:
         return true;
 
     default:
@@ -342,16 +342,16 @@ bool Reduce(TokenBuffer *Stack, Token currentToken, ASTNode **nodes) {
         }
 
         nodeCounter++;
-        if (operator.type == TOK_More_Then) {
+        if (operator.type == TOK_Greater_Than) {
             ExpCreateOperationNode(NODE_Greater_Than, firstOperand, secondOperand, nodes);
         }
-        else if (operator.type == TOK_Less_Then) {
+        else if (operator.type == TOK_Less_Than) {
             ExpCreateOperationNode(NODE_Less_Than, firstOperand, secondOperand, nodes);
         }
-        else if (operator.type == TOK_More_Equal_Then) {
+        else if (operator.type == TOK_Greater_Equal_Than) {
             ExpCreateOperationNode(NODE_Greater_Equal_Than, firstOperand, secondOperand, nodes);
         }
-        else if (operator.type == TOK_Less_Equal_Then) {
+        else if (operator.type == TOK_Less_Equal_Than) {
             ExpCreateOperationNode(NODE_Less_Equal_Than, firstOperand, secondOperand, nodes);
         }
         else if (operator.type == TOK_Equal) {

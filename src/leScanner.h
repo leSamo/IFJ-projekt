@@ -29,8 +29,8 @@ typedef enum {
     AS_LineComm,
     AS_Colon,
     AS_Equal,
-    AS_Less_Then,
-    AS_More_Then,
+    AS_Less_Than,
+    AS_Greater_Than,
     AS_Exclamation
 } state;
 
