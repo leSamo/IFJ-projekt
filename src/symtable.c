@@ -31,8 +31,6 @@ void ST_SetupBuiltIn(ST_Node **RootPtr) {
     // write-only _ variable
     ST_Insert(RootPtr, "_", TAG_Any, NULL, GLOBAL_SCOPE);
 
-    // TODO: Create function node factory
-
     // func inputs() (string,int)
     ASTNode *inputs = AST_CreateStringNode(ASTBuiltIn, NODE_Func_Def, "inputs");
     AST_CreateNode(inputs, NODE_Func_Def_Param_List);

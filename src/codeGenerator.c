@@ -14,9 +14,11 @@
 #include "symtable.c"
 #include "intBuffer.c"
 
+// used to distinguish temp variables of different statements
 int consecutiveLabelId = 0;
 
 void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable) {
+    // target code header and main function header
     printf(".IFJcode20\n\n");
     printf("LABEL *main\n");
     printf("CREATEFRAME\n");
@@ -24,13 +26,16 @@ void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable) {
 
     ASTNode *mainBlockNode = AST_GetChildOfType(mainNode, NODE_Block);
 
+    // this buffer tracks current scopes
     IntBuffer *mainScope = IntBufferCreate();
     IntBufferPush(mainScope, mainBlockNode->id);
 
+    // for each statement in main function block generate it
     for (int i = 0; i < mainBlockNode->childrenCount; i++) {
         generateStructure(mainBlockNode->children[i], symtable, *mainScope);
     }
 
+    // end of main function
     printf("\nPOPFRAME # func main LF\n");
     printf("EXIT int@0\n");
 
@@ -44,9 +49,11 @@ void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable) {
 
             IntBuffer *blockScope = IntBufferCreate();
 
+            // user-defined function header
             printf("LABEL *%s\n", funcDefNode->content.str);
             printf("PUSHFRAME\n");
 
+            // for each function parameter create local variable
             for (int i = 0; i < funcDefParamsNode->childrenCount; i++) {
                 printf("DEFVAR LF@%s\n", funcDefParamsNode->children[i]->children[0]->content.str);
                 printf("MOVE LF@%s LF@!arg%d\n", funcDefParamsNode->children[i]->children[0]->content.str, i);
@@ -54,8 +61,11 @@ void generateCode(ASTNode *astRoot, ASTNode *mainNode, ST_Node *symtable) {
 
             generateBlock(funcDefNode, symtable, *blockScope);
 
+            // end of user-defined function
             printf("POPFRAME\n");
             printf("RETURN\n");
+
+            IntBufferDispose(&blockScope);
         }
     }
 
@@ -80,7 +90,7 @@ void generateStructure(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
             generateFor(node, symtable, scope);
             break;
         case NODE_Block:
-            IntBufferPush(&scope, node->id);
+            IntBufferPush(&scope, node->id); // update scope with new block id
             generateBlock(node, symtable, scope);
             break;
         case NODE_Return:
@@ -94,9 +104,11 @@ void generateReturn(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
     ASTNode *returnParamsNode = AST_GetChildOfType(parentFunctionNode, NODE_Func_Def_Return);
 
     if (strcmp(parentFunctionNode->content.str, "main") == 0) {
+        // if there is return in main function, exit program
         printf("EXIT int@0\n");
     }
     else {
+        // pass return params to caller using temporary frame
         for (int i = 0; i < node->childrenCount; i++) {
             char expId[16];
             sprintf(expId, "!ret%d", i);
@@ -111,6 +123,7 @@ void generateReturn(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
 }
 
 void generateBlock(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
+    // for each statement inside the block
     for (int i = 0; i < node->childrenCount; i++) {
         generateStructure(node->children[i], symtable, scope);
     }
@@ -122,11 +135,11 @@ void generateFor(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
     ASTNode *expNode = AST_GetChildOfType(node, NODE_Exp);
     ASTNode *assignNode = AST_GetChildOfType(node, NODE_Assign); // there may be multiple assignments
 
-    int localId = consecutiveLabelId++;
+    int localId = consecutiveLabelId++; // unique identifier of all temp variables
     
     IntBufferPush(&scope, node->id); // for header scope
 
-    char expId[14];
+    char expId[14]; // temp variable
     sprintf(expId, "!forexp_%d", localId);
 
     if (defineNode != NULL) {
@@ -137,22 +150,22 @@ void generateFor(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
     IntBufferPrefix(&scope);
     printf("%s\n", expId); // expression result temp
 
-    printf("\nLABEL !for_start_%d\n", localId);
+    printf("\nLABEL !for_start_%d\n", localId); // jump for next iteration
 
-    generateExpression(expNode, symtable, scope, expId, false);
-    printf("JUMPIFNEQ !for_end_%d LF@", localId);
-    IntBufferPrefix(&scope);
+    generateExpression(expNode, symtable, scope, expId, false); // eval exp
+    printf("JUMPIFNEQ !for_end_%d LF@", localId); // if exp false jump to end
+    IntBufferPrefix(&scope); // print variable prefix with scopes
     printf("!forexp_%d bool@true\n", localId);
 
-    IntBufferPush(&scope, blockNode->id);
-    generateBlock(blockNode, symtable, scope); // TODO: Update scope
+    IntBufferPush(&scope, blockNode->id); // block inside for is scope separate from for header
+    generateBlock(blockNode, symtable, scope);
 
-    scope.count--;
+    scope.count--; // assignment is in the parent scope of block
     if (assignNode != NULL) {
         generateAssignment(assignNode, symtable, scope); // for assignment
     }
 
-    printf("JUMP !for_start_%d\n", localId);
+    printf("JUMP !for_start_%d\n", localId); // jump to start, there eval exp
     printf("\nLABEL !for_end_%d\n", localId);
 }
 
@@ -161,9 +174,9 @@ void generateIfElse(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
     ASTNode *ifBlock = node->children[1];
     ASTNode *elseBlock = node->children[2];
 
-    int localId = consecutiveLabelId++;
+    int localId = consecutiveLabelId++; // unique identifier of all temp variables
 
-    char expId[14];
+    char expId[14]; // temp variable
     sprintf(expId, "!exp_%d", localId);
 
     printf("DEFVAR LF@"); // expression result temp
@@ -171,15 +184,15 @@ void generateIfElse(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
     printf("%s\n", expId); // expression result temp
 
     generateExpression(expNode, symtable, scope, expId, false);
-    printf("JUMPIFNEQ !neg_%d LF@", localId);
+    printf("JUMPIFNEQ !neg_%d LF@", localId); // if exp is false jump to neg block
     IntBufferPrefix(&scope);
     printf("!exp_%d bool@true\n", localId);
 
-    printf("LABEL !pos_%d\n", localId);
+    printf("LABEL !pos_%d\n", localId); // block if true
     generateStructure(ifBlock, symtable, scope);
     printf("JUMP !end_%d\n", localId);
 
-    printf("LABEL !neg_%d\n", localId);
+    printf("LABEL !neg_%d\n", localId); // block if false
     generateStructure(elseBlock, symtable, scope);
 
     printf("LABEL !end_%d\n", localId);
@@ -188,11 +201,13 @@ void generateIfElse(ASTNode *node, ST_Node *symtable, IntBuffer scope) {
 void generateDefinition(ASTNode *defineNode, ST_Node *symtable, IntBuffer scope) {
     ASTNode *idNode = AST_GetChildOfType(defineNode, NODE_Identifier);
     ASTNode *expNode = defineNode->children[1];
-    
+
+    // define var
     printf("DEFVAR LF@");
     IntBufferPrefix(&scope);
     printf("%s\n", idNode->content.str);
 
+    // eval exp and assign var
     generateExpression(expNode, symtable, scope, idNode->content.str, false);
 }
 
@@ -201,10 +216,11 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
     ASTNode *leftSideNode = assignNode->children[0];
     ASTNode *rightSideNode = assignNode->children[1];
     
-    if (rightSideNode->type == NODE_Exp) {
+    if (rightSideNode->type == NODE_Exp) { // right side is exp, just simple assignment
         generateExpression(rightSideNode, symtable, scope, idNode->content.str, false);
     }
     else if (rightSideNode->type == NODE_Func_Call) {
+        // built-in function inputs() (string,int)
         if (strcmp(rightSideNode->content.str, "inputs") == 0) {
             ASTNode *outputStringNode = leftSideNode->children[0];
             ASTNode *outputErrNode = leftSideNode->children[1];
@@ -212,37 +228,43 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             // no need to check type, string takes anything
             printf("READ LF@%s string\n", outputStringNode->content.str);
         }
+        // built-in function inputi() (int,int)
         else if (strcmp(rightSideNode->content.str, "inputi") == 0) {
             ASTNode *outputIntNode = leftSideNode->children[0];
             ASTNode *outputErrNode = leftSideNode->children[1];
 
             printf("\nCREATEFRAME\n");
-            printf("DEFVAR TF@res%d\n", consecutiveLabelId);
-            printf("DEFVAR TF@type%d\n", consecutiveLabelId);
+            printf("DEFVAR TF@res%d\n", consecutiveLabelId); // inputed temp variable
+            printf("DEFVAR TF@type%d\n", consecutiveLabelId); // type of inputed variable
 
             printf("READ TF@res%d int\n", consecutiveLabelId);
             printf("TYPE TF@type%d TF@res%d\n", consecutiveLabelId, consecutiveLabelId);
 
-            printf("JUMPIFNEQ !error%d string@int TF@type%d\n", consecutiveLabelId, consecutiveLabelId);
+            printf("JUMPIFNEQ !error%d string@int TF@type%d\n", consecutiveLabelId, consecutiveLabelId); // check if type is int
             printf("MOVE LF@%s TF@res%d\n", outputIntNode->content.str, consecutiveLabelId);
 
+            if (strcmp(outputErrNode->content.str, "_") != 0) {
+                printf("MOVE LF@%s int@0\n", outputErrNode->content.str); // set error flag to 0
+            }
+
             printf("JUMP !end%d\n", consecutiveLabelId);
-            printf("LABEL !error%d\n", consecutiveLabelId);
+            printf("LABEL !error%d\n", consecutiveLabelId); // inputed type is not int
 
             if (strcmp(outputErrNode->content.str, "_") != 0) {
-                printf("MOVE LF@%s int@1\n", outputErrNode->content.str);
+                printf("MOVE LF@%s int@1\n", outputErrNode->content.str); // set error flag to 1
             }
 
             printf("LABEL !end%d\n", consecutiveLabelId++);
             printf("CLEARS\n\n");
         }
+        // built-in function inputf() (float64,int)
         else if (strcmp(rightSideNode->content.str, "inputf") == 0) {
             ASTNode *outputFloatNode = leftSideNode->children[0];
             ASTNode *outputErrNode = leftSideNode->children[1];
 
             printf("\nCREATEFRAME\n");
-            printf("DEFVAR TF@res%d\n", consecutiveLabelId);
-            printf("DEFVAR TF@type%d\n", consecutiveLabelId);
+            printf("DEFVAR TF@res%d\n", consecutiveLabelId); // inputed temp variable
+            printf("DEFVAR TF@type%d\n", consecutiveLabelId); // type of inputed variable
 
             printf("READ TF@res%d float\n", consecutiveLabelId);
             printf("TYPE TF@type%d TF@res%d\n", consecutiveLabelId, consecutiveLabelId);
@@ -250,22 +272,28 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("JUMPIFNEQ !error%d string@float TF@type%d\n", consecutiveLabelId, consecutiveLabelId);
             printf("MOVE LF@%s TF@res%d\n", outputFloatNode->content.str, consecutiveLabelId);
 
+            if (strcmp(outputErrNode->content.str, "_") != 0) {
+                printf("MOVE LF@%s int@0\n", outputErrNode->content.str); // set error flag to 0
+            }
+
             printf("JUMP !end%d\n", consecutiveLabelId);
-            printf("LABEL !error%d\n", consecutiveLabelId);
+            printf("LABEL !error%d\n", consecutiveLabelId); // inputed type is not float
 
             if (strcmp(outputErrNode->content.str, "_") != 0) {
-                printf("MOVE LF@%s int@1\n", outputErrNode->content.str);
+                printf("MOVE LF@%s int@1\n", outputErrNode->content.str); // set error flag to 1
             }
 
             printf("LABEL !end%d\n", consecutiveLabelId++);
             printf("CLEARS\n\n");
         }
+        // built-in function len(s string) (int)
         else if (strcmp(rightSideNode->content.str, "len") == 0) {
             ASTNode *outputIntNode = leftSideNode;
             ASTNode *inputStringNode = rightSideNode->children[0];
 
             printf("STRLEN LF@%s LF@%s\n", outputIntNode->content.str, inputStringNode->content.str);
         }
+        // built-in function ord(s string, i int) (int, int)
         else if (strcmp(rightSideNode->content.str, "ord") == 0) {
             ASTNode *inputStringNode = rightSideNode->children[0];
             ASTNode *inputPositionNode = rightSideNode->children[1];
@@ -273,12 +301,12 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             ASTNode *outputAsciiNode = leftSideNode->children[0];
             ASTNode *outputErrorNode = leftSideNode->children[1];
 
-            // get input string length - 1
+            // get input string (length - 1)
             printf("DEFVAR LF@!len%d\n", consecutiveLabelId);
             printf("STRLEN LF@!len%d ", consecutiveLabelId);
             printTerm(inputStringNode, symtable, scope, "LF");
             printf("\n");
-            printf("SUB LF@!len%d LF@!len%d int@1\n", consecutiveLabelId, consecutiveLabelId);
+            printf("SUB LF@!len%d LF@!len%d int@1\n", consecutiveLabelId, consecutiveLabelId); // subtract 1 from length
 
             // check if pos isn't less than 0
             printf("DEFVAR LF@!isErr%d\n", consecutiveLabelId);
@@ -294,7 +322,7 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
 
             // no error branch
-            printf("MOVE LF@%s int@0\n", outputErrorNode->content.str);
+            printf("MOVE LF@%s int@0\n", outputErrorNode->content.str); // set error flag to 0
 
             printf("STRI2INT LF@%s ", outputAsciiNode->content.str);
             printTerm(inputStringNode, symtable, scope, "LF");
@@ -306,12 +334,13 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("LABEL !err%d\n", consecutiveLabelId);
 
             // error branch
-            printf("MOVE LF@%s int@1\n", outputErrorNode->content.str);
+            printf("MOVE LF@%s int@1\n", outputErrorNode->content.str); // set error flag to 1
 
             printf("LABEL !end%d\n", consecutiveLabelId);
 
             consecutiveLabelId++;
         }
+        // built-in function chr(i int) (string, int)
         else if (strcmp(rightSideNode->content.str, "chr") == 0) {
             ASTNode *inputAsciiNode = rightSideNode->children[0];
     
@@ -332,7 +361,7 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
 
             // no error branch
-            printf("MOVE LF@%s int@0\n", outputErrorNode->content.str);
+            printf("MOVE LF@%s int@0\n", outputErrorNode->content.str); // set error flag to 0
 
             printf("INT2Char LF@%s ", outputCharNode->content.str);
             printTerm(inputAsciiNode, symtable, scope, "LF");
@@ -342,12 +371,13 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("LABEL !err%d\n", consecutiveLabelId);
 
             // error branch
-            printf("MOVE LF@%s int@1\n", outputErrorNode->content.str);
+            printf("MOVE LF@%s int@1\n", outputErrorNode->content.str); // set error flag to 1
 
             printf("LABEL !end%d\n", consecutiveLabelId);
 
             consecutiveLabelId++;
         }
+        // built-in function substr(s string, i int, n int) (string, int)
         else if (strcmp(rightSideNode->content.str, "substr") == 0) {
             ASTNode *inputStringNode = rightSideNode->children[0];
             ASTNode *inputStartIndexNode = rightSideNode->children[1];
@@ -394,7 +424,7 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
 
             // no error branch
             if (strcmp(outputErrorNode->content.str, "_") != 0) {
-                printf("MOVE LF@%s int@0\n", outputErrorNode->content.str);
+                printf("MOVE LF@%s int@0\n", outputErrorNode->content.str); // set error flag to 0
             }
 
             // calculate end index
@@ -435,30 +465,35 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
 
             // error branch
             if (strcmp(outputErrorNode->content.str, "_") != 0) {
-                printf("MOVE LF@%s int@1\n", outputErrorNode->content.str);
+                printf("MOVE LF@%s int@1\n", outputErrorNode->content.str); // set error flag to 1
             }
 
             printf("LABEL !end%d\n", consecutiveLabelId);
 
             consecutiveLabelId++;
         }
+        // built-in function int2float(i int) (float64)
         else if (strcmp(rightSideNode->content.str, "int2float") == 0) {
             ASTNode *outputFloatNode = leftSideNode;
             ASTNode *inputIntNode = rightSideNode->children[0];
 
             printf("INT2FLOAT LF@%s LF@%s\n", outputFloatNode->content.str, inputIntNode->content.str);
         }
+        // built-in function float2int(f float64) (int)
         else if (strcmp(rightSideNode->content.str, "float2int") == 0) {
             ASTNode *outputIntNode = leftSideNode;
             ASTNode *inputFloatNode = rightSideNode->children[0];
 
             printf("FLOAT2INT LF@%s LF@%s\n", outputIntNode->content.str, inputFloatNode->content.str);
         }
+        // user defined function
         else {
             if (leftSideNode->type == NODE_Identifier) { // one return value
                 generateFuncCall(rightSideNode, symtable, scope);
 
+                // ignore variables assigned to _
                 if (strcmp(leftSideNode->content.str, "_") != 0) {
+                    // after called function returns control, move its return value from TF to LF
                     printf("MOVE ");
                     printVar(leftSideNode->content.str, symtable, scope, "LF");
                     printf(" TF@!ret0\n");
@@ -469,7 +504,9 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             else if (leftSideNode->type == NODE_Multi_L_Value) { // more return values
                 generateFuncCall(rightSideNode, symtable, scope);
 
+                // after called function returns control, move all its return values from TF to LF
                 for (int i = 0; i < leftSideNode->childrenCount; i++) {
+                    // ignore variables assigned to _
                     if (strcmp(leftSideNode->children[i]->content.str, "_") == 0) {
                         continue;
                     }
@@ -509,11 +546,13 @@ void generateFuncCall(ASTNode *funcCallNode, ST_Node *symtable, IntBuffer scope)
 }
 
 void generateExpression(ASTNode *expNode, ST_Node *symtable, IntBuffer scope, char *resultId, bool tempFrame) {
+    // ignore assignment to _
     if (strcmp(resultId, "_") == 0) {
         return;
     }
 
     if (!isNodeOperator(expNode->children[0]->type)) {
+        // we have only one term in expression, no operators; simply assign
         printf("MOVE ");
         if (tempFrame) {
             printf("LF@%s", resultId);
@@ -527,10 +566,12 @@ void generateExpression(ASTNode *expNode, ST_Node *symtable, IntBuffer scope, ch
         printf("\n");
     }
     else {
+        // we have expression with operators, call generateExpressionRecursively to work it out     
         printf("\nCREATEFRAME\n"); // init TF
         
-        generateExpressionRecursively(expNode->children[0], symtable, scope, "$t");
+        generateExpressionRecursively(expNode->children[0], symtable, scope, "$t"); // assigns result to temp $t variable
 
+        // move from temp variable to assignee
         printf("MOVE ");
         if (tempFrame) {
             printf("LF@%s", resultId);
@@ -545,26 +586,33 @@ void generateExpression(ASTNode *expNode, ST_Node *symtable, IntBuffer scope, ch
 }
 
 void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBuffer scope, char *resultId) {
+    // define temp variable which will save intermediate result
     printf("DEFVAR TF@%s\n", resultId);
     
+    // if you go left suffix temp identificator with 'l'
     char *leftChild = newString(strlen(resultId) + 1);
     strcpy(leftChild, resultId);
     leftChild[strlen(resultId)] = 'l';
 
+    // if you go left suffix temp identificator with 'r'
     char *rightChild = newString(strlen(resultId) + 1);
     strcpy(rightChild, resultId);
     rightChild[strlen(resultId)] = 'r';
 
+    // if left node is not leaf, call this function recursively
     if (isNodeOperator(parentNode->children[0]->type)) {
         generateExpressionRecursively(parentNode->children[0], symtable, scope, leftChild);
     }
 
+    // if right node is not leaf, call this function recursively
     if (isNodeOperator(parentNode->children[1]->type)) {
         generateExpressionRecursively(parentNode->children[1], symtable, scope, rightChild);
     }
     
+    // first call recursion then print (we need to work out the bottom of the expression tree first)
     switch (parentNode->type) {
         case NODE_Add:
+            // choose ADD or CONCAT depending on operand type
             if (ST_CheckExpressionType(parentNode->children[0], &symtable, TAG_String, scope)) {
                 printf("CONCAT TF@%s ", resultId);
             }
@@ -582,6 +630,7 @@ void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBu
             printOperands(parentNode, symtable, scope, leftChild, rightChild);
             break;
         case NODE_Div:
+            // choose DIV or IDIV depending on operand type
             if (ST_CheckExpressionType(parentNode->children[0], &symtable, TAG_Int, scope)) {
                 printf("IDIV TF@%s ", resultId);
             }
@@ -595,6 +644,7 @@ void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBu
             printOperands(parentNode, symtable, scope, leftChild, rightChild);
             break;
         case NODE_Not_Equal:
+            // we don't have not equal instruction so combine equal and not instructions
             printf("DEFVAR TF@%s1\n", resultId);
             printf("EQ TF@%s1 ", resultId);
             printOperands(parentNode, symtable, scope, leftChild, rightChild);
@@ -609,6 +659,7 @@ void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBu
             printOperands(parentNode, symtable, scope, leftChild, rightChild);
             break;
         case NODE_Less_Equal_Than:
+            // we don't have less or equal instruction so combine equal, less and or instructions
             printf("DEFVAR TF@%s1\n", resultId);
             printf("DEFVAR TF@%s2\n", resultId);
             printf("EQ TF@%s1 ", resultId);
@@ -618,6 +669,7 @@ void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBu
             printf("OR TF@%s TF@%s1 TF@%s2\n", resultId, resultId, resultId);
             break;
         case NODE_Greater_Equal_Than:
+            // we don't have greater or equal instruction so combine equal, greater and or instructions
             printf("DEFVAR TF@%s1\n", resultId);
             printf("DEFVAR TF@%s2\n", resultId);
             printf("EQ TF@%s1 ", resultId);
@@ -630,7 +682,8 @@ void generateExpressionRecursively(ASTNode *parentNode, ST_Node *symtable, IntBu
 }
 
 void printOperands(ASTNode *parentNode, ST_Node *symtable, IntBuffer scope, char *leftChild, char *rightChild) {
-    if (!isNodeOperator(parentNode->children[0]->type)) {
+    // operand is either term (on leaf level) or temp variable which will be worked out recursively
+    if (!isNodeOperator(parentNode->children[0]->type)) { // left operand
         printTerm(parentNode->children[0], symtable, scope, "LF");
     }
     else {
@@ -639,7 +692,7 @@ void printOperands(ASTNode *parentNode, ST_Node *symtable, IntBuffer scope, char
 
     printf(" ");
 
-    if (!isNodeOperator(parentNode->children[1]->type)) {
+    if (!isNodeOperator(parentNode->children[1]->type)) { // right operand
         printTerm(parentNode->children[1], symtable, scope, "LF");
     }
     else {
@@ -650,10 +703,13 @@ void printOperands(ASTNode *parentNode, ST_Node *symtable, IntBuffer scope, char
 }
 
 void printVar(char *id, ST_Node *symtable, IntBuffer scopes, char *frame) {
+    // print frame
     printf("%s@", frame);
 
+    // find symbol in symtable
     ST_Node *symbol = ST_Search(symtable, symtable, id, scopes);
 
+    // prefix symbol with scopes
     if (symbol != NULL) {
         IntBufferPrefix(symbol->scopes);
     }
@@ -673,12 +729,15 @@ void printTerm(ASTNode *node, ST_Node *symtable, IntBuffer scopes, char *frame) 
             printf("float@%a", node->content.f);
             break;
         case NODE_Literal_String:
-            printFormatedString(node->content.str);
+            printFormattedString(node->content.str);
             break;
         case NODE_Identifier:
             printf("%s@", frame);
 
+            // search identifier in symtable
             ST_Node *symbol = ST_Search(symtable, symtable, node->content.str, scopes);
+
+            // prefix symbol with scopes
             if (symbol != NULL) {
                 IntBufferPrefix(symbol->scopes);
             }
@@ -691,25 +750,31 @@ void printTerm(ASTNode *node, ST_Node *symtable, IntBuffer scopes, char *frame) 
     }
 }
 
-void printFormatedString(char *string) {
-    int size = strlen(string) * 7 + 8; // max length
+void printFormattedString(char *string) {
+    // allocate maximum possible size of new string
+    int size = strlen(string) * 7 + 8;
+
     char result[size];
     memcpy(result, "string@", 8);
-    char tmp[7];
-    for (int i = 0; i < (int)strlen(string); i++) {
 
+    char tmp[7];
+
+    // check if each character needs to be transformed
+    for (int i = 0; i < strlen(string); i++) { 
+        // transform escape character
         if (0 <= string[i] && 9 >= string[i]) {
-            sprintf(tmp, "\\00%d", string[i]);
+            sprintf(tmp, "\\00%d\0", string[i]);
         }
         else if ((10 <= string[i] && 32 >= string[i]) || (string[i] == 35) || (string[i] == 92)) {
-            snprintf(tmp, 7, "\\0%d", string[i]);
+            snprintf(tmp, 7, "\\0%d\0", string[i]);
         }
         else {
             snprintf(tmp, 2, "%s", (char[2]){string[i], '\0'});
         }
+
         strcat(result, tmp);
     }
-
+    
     printf("%s", result);
     return;
 }

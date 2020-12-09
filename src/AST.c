@@ -57,7 +57,9 @@ ASTNode* AST_CreateFuncParamNode(ASTNode *paramList, ASTNodeType type, typeTag t
 ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag contentType, typeUnion content) {
     ASTNode *node = malloc(sizeof(ASTNode));
 
-    // TODO: Check if malloc was successful
+    if (node == NULL) {
+        throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
+    }
 
     // register new child in parent node
     if (parent != NULL) {
