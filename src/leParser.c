@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     bool semanticAnalysisSucess = NT_Prog();
 
     if (!semanticAnalysisSucess) {
-        //deallocateAll();
+        deallocateAll();
         throwError(SYNTAX_ERROR, "Syntactic error\n", true);
     }
 

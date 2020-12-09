@@ -31,6 +31,6 @@ char* charBufferGet(charBuffer* buffer);
 void charBufferPrint(charBuffer* buffer);
 
 /* deallocates char buffer */
-void charBufferDispose(charBuffer* buffer);
+void charBufferDispose(charBuffer** buffer);
 
 #endif

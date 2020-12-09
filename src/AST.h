@@ -120,4 +120,4 @@ void AST_PrettyPrint(ASTNode *nodePtr, int level);
 char* AST_GetNodeName(ASTNodeType type);
 
 /* Recursively delete tree and dispose of its memory */
-void AST_Delete(ASTNode *nodePtr);
+void AST_Delete(ASTNode **nodePtr);

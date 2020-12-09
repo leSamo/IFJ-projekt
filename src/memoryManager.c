@@ -31,9 +31,9 @@ char* newString(unsigned int length) {
 }
 
 void deallocateAll() {
-    charBufferDispose(scannerBuffer);   // free scanner buffer
-    StringBufferDispose(stringBuffer);  // free all strings
-    AST_Delete(ASTRoot);                // free semantic AST
-    AST_Delete(ASTBuiltIn);             // free semantic AST with built-in symbols
+    charBufferDispose(&scannerBuffer);   // free scanner buffer
+    StringBufferDispose(&stringBuffer);  // free all strings
+    AST_Delete(&ASTRoot);                // free semantic AST
+    AST_Delete(&ASTBuiltIn);             // free semantic AST with built-in symbols
     TokenBufferDispose(&tokenBuffer);   // free token buffer used for recursive descent
 }

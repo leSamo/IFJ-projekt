@@ -33,7 +33,7 @@ void StringBufferPush(StringBuffer *buffer, char *string) {
         char** newArray = realloc(buffer->content, sizeof(char*) * buffer->capacity);
 
         if (newArray == NULL) {
-            StringBufferDispose(buffer);
+            StringBufferDispose(&buffer);
             deallocateAll();
             throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
         }
@@ -46,15 +46,17 @@ void StringBufferPush(StringBuffer *buffer, char *string) {
     buffer->content[buffer->count++] = string;
 }
 
-void StringBufferDispose(StringBuffer *buffer) {
-    if (buffer != NULL) {
+void StringBufferDispose(StringBuffer **buffer) {
+    if (*buffer != NULL) {
         // free each pointer inside the buffer
-        for (int i = 0; i < buffer->count; i++) {
-            free(buffer->content[i]);
+        for (int i = 0; i < (*buffer)->count; i++) {
+            free((*buffer)->content[i]);
         }
 
         // free buffer itself
-        free(buffer->content);
-        free(buffer);
+        free((*buffer)->content);
+        free(*buffer);
+
+        *buffer = NULL;
     }
 }

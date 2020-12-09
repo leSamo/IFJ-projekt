@@ -60,9 +60,11 @@ void charBufferPrint(charBuffer* buffer) {
     printf("Char buffer: %s\n", buffer->content);
 }
 
-void charBufferDispose(charBuffer* buffer) {
-    if (buffer != NULL) {
-        free(buffer->content);
-        free(buffer);
+void charBufferDispose(charBuffer** buffer) {
+    if (*buffer != NULL) {
+        free((*buffer)->content);
+        free(*buffer);
+
+        *buffer = NULL;
     }
 }

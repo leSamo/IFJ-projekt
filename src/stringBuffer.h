@@ -26,6 +26,6 @@ StringBuffer* StringBufferCreate();
 void StringBufferPush(StringBuffer *buffer, char *string);
 
 /* Deallocated string buffer */
-void StringBufferDispose(StringBuffer *buffer);
+void StringBufferDispose(StringBuffer **buffer);
 
 #endif
