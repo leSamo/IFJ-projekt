@@ -226,7 +226,9 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             ASTNode *outputErrNode = leftSideNode->children[1];
 
             // no need to check type, string takes anything
-            printf("READ LF@%s string\n", outputStringNode->content.str);
+            printf("READ ");;
+            printTerm(outputStringNode, symtable, scope, "LF");
+            printf(" string\n");
         }
         // built-in function inputi() (int,int)
         else if (strcmp(rightSideNode->content.str, "inputi") == 0) {
@@ -241,17 +243,23 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("TYPE TF@type%d TF@res%d\n", consecutiveLabelId, consecutiveLabelId);
 
             printf("JUMPIFNEQ !error%d string@int TF@type%d\n", consecutiveLabelId, consecutiveLabelId); // check if type is int
-            printf("MOVE LF@%s TF@res%d\n", outputIntNode->content.str, consecutiveLabelId);
+            printf("MOVE ");
+            printTerm(outputIntNode, symtable, scope, "LF");
+            printf(" TF@res%d\n", consecutiveLabelId);
 
             if (strcmp(outputErrNode->content.str, "_") != 0) {
-                printf("MOVE LF@%s int@0\n", outputErrNode->content.str); // set error flag to 0
+                printf("MOVE "); // set error flag to 0
+                printTerm(outputErrNode, symtable, scope, "LF");
+                printf(" int@0\n");
             }
 
             printf("JUMP !end%d\n", consecutiveLabelId);
             printf("LABEL !error%d\n", consecutiveLabelId); // inputed type is not int
 
             if (strcmp(outputErrNode->content.str, "_") != 0) {
-                printf("MOVE LF@%s int@1\n", outputErrNode->content.str); // set error flag to 1
+                printf("MOVE "); // set error flag to 1
+                printTerm(outputErrNode, symtable, scope, "LF");
+                printf(" int@1\n");
             }
 
             printf("LABEL !end%d\n", consecutiveLabelId++);
@@ -270,17 +278,23 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("TYPE TF@type%d TF@res%d\n", consecutiveLabelId, consecutiveLabelId);
 
             printf("JUMPIFNEQ !error%d string@float TF@type%d\n", consecutiveLabelId, consecutiveLabelId);
-            printf("MOVE LF@%s TF@res%d\n", outputFloatNode->content.str, consecutiveLabelId);
+            printf("MOVE ");
+            printTerm(outputFloatNode, symtable, scope, "LF");
+            printf(" TF@res%d\n", consecutiveLabelId);
 
             if (strcmp(outputErrNode->content.str, "_") != 0) {
-                printf("MOVE LF@%s int@0\n", outputErrNode->content.str); // set error flag to 0
+                printf("MOVE "); // set error flag to 0
+                printTerm(outputErrNode, symtable, scope, "LF");
+                printf(" int@0\n");
             }
 
             printf("JUMP !end%d\n", consecutiveLabelId);
             printf("LABEL !error%d\n", consecutiveLabelId); // inputed type is not float
 
             if (strcmp(outputErrNode->content.str, "_") != 0) {
-                printf("MOVE LF@%s int@1\n", outputErrNode->content.str); // set error flag to 1
+                printf("MOVE "); // set error flag to 1
+                printTerm(outputErrNode, symtable, scope, "LF");
+                printf(" int@1\n");
             }
 
             printf("LABEL !end%d\n", consecutiveLabelId++);
@@ -291,7 +305,11 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             ASTNode *outputIntNode = leftSideNode;
             ASTNode *inputStringNode = rightSideNode->children[0];
 
-            printf("STRLEN LF@%s LF@%s\n", outputIntNode->content.str, inputStringNode->content.str);
+            printf("STRLEN ");
+            printTerm(outputIntNode, symtable, scope, "LF");
+            printf(" ");
+            printTerm(inputStringNode, symtable, scope, "LF");
+            printf("\n");
         }
         // built-in function ord(s string, i int) (int, int)
         else if (strcmp(rightSideNode->content.str, "ord") == 0) {
@@ -322,9 +340,13 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
 
             // no error branch
-            printf("MOVE LF@%s int@0\n", outputErrorNode->content.str); // set error flag to 0
+            printf("MOVE "); // set error flag to 0
+            printTerm(outputErrorNode, symtable, scope, "LF");
+            printf(" int@0\n");
 
-            printf("STRI2INT LF@%s ", outputAsciiNode->content.str);
+            printf("STRI2INT ");
+            printTerm(outputAsciiNode, symtable, scope, "LF");
+            printf(" ");
             printTerm(inputStringNode, symtable, scope, "LF");
             printf(" ");
             printTerm(inputPositionNode, symtable, scope, "LF");
@@ -334,7 +356,9 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("LABEL !err%d\n", consecutiveLabelId);
 
             // error branch
-            printf("MOVE LF@%s int@1\n", outputErrorNode->content.str); // set error flag to 1
+            printf("MOVE "); // set error flag to 1
+            printTerm(outputErrorNode, symtable, scope, "LF");
+            printf(" int@1\n");
 
             printf("LABEL !end%d\n", consecutiveLabelId);
 
@@ -361,9 +385,13 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("JUMPIFEQ !err%d LF@!isErr%d bool@true\n", consecutiveLabelId, consecutiveLabelId);
 
             // no error branch
-            printf("MOVE LF@%s int@0\n", outputErrorNode->content.str); // set error flag to 0
+            printf("MOVE "); // set error flag to 0
+            printTerm(outputErrorNode, symtable, scope, "LF");
+            printf(" int@0\n");
 
-            printf("INT2Char LF@%s ", outputCharNode->content.str);
+            printf("INT2CHAR ");
+            printTerm(outputCharNode, symtable, scope, "LF");
+            printf(" ");
             printTerm(inputAsciiNode, symtable, scope, "LF");
             printf("\n");
 
@@ -371,7 +399,9 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             printf("LABEL !err%d\n", consecutiveLabelId);
 
             // error branch
-            printf("MOVE LF@%s int@1\n", outputErrorNode->content.str); // set error flag to 1
+            printf("MOVE "); // set error flag to 1
+            printTerm(outputErrorNode, symtable, scope, "LF");
+            printf(" int@1\n");
 
             printf("LABEL !end%d\n", consecutiveLabelId);
 
@@ -424,7 +454,9 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
 
             // no error branch
             if (strcmp(outputErrorNode->content.str, "_") != 0) {
-                printf("MOVE LF@%s int@0\n", outputErrorNode->content.str); // set error flag to 0
+                printf("MOVE "); // set error flag to 0
+                printTerm(outputErrorNode, symtable, scope, "LF");
+                printf(" int@0\n");
             }
 
             // calculate end index
@@ -457,7 +489,9 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
 
             // move substring from temp to result
             if (strcmp(outputStringNode->content.str, "_") != 0) {
-                printf("MOVE LF@%s LF@string%d\n", outputStringNode->content.str, consecutiveLabelId);
+                printf("MOVE ");
+                printTerm(outputStringNode, symtable, scope, "LF");
+                printf(" LF@string%d\n", consecutiveLabelId);
             }
 
             printf("JUMP !end%d\n", consecutiveLabelId);
@@ -465,7 +499,9 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
 
             // error branch
             if (strcmp(outputErrorNode->content.str, "_") != 0) {
-                printf("MOVE LF@%s int@1\n", outputErrorNode->content.str); // set error flag to 1
+                printf("MOVE "); // set error flag to 1
+                printTerm(outputErrorNode, symtable, scope, "LF");
+                printf(" int@1\n");
             }
 
             printf("LABEL !end%d\n", consecutiveLabelId);
@@ -477,14 +513,22 @@ void generateAssignment(ASTNode *assignNode, ST_Node *symtable, IntBuffer scope)
             ASTNode *outputFloatNode = leftSideNode;
             ASTNode *inputIntNode = rightSideNode->children[0];
 
-            printf("INT2FLOAT LF@%s LF@%s\n", outputFloatNode->content.str, inputIntNode->content.str);
+            printf("INT2FLOAT ");
+            printTerm(outputFloatNode, symtable, scope, "LF");
+            printf(" ");
+            printTerm(inputIntNode, symtable, scope, "LF");
+            printf("\n");
         }
         // built-in function float2int(f float64) (int)
         else if (strcmp(rightSideNode->content.str, "float2int") == 0) {
             ASTNode *outputIntNode = leftSideNode;
             ASTNode *inputFloatNode = rightSideNode->children[0];
 
-            printf("FLOAT2INT LF@%s LF@%s\n", outputIntNode->content.str, inputFloatNode->content.str);
+            printf("FLOAT2INT ");
+            printTerm(outputIntNode, symtable, scope, "LF");
+            printf(" ");
+            printTerm(inputFloatNode, symtable, scope, "LF");
+            printf("\n");
         }
         // user defined function
         else {
