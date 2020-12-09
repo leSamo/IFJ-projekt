@@ -176,16 +176,16 @@ bool isNodeCompOperator(ASTNodeType type) {
     }
 }
 
-void ExpCreateOperationNode(ASTNodeType nodeType, Token firstTok, Token secondTok, ASTNode **nodes) {
-    ASTNode *Node = AST_CreateNode(NULL, nodeType);
-    Node->isOperatorResult = true;
-
+void ExpCreateOperationNode(ASTNodeType nodeType, Token firstTok, Token secondTok, ASTNode **nodes) {    
     // check if nodes have same operator type (boolean, arithmetic)
     if ((isNodeMathOperator(nodeType) && (isNodeCompOperator(nodes[secondTok.nodeNum]->type) || isNodeCompOperator(nodes[firstTok.nodeNum]->type))) ||
-        (isNodeCompOperator(nodeType) && (isNodeMathOperator(nodes[secondTok.nodeNum]->type) || isNodeMathOperator(nodes[firstTok.nodeNum]->type)))) {
-        throwError(SYNTAX_ERROR, "Invalid expression.\n", true);
-        return;
+        (isNodeCompOperator(nodeType) && (isNodeMathOperator(nodes[secondTok.nodeNum]->type) || isNodeMathOperator(nodes[firstTok.nodeNum]->type)))) {       
+        throwError(SYNTAX_ERROR, "Invalid expression.\n", true);       
     }
+
+    // create operation node
+    ASTNode *Node = AST_CreateNode(NULL, nodeType);
+    Node->isOperatorResult = true;
 
     // attach nodes to new created operation node
     AST_AttachNode(Node, nodes[secondTok.nodeNum]);
@@ -442,60 +442,49 @@ void attachASTToRoot(ASTNode *expRoot, ASTNode **nodes) {
 bool handleExpression(ASTNode *expRoot, Token overlapTokenIn, Token *overlapTokenOut) {
     nodeCounter = 0;
     // buffers initialization
-    TokenBuffer *Stack = TokenBufferCreate();
-    TokenBuffer *Input = TokenBufferCreate();
-    ASTNode *nodes[30];
+    PA_Stack = TokenBufferCreate();
+    PA_Input = TokenBufferCreate();
+    ASTNode *nodes[50];
 
     // fill input stack
-    *overlapTokenOut = FillInputStack(Input, overlapTokenIn);
+    *overlapTokenOut = FillInputStack(PA_Input, overlapTokenIn);
 
     // insert $ as bottom of work stack
     Token tmp;
     tmp.type = TOK_P_$;
-    TokenBufferPush(Stack, tmp);
+    TokenBufferPush(PA_Stack, tmp);
 
     // token initialization
-    Token currentToken = TokenBufferPopFront(&Input);
+    Token currentToken = TokenBufferPopFront(&PA_Input);
     PAT_Element currentElement;
-
-    int counter = 0; // counter to check for internal error
-    while ((currentToken.type == TOK_P_$ && TokenBufferTop(Stack).type == TOK_P_Ex && TokenBufferNTop(Stack, 2).type == TOK_P_$) != true) {
+    
+    while ((currentToken.type == TOK_P_$ && TokenBufferTop(PA_Stack).type == TOK_P_Ex && TokenBufferNTop(PA_Stack, 2).type == TOK_P_$) != true) {
         //get element from the precedence table
-        currentElement = PAT_GetSign(PAT_GetHeaderFromToken(GetTopTerminal(Stack)), PAT_GetHeaderFromToken(currentToken));
+        currentElement = PAT_GetSign(PAT_GetHeaderFromToken(GetTopTerminal(PA_Stack)), PAT_GetHeaderFromToken(currentToken));
 
         // element action
         if (currentElement == ERRORR) {
-            TokenBufferDispose(&Stack);
-            TokenBufferDispose(&Input);
+            TokenBufferDispose(&PA_Stack);
+            TokenBufferDispose(&PA_Input);
             return false;
         }
         else if (currentElement == SHIFTT) {
-            InsertShiftAfterTopTerminal(Stack, currentToken);
-            currentToken = TokenBufferPopFront(&Input);
+            InsertShiftAfterTopTerminal(PA_Stack, currentToken);
+            currentToken = TokenBufferPopFront(&PA_Input);
         }
         else if (currentElement == REDUCE) {
-            if (Reduce(Stack, currentToken, nodes) == false) {
-                throwError(INCOMPATIBLE_TYPE_ERROR, "Invalid expression.\n", true);
-                TokenBufferDispose(&Stack);
-                TokenBufferDispose(&Input);
-                return false;
+            if (Reduce(PA_Stack, currentToken, nodes) == false) {                
+                throwError(INCOMPATIBLE_TYPE_ERROR, "Invalid expression.\n", true);               
             }
         }
         else if (currentElement == EQUALL) {
-            TokenBufferPush(Stack, currentToken);
-            currentToken = TokenBufferPopFront(&Input);
-        }
+            TokenBufferPush(PA_Stack, currentToken);
+            currentToken = TokenBufferPopFront(&PA_Input);
+        }   
+    }    
 
-        if (counter == 300) {
-            TokenBufferDispose(&Stack);
-            TokenBufferDispose(&Input);
-            return false;
-        }
-        counter++;
-    }
-
-    TokenBufferDispose(&Stack);
-    TokenBufferDispose(&Input);
+    TokenBufferDispose(&PA_Stack);
+    TokenBufferDispose(&PA_Input);
     attachASTToRoot(expRoot, nodes);
     return true;
 }

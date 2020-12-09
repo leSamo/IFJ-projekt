@@ -69,7 +69,7 @@ bool isNodeCompOperator(ASTNodeType type);
 /* Creates operation node and stroe it to node arr*/
 void ExpCreateOperationNode(ASTNodeType nodeType, Token firstTok, Token secondTok, ASTNode **nodes);
 
-/* Creates leaf node and store it to node arr*/
+/* Creates leaf node of given type and store it to node arr*/
 void ExpCreateIdentifNode(ASTNodeType nodeType, Token firstTok, ASTNode **nodes);
 
 /* Applies Reduction rule to top elements on Stack*/

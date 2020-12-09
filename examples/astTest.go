@@ -2,7 +2,7 @@ package main
 
 func main() {
 	
-	b := 6 + 3 - 6 - 5
+	b := 00
 
 	/*
 	a,b = 6,5

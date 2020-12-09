@@ -20,6 +20,8 @@ TokenBuffer *tokenBuffer;   // token buffer for syntactic analysis of balanced c
 ASTNode *ASTRoot;           // AST with program structure for semantic analysis
 ASTNode *ASTBuiltIn;        // AST with built-in variables and functions for semantic analysis
 ST_Node *SymTableTree;      // symbol table for semantic analysis
+TokenBuffer *PA_Stack;      // precendece analysis main token stack
+TokenBuffer *PA_Input;      // precendece analysis input token stack
 
 char* newString(unsigned int length) {
     char* string = malloc(sizeof(char) * (length + 1));
@@ -35,5 +37,7 @@ void deallocateAll() {
     StringBufferDispose(&stringBuffer);  // free all strings
     AST_Delete(&ASTRoot);                // free semantic AST
     AST_Delete(&ASTBuiltIn);             // free semantic AST with built-in symbols
-    TokenBufferDispose(&tokenBuffer);   // free token buffer used for recursive descent
+    TokenBufferDispose(&tokenBuffer);    // free token buffer used for recursive descent
+    TokenBufferDispose(&PA_Stack);       // free precendece analysis main token stack
+    TokenBufferDispose(&PA_Input);       // free precendece analysis input token stack
 }
