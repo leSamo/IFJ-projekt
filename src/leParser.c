@@ -218,18 +218,24 @@ bool NT_Return_Types(ASTNode *parentNode) {
         ret = true;
     }
     else if (nextToken.type == TOK_L_Paren) {
-        Token secondToken = getToken();
-
-        if (secondToken.type == TOK_R_Paren) {
-            ret = getToken().type == TOK_L_Brace;
-        }
-        else {
-            overlapToken = secondToken;
-            ret = NT_Type(node) && NT_Return_Types_N(node) && getToken().type == TOK_L_Brace;
-        }
+        ret = NT_Return_Types_Start(node);
     }
 
     return ret;
+}
+
+bool NT_Return_Types_Start(ASTNode *parentNode) {
+    bool ret = false;
+
+    Token nextToken = getToken();
+
+    if (nextToken.type == TOK_R_Paren) {
+        ret = getToken().type == TOK_L_Brace;
+    }
+    else {
+        overlapToken = nextToken;
+        ret = NT_Type(parentNode) && NT_Return_Types_N(parentNode) && getToken().type == TOK_L_Brace;
+    }
 }
 
 bool NT_Return_Types_N(ASTNode *parentNode) {

@@ -32,6 +32,8 @@ bool NT_Type(ASTNode *parentNode);
 
 bool NT_Return_Types(ASTNode *parentNode);
 
+bool NT_Return_Types_Start(ASTNode *parentNode);
+
 bool NT_Return_Types_N(ASTNode *parentNode);
 
 bool NT_Prolog(); // no semantic purpose
