@@ -62,16 +62,16 @@ typedef union typeUnion {
     char *str;
 } typeUnion;
 
-/* TODO: Rework to inflatable buffer */
-#define AST_NODE_CHILDREN 50
+#define INITIAL_AST_NODE_CHILDREN 50
 
 typedef struct ASTNode {
     int id; // used in block and for nodes to identify scope
     ASTNodeType type;
 
     struct ASTNode *parent;
-    struct ASTNode *children[AST_NODE_CHILDREN];
-    int childrenCount;
+    struct ASTNode **children; // inflatable array of children
+    int childrenCount; // how many children are assigned
+    int childrenCapacity; // for how many children is there memory capacity
 
     bool isOperatorResult; // true if node was created in expression as a result of operator
     typeTag valueType; // indicate what primitive type node is

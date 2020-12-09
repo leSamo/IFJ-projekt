@@ -61,18 +61,22 @@ ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag conten
         throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
     }
 
-    // register new child in parent node
-    if (parent != NULL) {
-        parent->children[parent->childrenCount++] = node;
+    node->children = malloc(sizeof(ASTNode*) * INITIAL_AST_NODE_CHILDREN);
+
+    if (node->children  == NULL) {
+        throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
     }
 
-    node->id = AST_consecutiveId++;
-    node->parent = parent;
-    node->childrenCount = 0;
-    
-    for (int i = 0; i < AST_NODE_CHILDREN; i++) {
-        node->children[i] = NULL;
+    // register new child in parent node
+    if (parent != NULL) {
+        AST_AttachNode(parent, node);
     }
+
+    node->parent = parent;
+
+    node->id = AST_consecutiveId++;
+    node->childrenCount = 0;
+    node->childrenCapacity = INITIAL_AST_NODE_CHILDREN;
 
     node->type = type;
     node->isOperatorResult = false;
@@ -83,6 +87,19 @@ ASTNode* AST_CreateNodeGeneral(ASTNode *parent, ASTNodeType type, typeTag conten
 }
 
 void AST_AttachNode(ASTNode *parent, ASTNode* child) {
+    if (parent->childrenCount + 1 == parent->childrenCapacity) {
+        parent->childrenCapacity *= 2;
+
+        ASTNode **newArray = realloc(parent->children, sizeof(ASTNode*) * parent->childrenCapacity);
+
+        if (newArray == NULL) {
+            throwError(INTERNAL_ERROR, "Memory allocation error\n", false);
+        }
+        else {
+            parent->children = newArray;
+        }
+    }
+
     // register new child in parent node
     parent->children[parent->childrenCount++] = child;
     child->parent = parent;
